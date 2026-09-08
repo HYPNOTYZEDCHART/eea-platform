@@ -29,6 +29,7 @@ export default function HistorySection() {
     },
     {
       year: "2026",
+      isCurrent: true,
       title: "Démarrage Opérationnel Officiel",
       description:
         "Entrée effective en activité opérationnelle : déploiement de la plateforme numérique panafricaine, délivrance des cartes de membre certifiées et fonds d'amorçage.",
@@ -73,45 +74,111 @@ export default function HistorySection() {
           </p>
         </div>
 
-        {/* Timeline Grid */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {milestones.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.12 }}
-                className="relative flex flex-col justify-between p-6 rounded-2xl bg-[#091733]/70 border border-white/10 hover:border-[#D4AF37]/40 transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-black/30 group"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]">
-                      {item.year}
-                    </span>
-                    <div className="w-10 h-10 rounded-xl bg-[#0B3C8A]/40 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 transition-transform">
-                      <Icon className="w-5 h-5" />
+        {/* Continuous Golden Thread Timeline (Option 1) */}
+        <div className="mt-20">
+          {/* Desktop: Horizontal Continuous Golden Thread */}
+          <div className="hidden lg:block relative">
+            {/* The Horizontal Continuous Line */}
+            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-[#D4AF37]/30 via-[#D4AF37] to-[#D4AF37]/40 pointer-events-none" />
+
+            <div className="grid grid-cols-4 gap-8 relative z-10">
+              {milestones.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.year}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.5, delay: index * 0.15 }}
+                    className="flex flex-col text-left group"
+                  >
+                    {/* Node on the Thread */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div
+                        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 z-10 shrink-0 ${
+                          item.isCurrent
+                            ? "border-[#D4AF37] bg-[#D4AF37] text-[#060d1d] shadow-lg shadow-[#D4AF37]/40 ring-4 ring-[#D4AF37]/20"
+                            : "border-[#D4AF37]/60 bg-[#060d1d] text-[#D4AF37] group-hover:border-[#D4AF37] group-hover:scale-110 shadow-md shadow-black/60"
+                        }`}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      {item.isCurrent && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          En cours
+                        </span>
+                      )}
                     </div>
+
+                    {/* Year Headline */}
+                    <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]">
+                      {item.year}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-white mt-1 leading-snug group-hover:text-[#F3DE8A] transition-colors">
+                      {item.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm text-slate-300 leading-relaxed mt-2.5 font-normal">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile / Tablet: Vertical Continuous Golden Thread */}
+          <div className="lg:hidden relative pl-8 sm:pl-10 space-y-10 before:absolute before:top-2 before:bottom-2 before:left-[15px] sm:before:left-[19px] before:w-[2px] before:bg-gradient-to-b before:from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]/30">
+            {milestones.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, x: -15 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-30px" }}
+                  transition={{ duration: 0.5, delay: index * 0.12 }}
+                  className="relative text-left"
+                >
+                  {/* Node on vertical line */}
+                  <div
+                    className={`absolute -left-[31px] sm:-left-[39px] top-0 w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      item.isCurrent
+                        ? "border-[#D4AF37] bg-[#D4AF37] text-[#060d1d] ring-4 ring-[#D4AF37]/20 shadow-md shadow-[#D4AF37]/30"
+                        : "border-[#D4AF37]/60 bg-[#060d1d] text-[#D4AF37]"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
                   </div>
 
-                  <h3 className="text-lg font-bold text-white mb-2 leading-snug">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]">
+                      {item.year}
+                    </span>
+                    {item.isCurrent && (
+                      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        En cours
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-base font-bold text-white mt-1 leading-snug">
                     {item.title}
                   </h3>
 
-                  <p className="text-sm text-slate-300 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1.5 font-normal">
                     {item.description}
                   </p>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-white/5 flex items-center gap-1.5 text-xs text-[#D4AF37] font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                  <span>Jalon historique</span>
-                </div>
-              </motion.div>
-            );
-          })}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Dedicated UCAD Heritage Showcase Card */}
