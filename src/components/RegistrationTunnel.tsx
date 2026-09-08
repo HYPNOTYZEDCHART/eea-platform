@@ -220,30 +220,32 @@ export default function RegistrationTunnel({
         </div>
 
         {/* Step Progression Bar */}
-        <div className="mb-10 grid grid-cols-4 gap-2 sm:gap-4 text-center">
+        <div className="mb-8 grid grid-cols-4 gap-1.5 sm:gap-4 text-center">
           {[
             { step: 1, title: "1. Profil" },
             { step: 2, title: "2. Photo" },
             { step: 3, title: "3. Paiement" },
-            { step: 4, title: "4. Confirmation" },
+            { step: 4, title: "4. Validé" },
           ].map((s) => (
             <div
               key={s.step}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`py-2 px-1 sm:p-2.5 rounded-xl border transition-all ${
                 currentStep === s.step
-                  ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white font-bold"
+                  ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white font-bold shadow-md shadow-[#D4AF37]/10"
                   : currentStep > s.step
                   ? "bg-emerald-950/30 border-emerald-500/40 text-emerald-400 font-medium"
                   : "bg-white/[0.02] border-white/5 text-slate-500 font-normal"
               }`}
             >
-              <span className="text-xs sm:text-sm">{s.title}</span>
+              <span className="text-[10px] sm:text-xs font-semibold truncate block">
+                {s.title}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Step Container */}
-        <div className="rounded-2xl bg-[#091733] border border-white/10 p-6 sm:p-10 shadow-2xl">
+        <div className="rounded-2xl bg-[#091733] border border-white/10 p-4 sm:p-10 shadow-2xl">
           <AnimatePresence mode="wait">
             {/* STEP 1: PROFIL INFORMATIONS */}
             {currentStep === 1 && (

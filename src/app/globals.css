@@ -16,13 +16,23 @@
   --foreground: #f8fafc;
 }
 
+html {
+  overflow-x: clip;
+  max-width: 100vw;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100vw;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
+
 
 /* Lenis smooth scrolling support */
 html.lenis,

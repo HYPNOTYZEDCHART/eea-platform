@@ -67,18 +67,20 @@ export default function HeroSection() {
           >
             {/* Status / Authority Pill */}
             <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0F224A] border border-[#D4AF37]/40 shadow-sm text-xs font-semibold text-white">
-                <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-                <span>Organisation Panafricaine Reconnue par l&apos;État</span>
-                <span className="text-[#D4AF37]">•</span>
-                <span className="text-slate-300 font-normal">Idée née en 2008 • Démarrage officiel 2026</span>
+              <div className="inline-flex flex-wrap items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0F224A] border border-[#D4AF37]/40 shadow-sm text-[11px] sm:text-xs font-semibold text-white max-w-full">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+                  <span>Reconnu par l&apos;État</span>
+                </div>
+                <span className="text-[#D4AF37] hidden sm:inline">•</span>
+                <span className="text-slate-300 font-normal text-[10px] sm:text-xs">Initié en 2008 à l&apos;UCAD • Démarrage 2026</span>
               </div>
             </motion.div>
 
             {/* Main Headline */}
             <motion.h1
               variants={itemVariants}
-              className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.15]"
+              className="text-2xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.2] sm:leading-[1.15]"
             >
               Bâtir l&apos;Avenir de l&apos;Afrique par{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]">
@@ -90,14 +92,12 @@ export default function HeroSection() {
             {/* Mission Subtitle / Manifeste Officiel */}
             <motion.div
               variants={itemVariants}
-              className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed font-normal space-y-3"
+              className="space-y-3 p-4 sm:p-5 rounded-2xl bg-[#091733]/80 border border-[#D4AF37]/30 shadow-lg"
             >
-              <p>
-                L&apos;entrepreneuriat est un terreau fertile pour ce changement de
-                cap, il sert de gouvernail à notre association d&apos;idées
-                fructueuses pour un développement à visage humain.
+              <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#D4AF37]">
+                Manifeste Statutaire & Engagement Continental
               </p>
-              <p className="text-sm sm:text-base text-slate-300">
+              <p className="text-xs sm:text-base text-slate-300 leading-relaxed">
                 <strong className="text-white font-semibold">EEA</strong> veut
                 promouvoir et impliquer le talent entrepreneurial de ses membres et
                 les orienter vers le grand défi de redressement de l&apos;Afrique et
@@ -113,22 +113,22 @@ export default function HeroSection() {
             {/* 4 Core Pillars Pills */}
             <motion.div
               variants={itemVariants}
-              className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1"
             >
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-200">
-                <Cpu className="w-4 h-4 text-[#38BDF8]" />
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
+                <Cpu className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
                 <span>Tech & IA</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-200">
-                <Sprout className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
+                <Sprout className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>Agro-business</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-200">
-                <GraduationCap className="w-4 h-4 text-[#D4AF37]" />
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
+                <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
                 <span>Excellence</span>
               </div>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-medium text-slate-200">
-                <Globe2 className="w-4 h-4 text-[#60A5FA]" />
+              <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
+                <Globe2 className="w-3.5 h-3.5 text-[#60A5FA] shrink-0" />
                 <span>Diaspora</span>
               </div>
             </motion.div>
@@ -136,11 +136,11 @@ export default function HeroSection() {
             {/* CTAs */}
             <motion.div
               variants={itemVariants}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2"
             >
               <a
                 href="#adhesion"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] shadow-lg shadow-[#D4AF37]/15 hover:brightness-105 transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] text-base"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-xl shadow-[#D4AF37]/20 transition-all duration-300 text-sm sm:text-base group cursor-pointer text-center"
               >
                 <span>Rejoindre le Mouvement • 5 000 FCFA</span>
                 <ArrowRight className="w-4 h-4 text-[#060d1d]" />
@@ -148,7 +148,7 @@ export default function HeroSection() {
 
               <a
                 href="#mouvement"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-slate-200 bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-slate-200 bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 transition-all duration-200 text-sm sm:text-base"
               >
                 <span>Découvrir notre Histoire</span>
               </a>
