@@ -63,6 +63,7 @@ alter table public.members enable row level security;
 alter table public.payments enable row level security;
 
 -- A. Table members: Lecture autorisée pour les vérifications de badge ou administrateurs
+drop policy if exists "Lecture publique de vérification de carte" on public.members;
 create policy "Lecture publique de vérification de carte"
     on public.members
     for select
@@ -73,6 +74,7 @@ create policy "Lecture publique de vérification de carte"
     );
 
 -- B. Table members: Création de membre lors du formulaire d'adhésion
+drop policy if exists "Insertion d'un nouveau membre lors du tunnel" on public.members;
 create policy "Insertion d'un nouveau membre lors du tunnel"
     on public.members
     for insert
@@ -83,36 +85,43 @@ create policy "Insertion d'un nouveau membre lors du tunnel"
     );
 
 -- C. Table members: Mise à jour par les administrateurs ou via service role
+drop policy if exists "Mise à jour membre par service role" on public.members;
 create policy "Mise à jour membre par service role"
     on public.members
     for update
     using (auth.role() = 'service_role' or auth.role() = 'authenticated');
 
 -- D. Table payments: Insertion lors de l'initiation d'un paiement
+drop policy if exists "Insertion d'un paiement en attente" on public.payments;
 create policy "Insertion d'un paiement en attente"
     on public.payments
     for insert
     with check (amount >= 5000);
 
 -- E. Table payments: Lecture strictement réservée aux administrateurs
+drop policy if exists "Lecture des paiements par service role ou authentifié" on public.payments;
 create policy "Lecture des paiements par service role ou authentifié"
     on public.payments
     for select
     using (auth.role() = 'service_role' or auth.role() = 'authenticated');
 
 -- F. Politiques de stockage
+drop policy if exists "Accès public en lecture des photos de membres" on storage.objects;
 create policy "Accès public en lecture des photos de membres"
     on storage.objects for select
     using (bucket_id = 'member-photos');
 
+drop policy if exists "Upload public des photos de membres" on storage.objects;
 create policy "Upload public des photos de membres"
     on storage.objects for insert
     with check (bucket_id = 'member-photos');
 
+drop policy if exists "Accès public en lecture des cartes de membres" on storage.objects;
 create policy "Accès public en lecture des cartes de membres"
     on storage.objects for select
     using (bucket_id = 'member-cards');
 
+drop policy if exists "Upload des cartes générées par admin" on storage.objects;
 create policy "Upload des cartes générées par admin"
     on storage.objects for insert
     with check (bucket_id = 'member-cards');
