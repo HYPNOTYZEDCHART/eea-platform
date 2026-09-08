@@ -24,6 +24,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://eea-afrique.org"),
   title: "Étudiant Entrepreneuriat Afrique (EEA) | Plateforme Officielle",
   description:
     "Organisation reconnue par l'État. Projet né en 2008 à l'UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Fédérer les étudiants d'Afrique et de la diaspora autour de projets d'entrepreneuriat, de technologie et d'agriculture moderne.",
@@ -35,7 +36,42 @@ export const metadata: Metadata = {
     "Agrobusiness",
     "Tech Afrique",
     "Carte membre EEA",
+    "UCAD Dakar",
+    "Badge vérifié",
   ],
+  icons: {
+    icon: [
+      { url: "/logo-eea.jpg", type: "image/jpeg" },
+    ],
+    apple: [
+      { url: "/logo-eea.jpg" },
+    ],
+    shortcut: ["/logo-eea.jpg"],
+  },
+  openGraph: {
+    title: "Étudiant Entrepreneuriat Afrique (EEA) | Plateforme Officielle",
+    description:
+      "Organisation panafricaine initiée en 2008 à l'UCAD de Dakar. Fédérer l'élite estudiantine africaine en Tech & Agrobusiness. Carte officielle de membre sécurisée par QR Code.",
+    url: "https://eea-afrique.org",
+    siteName: "EEA - Étudiant Entrepreneuriat Afrique",
+    images: [
+      {
+        url: "/logo-eea.jpg",
+        width: 800,
+        height: 800,
+        alt: "Logo Officiel EEA - Étudiant Entrepreneuriat Afrique",
+      },
+    ],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Étudiant Entrepreneuriat Afrique (EEA)",
+    description:
+      "Plateforme officielle de l'Étudiant Entrepreneuriat Afrique. Carte de membre sécurisée par QR Code.",
+    images: ["/logo-eea.jpg"],
+  },
 };
 
 export default function RootLayout({

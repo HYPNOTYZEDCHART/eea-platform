@@ -29,6 +29,18 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "gynoxjawwyvmpvmkiafx.supabase.co",
+      },
+    ],
+  },
   async headers() {
     return [
       {

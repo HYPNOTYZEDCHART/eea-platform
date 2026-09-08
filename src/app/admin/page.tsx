@@ -1180,7 +1180,7 @@ export default function AdminPage() {
                           <div className="flex items-center gap-3">
                             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-[#D4AF37]/50 bg-slate-800 shrink-0">
                               {m.photo_url ? (
-                                <Image src={m.photo_url} alt={m.first_name} fill className="object-cover" />
+                                <Image src={m.photo_url} alt={m.first_name} fill unoptimized className="object-cover" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-white bg-[#0B3C8A]/40">
                                   {m.first_name[0]}

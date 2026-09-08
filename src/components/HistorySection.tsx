@@ -17,7 +17,7 @@ export default function HistorySection() {
       year: "2008",
       title: "La Genèse à l'UCAD Dakar",
       description:
-        "L'idée et le projet voient le jour au sein de la Bibliothèque Centrale de l'UCAD, portés par des étudiants  avec l’appui du DR. Serigne saliou fall expert en finance, déterminés à transformer le continent.",
+        "L'idée et le projet voient le jour au sein de la Bibliothèque Centrale de l'UCAD, portés par des étudiants avec l'appui du Dr. Serigne Saliou FALL (expert en finance), déterminés à transformer le continent.",
       icon: Award,
     },
     {

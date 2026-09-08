@@ -147,7 +147,41 @@ export default function RegistrationTunnel({
         expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      // 2. Insert to Supabase if configured, or gracefully fallback locally
+      // 2. Upload photo to Supabase Storage if present, or fallback gracefully
+      let publicPhotoUrl = newMember.photo_url;
+      if (newMember.photo_url && newMember.photo_url.startsWith("data:")) {
+        try {
+          const base64Data = newMember.photo_url.split(",")[1];
+          if (base64Data) {
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: "image/jpeg" });
+            const fileName = `${newMember.membership_id}-${Date.now()}.jpg`;
+
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from("member-photos")
+              .upload(fileName, blob, { contentType: "image/jpeg", upsert: true });
+
+            if (!uploadError && uploadData) {
+              const { data: publicUrlData } = supabase.storage
+                .from("member-photos")
+                .getPublicUrl(fileName);
+              if (publicUrlData?.publicUrl) {
+                publicPhotoUrl = publicUrlData.publicUrl;
+                newMember.photo_url = publicPhotoUrl;
+              }
+            }
+          }
+        } catch (uploadErr) {
+          console.warn("Notice: Stockage local de la photo utilisé:", uploadErr);
+        }
+      }
+
+      // 3. Insert to Supabase if configured, or gracefully fallback locally
       try {
         const { error } = await supabase.from("members").insert({
           membership_id: newMember.membership_id,
@@ -158,7 +192,7 @@ export default function RegistrationTunnel({
           country: newMember.country,
           university: newMember.university,
           field_of_study: newMember.field_of_study,
-          photo_url: newMember.photo_url,
+          photo_url: publicPhotoUrl,
           qr_code_token: newMember.qr_code_token,
           status: "pending",
         });

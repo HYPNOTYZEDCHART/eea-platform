@@ -416,6 +416,7 @@ export default function PhotoCapture({
               src={photoPreview}
               alt="Photo d'identité validée"
               fill
+              unoptimized
               className="object-cover"
             />
           </div>

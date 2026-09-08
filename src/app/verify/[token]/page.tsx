@@ -225,6 +225,7 @@ export default function VerifyPage({
                       src={member.photo_url}
                       alt="Photo du membre"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   ) : (

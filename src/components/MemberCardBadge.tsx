@@ -181,7 +181,9 @@ export default function MemberCardBadge({
 
     if (member.photo_url) {
       const userImg = new window.Image();
-      userImg.crossOrigin = "anonymous";
+      if (!member.photo_url.startsWith("data:")) {
+        userImg.crossOrigin = "anonymous";
+      }
       userImg.src = member.photo_url;
       await new Promise((res) => {
         userImg.onload = res;
@@ -392,6 +394,7 @@ export default function MemberCardBadge({
                 src={member.photo_url}
                 alt="Photo officielle de membre"
                 fill
+                unoptimized
                 className="object-cover"
               />
             ) : (
