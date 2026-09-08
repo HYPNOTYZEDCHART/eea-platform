@@ -161,6 +161,15 @@ export default function AdminPage() {
     sessionStorage.removeItem("eea_admin_auth");
   }, []);
 
+  // Helper pour générer l'URL exacte de vérification selon le domaine en direct
+  const getVerifyUrl = (token: string) => {
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app";
+    return `${origin}/verify/${token}`;
+  };
+
   // Compte à rebours du code OTP (5 minutes)
   useEffect(() => {
     if (loginStep !== "otp" || otpTimer <= 0) return;
@@ -465,7 +474,7 @@ export default function AdminPage() {
             `Votre Carte Officielle de Membre EEA (${member.membership_id})`
           );
           const body = encodeURIComponent(
-            `Bonjour ${member.first_name} ${member.last_name},\n\nLe Secrétariat Général de l'EEA a le plaisir de vous transmettre votre carte officielle de membre au format PDF.\n\n- Matricule Officiel : ${member.membership_id}\n- Université : ${member.university}\n- Filière : ${member.field_of_study}\n- Vérification en ligne de votre QR Code : https://eea-afrique.org/verify/${member.qr_code_token}\n\nFélicitations pour votre engagement dans la souveraineté économique et entrepreneuriale de l'Afrique.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
+            `Bonjour ${member.first_name} ${member.last_name},\n\nLe Secrétariat Général de l'EEA a le plaisir de vous transmettre votre carte officielle de membre au format PDF.\n\n- Matricule Officiel : ${member.membership_id}\n- Université : ${member.university}\n- Filière : ${member.field_of_study}\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(member.qr_code_token)}\n\nFélicitations pour votre engagement dans la souveraineté économique et entrepreneuriale de l'Afrique.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
           );
           window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
         }
@@ -477,7 +486,7 @@ export default function AdminPage() {
         `Votre Carte Officielle de Membre EEA (${member.membership_id}) - Format PDF`
       );
       const body = encodeURIComponent(
-        `Bonjour ${member.first_name} ${member.last_name},\n\nLe Secrétariat Général de l'Étudiant Entrepreneuriat Afrique (EEA) a le plaisir de vous transmettre votre carte officielle de membre au format PDF.\n\n- Matricule Officiel : ${member.membership_id}\n- Université : ${member.university}\n- Filière : ${member.field_of_study}\n- Vérification en ligne de votre QR Code : https://eea-afrique.org/verify/${member.qr_code_token}\n\nFélicitations pour votre engagement dans la souveraineté économique et entrepreneuriale de l'Afrique.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
+        `Bonjour ${member.first_name} ${member.last_name},\n\nLe Secrétariat Général de l'Étudiant Entrepreneuriat Afrique (EEA) a le plaisir de vous transmettre votre carte officielle de membre au format PDF.\n\n- Matricule Officiel : ${member.membership_id}\n- Université : ${member.university}\n- Filière : ${member.field_of_study}\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(member.qr_code_token)}\n\nFélicitations pour votre engagement dans la souveraineté économique et entrepreneuriale de l'Afrique.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
       );
       window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
       setToastMessage(`Carte officielle préparée et transmise par email à ${member.email} !`);
@@ -508,12 +517,23 @@ export default function AdminPage() {
     }
 
     try {
-      await supabase
-        .from("members")
-        .update({ status: "active" })
-        .eq("membership_id", member.membership_id);
-    } catch (err) {
-      console.warn("Mise à jour locale réussie:", err);
+      await fetch("/api/admin/members/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: member.membership_id,
+          status: "active",
+        }),
+      });
+    } catch {
+      try {
+        await supabase
+          .from("members")
+          .update({ status: "active" })
+          .eq("membership_id", member.membership_id);
+      } catch (err) {
+        console.warn("Mise à jour locale réussie:", err);
+      }
     }
 
     setToastMessage(
@@ -542,12 +562,24 @@ export default function AdminPage() {
     }
 
     try {
-      await supabase
-        .from("members")
-        .update({ status: "active", expires_at: newExpiresAt })
-        .eq("membership_id", member.membership_id);
-    } catch (err) {
-      console.warn("Mise à jour locale réussie:", err);
+      await fetch("/api/admin/members/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: member.membership_id,
+          status: "active",
+          expires_at: newExpiresAt,
+        }),
+      });
+    } catch {
+      try {
+        await supabase
+          .from("members")
+          .update({ status: "active", expires_at: newExpiresAt })
+          .eq("membership_id", member.membership_id);
+      } catch (err) {
+        console.warn("Mise à jour locale réussie:", err);
+      }
     }
 
     setToastMessage(
@@ -583,12 +615,23 @@ export default function AdminPage() {
     }
 
     try {
-      await supabase
-        .from("members")
-        .update({ status: "revoked" })
-        .eq("membership_id", target.membership_id);
-    } catch (err) {
-      console.warn("Mise à jour locale réussie:", err);
+      await fetch("/api/admin/members/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: target.membership_id,
+          status: "revoked",
+        }),
+      });
+    } catch {
+      try {
+        await supabase
+          .from("members")
+          .update({ status: "revoked" })
+          .eq("membership_id", target.membership_id);
+      } catch (err) {
+        console.warn("Mise à jour locale réussie:", err);
+      }
     }
 
     setMemberToEject(null);
@@ -612,12 +655,23 @@ export default function AdminPage() {
     }
 
     try {
-      await supabase
-        .from("members")
-        .update({ status: "active" })
-        .eq("membership_id", member.membership_id);
-    } catch (err) {
-      console.warn("Mise à jour locale réussie:", err);
+      await fetch("/api/admin/members/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: member.membership_id,
+          status: "active",
+        }),
+      });
+    } catch {
+      try {
+        await supabase
+          .from("members")
+          .update({ status: "active" })
+          .eq("membership_id", member.membership_id);
+      } catch (err) {
+        console.warn("Mise à jour locale réussie:", err);
+      }
     }
 
     setToastMessage(
@@ -1334,7 +1388,7 @@ export default function AdminPage() {
                                 effStatus === "expired"
                                   ? `Bonjour ${m.first_name} ${m.last_name},\n\nVotre carte annuelle EEA (Matricule : ${m.membership_id}) est arrivée à échéance. Merci de procéder au renouvellement de votre cotisation statutaire (5 000 FCFA) par Wave/Orange Money vers le +221 78 542 53 45 pour maintenir vos accès et votre carte active.\n\nSecrétariat Général EEA`
                                   : effStatus === "active"
-                                  ? `Bonjour ${m.first_name} ${m.last_name},\n\nFélicitations ! Votre adhésion à l'Étudiant Entrepreneuriat Afrique (EEA) a bien été validée par le Secrétariat Général.\n\n- Matricule Officiel : ${m.membership_id}\n- Statut : MEMBRE ACTIF VALIDE\n- Vérification en ligne de votre QR Code : https://eea-afrique.org/verify/${m.qr_code_token}\n\nVotre carte officielle de membre au format PDF est prête et disponible.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
+                                  ? `Bonjour ${m.first_name} ${m.last_name},\n\nFélicitations ! Votre adhésion à l'Étudiant Entrepreneuriat Afrique (EEA) a bien été validée par le Secrétariat Général.\n\n- Matricule Officiel : ${m.membership_id}\n- Statut : MEMBRE ACTIF VALIDE\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(m.qr_code_token)}\n\nVotre carte officielle de membre au format PDF est prête et disponible.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
                                   : `Bonjour ${m.first_name} ${m.last_name},\n\nNous avons bien reçu votre demande d'adhésion EEA (Matricule : ${m.membership_id}). Merci de nous confirmer votre transfert de 5 000 FCFA vers le +221 78 542 53 45 pour que nous puissions activer votre statut et vous transmettre votre carte officielle au format PDF.\n\nSecrétariat Général EEA`
                               )}`}
                               target="_blank"
@@ -1650,7 +1704,7 @@ export default function AdminPage() {
 
                 <a
                   href={`https://wa.me/${selectedMemberForBadge.phone.replace(/[^0-9]/g, "") || "221785425345"}?text=${encodeURIComponent(
-                    `Bonjour ${selectedMemberForBadge.first_name} ${selectedMemberForBadge.last_name},\n\nVotre adhésion à l'Étudiant Entrepreneuriat Afrique (EEA) a bien été validée par le Secrétariat Général.\n\n- Matricule Officiel : ${selectedMemberForBadge.membership_id}\n- Vérification en ligne de votre QR Code : https://eea-afrique.org/verify/${selectedMemberForBadge.qr_code_token}\n\nVotre carte officielle de membre au format PDF est prête et attachée ci-joint.\n\nSecrétariat Général EEA - UCAD Dakar`
+                    `Bonjour ${selectedMemberForBadge.first_name} ${selectedMemberForBadge.last_name},\n\nVotre adhésion à l'Étudiant Entrepreneuriat Afrique (EEA) a bien été validée par le Secrétariat Général.\n\n- Matricule Officiel : ${selectedMemberForBadge.membership_id}\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(selectedMemberForBadge.qr_code_token)}\n\nVotre carte officielle de membre au format PDF est prête et attachée ci-joint.\n\nSecrétariat Général EEA - UCAD Dakar`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

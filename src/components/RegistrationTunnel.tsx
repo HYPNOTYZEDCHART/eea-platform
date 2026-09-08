@@ -179,24 +179,39 @@ export default function RegistrationTunnel({
         }
       }
 
-      // 3. Insert to Supabase if configured, or gracefully fallback locally
+      // 3. Insert to Supabase via server API route (bypasses RLS) with client fallback
       try {
-        const { error } = await supabase.from("members").insert({
-          membership_id: newMember.membership_id,
-          first_name: newMember.first_name,
-          last_name: newMember.last_name,
-          email: newMember.email,
-          phone: newMember.phone,
-          country: newMember.country,
-          university: newMember.university,
-          field_of_study: newMember.field_of_study,
-          photo_url: publicPhotoUrl,
-          qr_code_token: newMember.qr_code_token,
-          status: "pending",
+        const apiRes = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            membership_id: newMember.membership_id,
+            first_name: newMember.first_name,
+            last_name: newMember.last_name,
+            email: newMember.email,
+            phone: newMember.phone,
+            country: newMember.country,
+            university: newMember.university,
+            field_of_study: newMember.field_of_study,
+            photo_url: publicPhotoUrl,
+            qr_code_token: newMember.qr_code_token,
+            status: "pending",
+          }),
         });
-
-        if (error) {
-          console.warn("Notice: Enregistrement local utilisé :", error.message);
+        if (!apiRes.ok) {
+          await supabase.from("members").insert({
+            membership_id: newMember.membership_id,
+            first_name: newMember.first_name,
+            last_name: newMember.last_name,
+            email: newMember.email,
+            phone: newMember.phone,
+            country: newMember.country,
+            university: newMember.university,
+            field_of_study: newMember.field_of_study,
+            photo_url: publicPhotoUrl,
+            qr_code_token: newMember.qr_code_token,
+            status: "pending",
+          });
         }
       } catch (err) {
         console.warn("Mode local actif :", err);
