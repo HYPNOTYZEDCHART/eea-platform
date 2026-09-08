@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Cinzel } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import ScrollProgress from "@/components/ScrollProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +15,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
 });
 
 export const viewport: Viewport = {
@@ -82,9 +89,10 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased selection:bg-[#D4AF37] selection:text-[#060d1d] overflow-x-hidden`}
+      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased selection:bg-[#D4AF37] selection:text-[#060d1d] overflow-x-hidden`}
     >
       <body className="min-h-full flex flex-col bg-[#060d1d] text-[#f8fafc] overflow-x-hidden w-full max-w-[100vw]">
+        <ScrollProgress />
         <SmoothScroll>
           <Navbar />
           <main className="flex-1 w-full overflow-x-hidden">{children}</main>

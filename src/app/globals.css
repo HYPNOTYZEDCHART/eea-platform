@@ -76,3 +76,88 @@ html.lenis body {
   animation: marquee 35s linear infinite;
 }
 
+/* Luxury Academic Font Class */
+.font-cinzel {
+  font-family: var(--font-cinzel), Georgia, "Times New Roman", serif;
+}
+
+/* Floating Slow Animation */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+/* Rotating Celestial Orbit Ring */
+@keyframes goldOrbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-orbit-slow {
+  animation: goldOrbit 28s linear infinite;
+}
+
+.animate-orbit-reverse {
+  animation: goldOrbit 38s linear infinite reverse;
+}
+
+/* Liquid Sheen Sweep */
+@keyframes liquidSheen {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-sheen {
+  background-size: 200% 100%;
+  animation: liquidSheen 4s ease-in-out infinite;
+}
+
+/* Border Beam Ray */
+@keyframes borderBeam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* Holographic security sheen */
+@keyframes holographicSweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.hologram-shimmer {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0) 0%,
+    rgba(212, 175, 55, 0.25) 25%,
+    rgba(56, 189, 248, 0.25) 50%,
+    rgba(244, 114, 182, 0.2) 75%,
+    rgba(212, 175, 55, 0) 100%
+  );
+  background-size: 300% 300%;
+  animation: holographicSweep 6s ease infinite;
+}
+

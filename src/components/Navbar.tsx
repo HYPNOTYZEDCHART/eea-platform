@@ -49,7 +49,7 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-sans">
+                <span className="font-cinzel font-black text-xl tracking-tight text-white">
                   EEA
                 </span>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase font-semibold tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
@@ -72,7 +72,7 @@ export default function Navbar() {
                 className="text-sm font-medium text-slate-200 hover:text-[#D4AF37] transition-colors duration-200 relative group py-1"
               >
                 {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#D4AF37] to-[#FFF3B0] shadow-[0_0_8px_rgba(212,175,55,0.8)] transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </nav>
@@ -81,7 +81,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             <a
               href="#adhesion"
-              className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-md shadow-[#D4AF37]/15 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+              className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-extrabold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#FFF3B0] to-[#D4AF37] animate-sheen hover:brightness-105 shadow-lg shadow-[#D4AF37]/25 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
             >
               <CreditCard className="w-4 h-4 text-[#060d1d]" />
               <span>Adhérer • 5 000 FCFA</span>
