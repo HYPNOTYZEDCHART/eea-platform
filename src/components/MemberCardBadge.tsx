@@ -354,7 +354,7 @@ export default function MemberCardBadge({
   const renderVisualCard = () => (
     <div
       ref={cardElementRef}
-      className="w-full max-w-2xl aspect-[1.586/1] rounded-2xl bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37] p-4 sm:p-6 shadow-2xl shadow-black/80 flex flex-col justify-between relative overflow-hidden text-white"
+      className="w-full max-w-2xl min-h-[220px] sm:min-h-0 sm:aspect-[1.586/1] rounded-2xl bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37] p-3.5 sm:p-6 shadow-2xl shadow-black/80 flex flex-col justify-between relative overflow-hidden text-white"
     >
       {/* Watermark Logo */}
       <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-52 h-52">
@@ -364,29 +364,29 @@ export default function MemberCardBadge({
       {/* Card Header */}
       <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm shrink-0">
+          <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm shrink-0">
             <Image src="/logo-eea.jpg" alt="Logo EEA" fill className="object-cover" />
           </div>
           <div>
-            <h3 className="font-extrabold text-xs sm:text-sm tracking-wide text-white">
+            <h3 className="font-extrabold text-[11px] sm:text-sm tracking-wide text-white">
               ÉTUDIANT ENTREPRENEURIAT AFRIQUE
             </h3>
-            <p className="text-[9px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase">
+            <p className="text-[8.5px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase">
               Carte Officielle de Membre • Né en 2008 • Démarrage officiel 2026
             </p>
           </div>
         </div>
 
-        <span className="px-2.5 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[9px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0">
+        <span className="px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[8.5px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0">
           Membre Actif
         </span>
       </div>
 
       {/* Card Body */}
-      <div className="relative z-10 grid grid-cols-12 gap-3 items-center my-auto py-1">
+      <div className="relative z-10 grid grid-cols-12 gap-2.5 sm:gap-3 items-center my-auto py-1">
         {/* Photo */}
         <div className="col-span-4 sm:col-span-3 flex justify-center">
-          <div className="relative w-20 h-24 sm:w-24 sm:h-30 rounded-xl overflow-hidden border-2 border-[#D4AF37] bg-[#040914] shadow-md">
+          <div className="relative w-16 h-20 sm:w-24 sm:h-30 rounded-xl overflow-hidden border-2 border-[#D4AF37] bg-[#040914] shadow-md shrink-0">
             {member.photo_url ? (
               <Image
                 src={member.photo_url}

@@ -1142,11 +1142,16 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Data Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-white/10 text-slate-400 uppercase font-bold tracking-wider">
+          {/* Data Table with Mobile Horizontal Scroll Assurance */}
+          <div className="space-y-2">
+            <div className="flex sm:hidden items-center justify-between text-[11px] text-slate-400 px-1">
+              <span>Faites défiler le tableau vers la droite ➔</span>
+              <span className="font-mono text-[10px] text-[#D4AF37]">{filteredMembers.length} membres</span>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-white/5 pb-2">
+              <table className="w-full text-left text-xs min-w-[880px]">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 uppercase font-bold tracking-wider">
                   <th className="pb-3 px-3">Étudiant</th>
                   <th className="pb-3 px-3">Matricule Officiel</th>
                   <th className="pb-3 px-3">Université & Pays</th>
@@ -1389,6 +1394,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+    </div>
 
       {/* TOAST NOTIFICATION */}
       {toastMessage && (
