@@ -114,7 +114,7 @@ export default function PillarsSection() {
   ];
 
   return (
-    <section id="piliers" className="relative py-24 sm:py-32 bg-[#08142c]/50 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
+    <section id="piliers" className="relative py-24 sm:py-32 bg-[#08142c]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
       {/* Background Ambience (No Neon) */}
       <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-[#0B3C8A]/15 rounded-full blur-[140px] pointer-events-none" />
 

@@ -76,7 +76,7 @@ export default function MembershipCardShowcase() {
   ];
 
   return (
-    <section id="carte" className="relative py-24 sm:py-32 bg-[#08142c]/50 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
+    <section id="carte" className="relative py-24 sm:py-32 bg-[#08142c]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
       {/* Background Soft Lighting - Dignified, No Neon */}
       <div className="absolute top-1/4 left-1/4 w-[600px] h-[400px] bg-[#0B3C8A]/20 rounded-full blur-[160px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-[450px] h-[350px] bg-[#D4AF37]/5 rounded-full blur-[140px] pointer-events-none" />

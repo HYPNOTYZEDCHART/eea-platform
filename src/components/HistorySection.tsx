@@ -45,7 +45,7 @@ export default function HistorySection() {
   ];
 
   return (
-    <section id="mouvement" className="relative py-24 sm:py-32 bg-[#060d1d]/40 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
+    <section id="mouvement" className="relative py-24 sm:py-32 bg-[#060d1d]/20 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
       {/* Background Subtle Accent */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-[#0B3C8A]/15 rounded-full blur-[140px] pointer-events-none" />
 

@@ -99,11 +99,11 @@ export default function RootLayout({
             alt="Bibliothèque Centrale UCAD en arrière-plan"
             fill
             priority
-            className="object-cover object-center opacity-35 scale-105 filter saturate-75 contrast-110"
+            className="object-cover object-center opacity-75 scale-105 filter saturate-90 contrast-125"
           />
           {/* Nocturnal Deep Blue Scrim & Vignette Gradients */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#060d1d]/85 via-[#08142c]/80 to-[#060d1d]/90" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#060d1d_85%)] opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#060d1d]/65 via-[#08142c]/55 to-[#060d1d]/75" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_10%,#060d1d_85%)] opacity-55" />
         </div>
 
         <SmoothScroll>

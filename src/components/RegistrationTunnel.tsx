@@ -232,7 +232,7 @@ export default function RegistrationTunnel({
   )}`;
 
   return (
-    <section id="adhesion" className="relative py-24 sm:py-32 bg-[#060d1d]/50 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
+    <section id="adhesion" className="relative py-24 sm:py-32 bg-[#060d1d]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
       {/* Background Soft Glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#0B3C8A]/15 rounded-full blur-[160px] pointer-events-none" />
 
