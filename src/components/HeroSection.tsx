@@ -10,6 +10,9 @@ import {
   Cpu,
   GraduationCap,
   Globe2,
+  Rocket,
+  Coins,
+  QrCode,
 } from "lucide-react";
 
 export default function HeroSection() {
@@ -162,43 +165,93 @@ export default function HeroSection() {
           </motion.p>
         </motion.div>
 
-        {/* Bottom Key Numbers Strip */}
+        {/* Launch Momentum & Trust Tiles */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-16 sm:mt-20 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
+          className="mt-14 sm:mt-16 pt-8 border-t border-white/10 w-full max-w-5xl"
         >
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              2008
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-left">
+            {/* 1. Lancement 2026 */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#D4AF37]/40 transition-colors flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                  <Rocket className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  En cours
+                </span>
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-bold text-white">
+                  Promo Pionnière
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
+                  Campagne officielle 2026 ouverte
+                </p>
+              </div>
             </div>
-            <div className="text-xs sm:text-sm text-slate-400 mt-1">
-              Genèse à l&apos;UCAD Dakar
+
+            {/* 2. Tarif Accessible */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#D4AF37]/40 transition-colors flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <Coins className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </div>
+                <span className="text-[10px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/20">
+                  Solidaire
+                </span>
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-bold text-white">
+                  5 000 FCFA / an
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
+                  Adhésion annuelle accessible à tous
+                </p>
+              </div>
             </div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-[#D4AF37]">
-              2026
+
+            {/* 3. Carte Numérique Officielle */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#D4AF37]/40 transition-colors flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8]">
+                  <QrCode className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </div>
+                <span className="text-[10px] font-semibold text-[#38BDF8] bg-[#38BDF8]/10 px-2 py-0.5 rounded-full border border-[#38BDF8]/20">
+                  Infalsifiable
+                </span>
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-bold text-white">
+                  Carte Numérique
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
+                  QR Code d&apos;État & matricule unique
+                </p>
+              </div>
             </div>
-            <div className="text-xs sm:text-sm text-slate-400 mt-1">
-              Démarrage opérationnel
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
-              18+ Pays
-            </div>
-            <div className="text-xs sm:text-sm text-slate-400 mt-1">
-              Continent & Diaspora
-            </div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-[#D4AF37]">
-              10 000+
-            </div>
-            <div className="text-xs sm:text-sm text-slate-400 mt-1">
-              Étudiants et porteurs de projets
+
+            {/* 4. Synergie Continent & Diaspora */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#D4AF37]/40 transition-colors flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#818CF8]/15 border border-[#818CF8]/30 flex items-center justify-center text-[#818CF8]">
+                  <Globe2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </div>
+                <span className="text-[10px] font-semibold text-[#818CF8] bg-[#818CF8]/10 px-2 py-0.5 rounded-full border border-[#818CF8]/20">
+                  Réseau
+                </span>
+              </div>
+              <div>
+                <div className="text-sm sm:text-base font-bold text-white">
+                  Synergie Panafricaine
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
+                  Campus, agro-industrie & diaspora
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>
