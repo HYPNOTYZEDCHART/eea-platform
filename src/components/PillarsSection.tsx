@@ -163,7 +163,7 @@ export default function PillarsSection() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
                   {/* Left Column: Number & Icon */}
                   <div className="lg:col-span-2 flex items-center lg:flex-col lg:items-start gap-4">
-                    <span className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]/50 font-serif tracking-tight">
+                    <span className="text-4xl sm:text-5xl font-black text-white font-serif tracking-tight">
                       {pillar.number}
                     </span>
                     <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
