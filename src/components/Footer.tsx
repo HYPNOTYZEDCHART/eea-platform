@@ -36,10 +36,10 @@ export default function Footer() {
                 />
               </div>
               <div>
-                <span className="font-cinzel font-black text-2xl text-white tracking-tight block">
+                <span className="font-black text-xl text-white tracking-tight block">
                   EEA
                 </span>
-                <span className="font-cinzel text-xs text-[#D4AF37] font-semibold tracking-wider uppercase">
+                <span className="text-xs text-[#D4AF37] font-semibold tracking-wider uppercase">
                   Étudiant Entrepreneuriat Afrique
                 </span>
               </div>

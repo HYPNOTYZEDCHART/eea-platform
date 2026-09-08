@@ -5,7 +5,6 @@ import SmoothScroll from "@/components/SmoothScroll";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import ScrollProgress from "@/components/ScrollProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -92,7 +91,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased selection:bg-[#D4AF37] selection:text-[#060d1d] overflow-x-hidden`}
     >
       <body className="min-h-full flex flex-col bg-[#060d1d] text-[#f8fafc] overflow-x-hidden w-full max-w-[100vw]">
-        <ScrollProgress />
         <SmoothScroll>
           <Navbar />
           <main className="flex-1 w-full overflow-x-hidden">{children}</main>
