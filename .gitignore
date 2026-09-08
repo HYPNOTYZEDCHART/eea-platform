@@ -20,18 +20,32 @@
 # production
 /build
 
-# misc
+# security & secrets
 .DS_Store
 *.pem
+*.key
+*.cert
+*.crt
+credentials*.json
+serviceAccountKey*.json
 
-# debug
+# debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# environment variables (NEVER commit secrets to GitHub)
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Allow committing template examples
+!.env.local.example
+!.env.example
 
 # vercel
 .vercel
