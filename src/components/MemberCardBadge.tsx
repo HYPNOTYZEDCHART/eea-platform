@@ -75,7 +75,7 @@ export default function MemberCardBadge({
     const baseUrl =
       typeof window !== "undefined"
         ? window.location.origin
-        : "https://eea-afrique.org";
+        : (process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app");
     const verifyUrl = `${baseUrl}/verify/${member.qr_code_token}`;
 
     QRCode.toDataURL(
@@ -278,7 +278,11 @@ export default function MemberCardBadge({
 
     ctx.fillStyle = "#D4AF37";
     ctx.font = "13px sans-serif";
-    ctx.fillText("VÉRIFIABLE SUR EEA-AFRIQUE.ORG/VERIFY", 670, 605);
+    const verifyHost =
+      typeof window !== "undefined" && window.location.host
+        ? window.location.host.toUpperCase()
+        : "EEA-AFRIQUE.ORG";
+    ctx.fillText(`VÉRIFIABLE SUR ${verifyHost}/VERIFY`, 670, 605);
 
     return canvas;
   };

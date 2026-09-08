@@ -59,7 +59,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://eea-afrique.org";
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (host ? `${proto}://${host}` : "https://eea-platform.vercel.app");
     const verifyUrl = `${baseUrl}/verify/${qr_code_token || "eea_token_demo_0842"}`;
 
     const subject = `🎓 [EEA] Votre Carte Officielle de Membre Certifiée — Matricule ${membership_id}`;

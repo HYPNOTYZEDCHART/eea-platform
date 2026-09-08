@@ -67,6 +67,10 @@ export async function POST(request: NextRequest) {
         })
       : "Échue";
 
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || (host ? `${proto}://${host}` : "https://eea-platform.vercel.app");
+
     // 2. Préparation du sujet et du corps officiel
     const subject = `⚠️ [EEA] Renouvellement Obligatoire de votre Carte de Membre Annuelle - Matricule ${membership_id}`;
 
@@ -94,7 +98,7 @@ MODALITÉS DE RÈGLEMENT :
 Dès réception de votre transfert, le Secrétariat Général validera immédiatement votre renouvellement pour 1 an supplémentaire et vous transmettra votre nouvelle carte PDF certifiée avec QR Code actualisé.
 
 Contact Trésorerie & Assistance WhatsApp : +221 78 542 53 45
-Site Officiel : https://eea-afrique.org
+Site Officiel : ${siteUrl}
 
 Pour l'Afrique de demain,
 Le Secrétariat Général EEA
