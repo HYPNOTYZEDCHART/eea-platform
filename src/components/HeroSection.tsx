@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -37,26 +36,12 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-16 overflow-hidden bg-gradient-to-b from-[#060d1d] via-[#091733] to-[#060d1d]">
-      {/* Real Historic UCAD Library Background - Enhanced Visibility */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Image
-          src="/ucad-library.jpg"
-          alt="Bibliothèque Universitaire Centrale UCAD en arrière-plan"
-          fill
-          priority
-          className="object-cover object-center opacity-40 scale-105 filter saturate-75 contrast-110"
-        />
-        {/* Subtle Vignette & Directional Gradients to keep text crisp while displaying the monument */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#060d1d] via-[#060d1d]/75 to-[#060d1d]/40" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060d1d]/80 via-transparent to-[#060d1d]" />
-      </div>
-
+    <section className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-16 overflow-hidden bg-transparent">
       {/* Background Subtle Geometric Pattern - No Neon */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]" />
 
       {/* Very Soft Deep Blue Lighting Accents (Non-Neon) */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#0B3C8A]/25 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#0B3C8A]/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-[400px] h-[300px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-auto flex flex-col items-center text-center">

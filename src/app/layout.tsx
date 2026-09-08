@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Image from "next/image";
 import { Geist, Geist_Mono, Cinzel } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -90,7 +91,21 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased selection:bg-[#D4AF37] selection:text-[#060d1d] overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col bg-[#060d1d] text-[#f8fafc] overflow-x-hidden w-full max-w-[100vw]">
+      <body className="min-h-full flex flex-col bg-[#060d1d] text-[#f8fafc] overflow-x-hidden w-full max-w-[100vw] relative">
+        {/* Global Fixed UCAD Library Heritage Background */}
+        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+          <Image
+            src="/ucad-library.jpg"
+            alt="Bibliothèque Centrale UCAD en arrière-plan"
+            fill
+            priority
+            className="object-cover object-center opacity-35 scale-105 filter saturate-75 contrast-110"
+          />
+          {/* Nocturnal Deep Blue Scrim & Vignette Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#060d1d]/85 via-[#08142c]/80 to-[#060d1d]/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#060d1d_85%)] opacity-80" />
+        </div>
+
         <SmoothScroll>
           <Navbar />
           <main className="flex-1 w-full overflow-x-hidden">{children}</main>

@@ -18,7 +18,7 @@ export default function Footer() {
   )}`;
 
   return (
-    <footer className="bg-[#040914] text-slate-300 border-t border-white/10 relative overflow-hidden">
+    <footer className="bg-[#040914]/85 backdrop-blur-sm text-slate-300 border-t border-white/10 relative overflow-hidden">
       {/* Top Banner Accent */}
       <div className="h-1 w-full bg-gradient-to-r from-[#0B3C8A] via-[#D4AF37] to-[#0B3C8A]" />
 
