@@ -186,7 +186,7 @@ export default function PhotoCapture({
     setMode("preview");
   };
 
-  // Mouse pan handlers for crop canvas
+  // Mouse & Touch pan handlers for crop canvas (Desktop + Mobile)
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
@@ -201,6 +201,25 @@ export default function PhotoCapture({
   };
 
   const handleMouseUp = () => setIsDragging(false);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      const touch = e.touches[0];
+      setDragStart({ x: touch.clientX - pan.x, y: touch.clientY - pan.y });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setPan({
+      x: touch.clientX - dragStart.x,
+      y: touch.clientY - dragStart.y,
+    });
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
 
   return (
     <div className="w-full bg-[#091733] border border-white/10 rounded-2xl p-6 shadow-xl space-y-6">
@@ -330,7 +349,11 @@ export default function PhotoCapture({
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
-              className="w-full h-full object-cover"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+              className="w-full h-full object-cover touch-none"
             />
 
             {/* Passport Oval Overlay */}

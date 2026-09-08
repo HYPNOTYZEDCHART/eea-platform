@@ -81,6 +81,43 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://eea-afrique.org/#organization",
+      name: "Étudiant Entrepreneuriat Afrique",
+      alternateName: ["EEA", "EEA Afrique"],
+      url: "https://eea-afrique.org",
+      logo: "https://eea-afrique.org/logo-eea.jpg",
+      foundingDate: "2008",
+      foundingLocation: {
+        "@type": "Place",
+        name: "Université Cheikh Anta Diop (UCAD), Dakar, Sénégal",
+      },
+      description:
+        "Organisation panafricaine reconnue par l'État. Fédérer l'élite estudiantine africaine autour des pôles d'excellence en Entrepreneuriat, Haute Technologie et Agrobusiness.",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+221785425345",
+        contactType: "customer service",
+        availableLanguage: ["French", "English", "Wolof"],
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://eea-afrique.org/#website",
+      url: "https://eea-afrique.org",
+      name: "Plateforme Officielle EEA",
+      publisher: {
+        "@id": "https://eea-afrique.org/#organization",
+      },
+      inLanguage: "fr-FR",
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -91,6 +128,12 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased selection:bg-[#D4AF37] selection:text-[#060d1d] overflow-x-hidden`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[#060d1d] text-[#f8fafc] overflow-x-hidden w-full max-w-[100vw] relative">
         {/* Global Fixed UCAD Library Heritage Background */}
         <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">

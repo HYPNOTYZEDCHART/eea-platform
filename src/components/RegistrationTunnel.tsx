@@ -307,7 +307,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, firstName: e.target.value })
                       }
                       placeholder="Ex: Cheikh, Aïssatou, Jean-David"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                     />
                     {errors.firstName && (
                       <p className="text-xs text-rose-400 mt-1">{errors.firstName}</p>
@@ -325,7 +325,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, lastName: e.target.value })
                       }
                       placeholder="Ex: DIOP, KOUASSI, TOURE"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                     />
                     {errors.lastName && (
                       <p className="text-xs text-rose-400 mt-1">{errors.lastName}</p>
@@ -345,7 +345,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, email: e.target.value })
                       }
                       placeholder="etudiant@ucad.edu.sn ou nom@gmail.com"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                     />
                     {errors.email && (
                       <p className="text-xs text-rose-400 mt-1">{errors.email}</p>
@@ -363,7 +363,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, phone: e.target.value })
                       }
                       placeholder="+221 78 542 53 45"
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                     />
                     {errors.phone && (
                       <p className="text-xs text-rose-400 mt-1">{errors.phone}</p>
@@ -382,7 +382,7 @@ export default function RegistrationTunnel({
                         onChange={(e) =>
                           setFormData({ ...formData, country: e.target.value })
                         }
-                        className="w-full px-4 py-3 rounded-xl bg-[#060d1d] border border-white/10 text-white focus:outline-none focus:border-[#D4AF37] text-sm appearance-none"
+                        className="w-full px-4 py-3 rounded-xl bg-[#060d1d] border border-white/10 text-white focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm appearance-none"
                       >
                         {COUNTRIES.map((c) => (
                           <option key={c} value={c} className="bg-[#060d1d]">
@@ -406,7 +406,7 @@ export default function RegistrationTunnel({
                           setFormData({ ...formData, university: e.target.value })
                         }
                         placeholder="Ex: UCAD Dakar, INPHB Yamoussoukro, etc."
-                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                       />
                       <Building className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
                     </div>
@@ -430,7 +430,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, fieldOfStudy: e.target.value })
                       }
                       placeholder="Ex: Agronomie & Agro-business, Informatique & IA, Économie, etc."
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-sm"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-sm"
                     />
                     <GraduationCap className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
                   </div>
@@ -444,7 +444,7 @@ export default function RegistrationTunnel({
                 <div className="pt-4 flex justify-end">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm cursor-pointer"
                   >
                     <span>Continuer vers la Photo</span>
                     <ArrowRight className="w-4 h-4" />
@@ -576,7 +576,7 @@ export default function RegistrationTunnel({
                     <label className="block text-xs font-semibold text-slate-300 mb-2">
                       Moyen utilisé pour le transfert :
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5">
                       {[
                         { id: "wave", label: "Wave", desc: "0% frais" },
                         { id: "orange_money", label: "Orange Money", desc: "Sénégal / UEMOA" },
@@ -586,14 +586,14 @@ export default function RegistrationTunnel({
                           key={p.id}
                           type="button"
                           onClick={() => setFormData({ ...formData, paymentMethod: p.id as "wave" | "orange_money" | "whatsapp" })}
-                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                             formData.paymentMethod === p.id
                               ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white"
                               : "bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/20"
                           }`}
                         >
-                          <div className="font-bold text-xs">{p.label}</div>
-                          <div className="text-[10px] text-slate-400 mt-0.5">{p.desc}</div>
+                          <div className="font-bold text-xs sm:text-sm">{p.label}</div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">{p.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -611,7 +611,7 @@ export default function RegistrationTunnel({
                         setFormData({ ...formData, paymentReference: e.target.value })
                       }
                       placeholder="Ex: 77 123 45 67 ou Réf. Wave SN-2026-..."
-                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-xs font-mono"
+                      className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-xs font-mono"
                     />
                     <p className="text-[11px] text-slate-400 mt-1">
                       Cette information permet à l&apos;administrateur de valider instantanément votre versement de 5 000 FCFA dans le back-office.
@@ -619,11 +619,11 @@ export default function RegistrationTunnel({
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+                <div className="pt-6 border-t border-white/10 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Retour à la photo</span>
@@ -633,7 +633,7 @@ export default function RegistrationTunnel({
                     type="button"
                     disabled={loading}
                     onClick={handleProcessPayment}
-                    className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm disabled:opacity-50 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm disabled:opacity-50 cursor-pointer text-center"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#060d1d]" />
                     <span>
