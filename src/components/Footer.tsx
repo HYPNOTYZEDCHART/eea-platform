@@ -87,13 +87,13 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#impact" className="hover:text-white transition-colors">
-                  Chiffres Clés & Impact
+                <a href="#carte" className="hover:text-white transition-colors">
+                  Carte Numérique Sécurisée
                 </a>
               </li>
               <li>
-                <a href="#partenaires" className="hover:text-white transition-colors">
-                  Ministères & Sponsors
+                <a href="#adhesion" className="hover:text-white transition-colors">
+                  Campagne d&apos;Adhésion 2026
                 </a>
               </li>
             </ul>

@@ -21,9 +21,9 @@ export default function Navbar() {
   const navLinks = [
     { name: "Le Mouvement", href: "#mouvement" },
     { name: "Piliers & Vision", href: "#piliers" },
-    { name: "Impact & Chiffres", href: "#impact" },
     { name: "Carte Membre", href: "#carte" },
-    { name: "Partenaires", href: "#partenaires" },
+    { name: "Adhésion", href: "#adhesion" },
+    { name: "FAQ", href: "#faq" },
   ];
 
   return (
