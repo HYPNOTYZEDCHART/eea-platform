@@ -15,11 +15,11 @@ export default function PillarsSection() {
   const pillars = [
     {
       id: "tech",
+      number: "01",
       icon: Monitor,
-      symbol: "Inspiré de l'ordinateur central du sceau officiel",
       title: "Haute Technologie & Digitalisation",
       tag: "Souveraineté Numérique",
-      tagColor: "bg-blue-900/40 text-sky-300 border-sky-500/30",
+      tagColor: "bg-sky-500/10 text-sky-300 border-sky-500/30",
       description:
         "Accompagner les étudiants codeurs, ingénieurs et créateurs de solutions logicielles adaptées aux réalités africaines : fintech inclusive, IA appliquée, plateformes logistiques et santé connectée.",
       keyProjects: [
@@ -30,11 +30,11 @@ export default function PillarsSection() {
     },
     {
       id: "agro",
+      number: "02",
       icon: Wheat,
-      symbol: "Inspiré des rangées de cultures verdoyantes",
       title: "Agro-business & Souveraineté Alimentaire",
       tag: "Terre & Prospérité",
-      tagColor: "bg-emerald-950/50 text-emerald-300 border-emerald-500/30",
+      tagColor: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
       description:
         "Transformer l'agriculture traditionnelle en un secteur moderne, rentable et valorisant. Permettre aux étudiants agronomes, gestionnaires et ingénieurs de créer des fermes pilotes durables et des unités de transformation.",
       keyProjects: [
@@ -45,13 +45,13 @@ export default function PillarsSection() {
     },
     {
       id: "education",
+      number: "03",
       icon: GraduationCap,
-      symbol: "Inspiré du mortier académique et du livre ouvert",
       title: "Formation d'Excellence & Mentorat",
       tag: "Savoir & Leadership",
-      tagColor: "bg-[#0F224A] text-[#D4AF37] border-[#D4AF37]/30",
+      tagColor: "bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30",
       description:
-        "Faire le lien entre la théorie dispensée dans les facultés et l'exigence du monde des affaires. Nos membres bénéficient d'un parrainage direct par des dirigeants d'entreprises et d'anciens lauréats de l'EEA.",
+        "Faire le lien entre la théorie dispensée dans les facultés et l'exigence du monde des affaires. Nos membres bénéficient d'un parrainage direct par des dirigeants d'entreprises et d'experts aguerris.",
       keyProjects: [
         "Masterclasses avec des chefs d'entreprises",
         "Accompagnement juridique et financier",
@@ -60,15 +60,15 @@ export default function PillarsSection() {
     },
     {
       id: "diaspora",
+      number: "04",
       icon: Globe,
-      symbol: "Inspiré de la carte d'Afrique et du globe ceint de lauriers",
       title: "Synergie Panafricaine & Diaspora",
       tag: "Union & Réseau Global",
-      tagColor: "bg-indigo-950/50 text-indigo-300 border-indigo-500/30",
+      tagColor: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30",
       description:
-        "Mobiliser l'expertise, les financements et le carnet d'adresses de la diaspora pour catalyser les projets des étudiants restés sur le continent. Un pont structuré, officiel et transparent.",
+        "Mobiliser l'expertise, les financements et le carnet d'adresses de la diaspora pour catalyser les projets des étudiants sur le continent. Un pont structuré, officiel et transparent.",
       keyProjects: [
-        "Clubs EEA dans les capitales européennes & nord-américaines",
+        "Clubs EEA dans les capitales internationales",
         "Fonds d'amorçage mixte Diaspora-Continent",
         "Conférences annuelles panafricaines",
       ],
@@ -132,7 +132,7 @@ export default function PillarsSection() {
             </h2>
 
             <p className="mt-4 text-base sm:text-lg text-slate-300 font-normal">
-              Chaque pilier reflète fidèlement les symboles inscrits au cœur de notre blason officiel : unir le savoir universitaire à la terre nourricière et aux technologies de pointe.
+              Chaque pilier incarne la mission fondamentale de l&apos;EEA : unir l&apos;excellence universitaire à la terre nourricière et aux technologies de pointe.
             </p>
           </div>
 
@@ -147,62 +147,65 @@ export default function PillarsSection() {
           </div>
         </div>
 
-        {/* Pillars Cards 2x2 Grid */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Horizontal Editorial Panorama (Option A - No Cards) */}
+        <div className="mt-8 divide-y divide-white/10 border-b border-white/10">
           {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
               <motion.div
                 key={pillar.id}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.6, delay: idx * 0.15 }}
-                className="relative rounded-2xl bg-[#091733]/80 border border-white/10 hover:border-[#D4AF37]/40 p-8 flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:shadow-black/40 group"
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="py-10 sm:py-12 transition-colors group"
               >
-                <div>
-                  {/* Top Bar inside Card */}
-                  <div className="flex items-center justify-between gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-[#0B3C8A]/40 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] group-hover:scale-105 transition-transform">
-                      <Icon className="w-6 h-6" />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+                  {/* Left Column: Number & Icon */}
+                  <div className="lg:col-span-2 flex items-center lg:flex-col lg:items-start gap-4">
+                    <span className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]/50 font-serif tracking-tight">
+                      {pillar.number}
+                    </span>
+                    <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
+                      <Icon className="w-5 h-5" />
                     </div>
+                  </div>
+
+                  {/* Center Column: Domain Badge & Main Title */}
+                  <div className="lg:col-span-4 space-y-2.5">
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${pillar.tagColor}`}
+                      className={`inline-flex text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5 rounded-full border ${pillar.tagColor}`}
                     >
                       {pillar.tag}
                     </span>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-white group-hover:text-[#F3DE8A] transition-colors leading-snug">
+                      {pillar.title}
+                    </h3>
                   </div>
 
-                  <div className="text-[11px] text-slate-400 font-medium tracking-wide flex items-center gap-1.5 mb-2">
-                    <Sparkles className="w-3 h-3 text-[#D4AF37]" />
-                    <span>{pillar.symbol}</span>
+                  {/* Right Column: Description & 2026 Action Axes */}
+                  <div className="lg:col-span-6 space-y-4">
+                    <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+                      {pillar.description}
+                    </p>
+
+                    <div>
+                      <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block mb-2.5">
+                        Axes d&apos;action prioritaires 2026 :
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {pillar.keyProjects.map((project) => (
+                          <span
+                            key={project}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-slate-200 font-medium hover:border-[#D4AF37]/30 transition-colors"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                            {project}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">
-                    {pillar.title}
-                  </h3>
-
-                  <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6 font-normal">
-                    {pillar.description}
-                  </p>
-                </div>
-
-                {/* Key Projects Pill List */}
-                <div className="pt-6 border-t border-white/10">
-                  <span className="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-3">
-                    Programmes & Réalisations :
-                  </span>
-                  <ul className="space-y-2">
-                    {pillar.keyProjects.map((project) => (
-                      <li
-                        key={project}
-                        className="text-xs sm:text-sm text-slate-200 flex items-center gap-2"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                        <span>{project}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </motion.div>
             );
