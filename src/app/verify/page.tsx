@@ -41,7 +41,7 @@ export default function VerifyPortalPage() {
       }
 
       // 2. Query Supabase by membership_id or qr_code_token
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("members")
         .select("qr_code_token")
         .or(`membership_id.ilike.%${cleanQuery}%,qr_code_token.eq.${cleanQuery}`)
@@ -58,7 +58,7 @@ export default function VerifyPortalPage() {
         try {
           const localList = JSON.parse(localStorage.getItem("eea_members") || "[]");
           const found = localList.find(
-            (m: any) =>
+            (m: { membership_id?: string; qr_code_token?: string }) =>
               m.membership_id?.toLowerCase() === cleanQuery.toLowerCase() ||
               m.qr_code_token === cleanQuery
           );

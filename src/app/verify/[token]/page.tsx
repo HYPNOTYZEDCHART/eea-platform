@@ -11,7 +11,6 @@ import {
   Building,
   GraduationCap,
   ArrowLeft,
-  Sparkles,
   AlertTriangle,
   Ban,
 } from "lucide-react";

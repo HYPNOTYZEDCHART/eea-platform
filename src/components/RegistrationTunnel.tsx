@@ -10,9 +10,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Smartphone,
-  ShieldCheck,
   Sparkles,
-  Lock,
   Building,
   Globe,
   Copy,
@@ -226,10 +224,6 @@ export default function RegistrationTunnel({
       setLoading(false);
     }
   };
-
-  const whatsappRedirectUrl = `https://wa.me/221785425345?text=${encodeURIComponent(
-    `Bonjour Secrétariat EEA, je souhaite valider mon adhésion (5 000 FCFA) par transfert WhatsApp :\n\n- Nom : ${formData.lastName} ${formData.firstName}\n- Université : ${formData.university} (${formData.country})\n- Filière : ${formData.fieldOfStudy}\n- Téléphone : ${formData.phone}`
-  )}`;
 
   return (
     <section id="adhesion" className="relative py-24 sm:py-32 bg-[#060d1d]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
@@ -591,7 +585,7 @@ export default function RegistrationTunnel({
                         <button
                           key={p.id}
                           type="button"
-                          onClick={() => setFormData({ ...formData, paymentMethod: p.id as any })}
+                          onClick={() => setFormData({ ...formData, paymentMethod: p.id as "wave" | "orange_money" | "whatsapp" })}
                           className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                             formData.paymentMethod === p.id
                               ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white"

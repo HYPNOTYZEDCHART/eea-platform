@@ -22,54 +22,51 @@ interface MemberCardBadgeProps {
   compact?: boolean;
 }
 
+const defaultDemoMember: Member = {
+  id: "demo-id",
+  membership_id: "EEA-2026-SN-0842",
+  first_name: "Jean-David",
+  last_name: "KOUASSI",
+  email: "kouassi.jeandavid@ucad.edu.sn",
+  phone: "+221 78 542 53 45",
+  country: "Sénégal",
+  university: "Université Cheikh Anta Diop (UCAD Dakar)",
+  field_of_study: "Génie Logiciel & Agrobusiness",
+  photo_url: null,
+  qr_code_token: "eea_token_demo_0842",
+  status: "active",
+  created_at: "2026-01-01T00:00:00.000Z",
+  expires_at: "2027-01-01T00:00:00.000Z",
+};
+
 export default function MemberCardBadge({
   member: initialMember,
   compact = false,
 }: MemberCardBadgeProps) {
-  const [member, setMember] = useState<Member | null>(initialMember || null);
+  const [localMember, setLocalMember] = useState<Member | null>(null);
+  const [currentTime, setCurrentTime] = useState<number>(0);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [downloadingPng, setDownloadingPng] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const cardElementRef = useRef<HTMLDivElement>(null);
 
-  // Sync with prop when it changes
-  useEffect(() => {
-    if (initialMember) {
-      setMember(initialMember);
-    }
-  }, [initialMember]);
+  const member: Member = initialMember || localMember || defaultDemoMember;
 
-  // Fallback to localStorage if no prop provided
+  // Set client-side timestamp and fallback to localStorage if no prop provided
   useEffect(() => {
-    if (!member && typeof window !== "undefined") {
+    setCurrentTime(Date.now());
+    if (!initialMember && typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("eea_current_member");
         if (stored) {
-          setMember(JSON.parse(stored));
-        } else {
-          setMember({
-            id: "demo-id",
-            membership_id: "EEA-2026-SN-0842",
-            first_name: "Jean-David",
-            last_name: "KOUASSI",
-            email: "kouassi.jeandavid@ucad.edu.sn",
-            phone: "+221 78 542 53 45",
-            country: "Sénégal",
-            university: "Université Cheikh Anta Diop (UCAD Dakar)",
-            field_of_study: "Génie Logiciel & Agrobusiness",
-            photo_url: null,
-            qr_code_token: "eea_token_demo_0842",
-            status: "active",
-            created_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          });
+          setLocalMember(JSON.parse(stored));
         }
       } catch (err) {
         console.error(err);
       }
     }
-  }, [member]);
+  }, [initialMember]);
 
   // Generate dynamic QR Code for official verification URL
   useEffect(() => {
@@ -473,7 +470,7 @@ export default function MemberCardBadge({
               <span className="w-2 h-2 rounded-full bg-rose-500" />
               <span className="text-rose-400 font-bold">RÉVOQUÉ / ÉJECTÉ</span>
             </>
-          ) : new Date(member.expires_at).getTime() < Date.now() ? (
+          ) : currentTime > 0 && new Date(member.expires_at).getTime() < currentTime ? (
             <>
               <span className="w-2 h-2 rounded-full bg-amber-400" />
               <span className="text-amber-400 font-bold">EXPIRÉ (À RENOUVELER)</span>

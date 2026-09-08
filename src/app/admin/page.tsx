@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -127,6 +127,40 @@ export default function AdminPage() {
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
   const [resendingOtp, setResendingOtp] = useState(false);
 
+  const [members, setMembers] = useState<Member[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "pending" | "expired" | "revoked"
+  >("all");
+  const [loading, setLoading] = useState(false);
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+
+  // Modals & Action States
+  const [selectedMemberForBadge, setSelectedMemberForBadge] = useState<Member | null>(null);
+  const [memberToEject, setMemberToEject] = useState<Member | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const [renewalNoticeData, setRenewalNoticeData] = useState<{
+    member: Member;
+    preview: {
+      subject: string;
+      plainText: string;
+      whatsappUrl: string;
+    };
+  } | null>(null);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Secure logout with cookie invalidation
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch("/api/admin/auth", { method: "DELETE" });
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("eea_admin_auth");
+  }, []);
+
   // Compte à rebours du code OTP (5 minutes)
   useEffect(() => {
     if (loginStep !== "otp" || otpTimer <= 0) return;
@@ -157,30 +191,7 @@ export default function AdminPage() {
       clearTimeout(timeoutId);
       events.forEach((evt) => window.removeEventListener(evt, resetInactivity));
     };
-  }, [isAuthenticated]);
-
-  const [members, setMembers] = useState<Member[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "pending" | "expired" | "revoked"
-  >("all");
-  const [loading, setLoading] = useState(false);
-  const [authSubmitting, setAuthSubmitting] = useState(false);
-
-  // Modals & Action States
-  const [selectedMemberForBadge, setSelectedMemberForBadge] = useState<Member | null>(null);
-  const [memberToEject, setMemberToEject] = useState<Member | null>(null);
-  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
-  const [renewalNoticeData, setRenewalNoticeData] = useState<{
-    member: Member;
-    preview: {
-      subject: string;
-      plainText: string;
-      whatsappUrl: string;
-    };
-  } | null>(null);
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  }, [isAuthenticated, handleLogout]);
 
   // Check saved session via secure server-side cookie
   useEffect(() => {
@@ -201,7 +212,7 @@ export default function AdminPage() {
   }, []);
 
   // Fetch members from Supabase with LocalStorage and Seed fallback
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     setLoading(true);
     let combinedList: Member[] = [...INITIAL_MEMBERS_SEEDED];
 
@@ -247,13 +258,16 @@ export default function AdminPage() {
 
     setMembers(combinedList);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadMembers();
+      const timer = setTimeout(() => {
+        void loadMembers();
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadMembers]);
 
   // Étape 1 : Vérification des identifiants (Email + Mot de passe)
   const handleStep1Login = async (e: React.FormEvent) => {
@@ -360,17 +374,6 @@ export default function AdminPage() {
     } finally {
       setResendingOtp(false);
     }
-  };
-
-  // Secure logout with cookie invalidation
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/admin/auth", { method: "DELETE" });
-    } catch {
-      // ignore
-    }
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("eea_admin_auth");
   };
 
   // Helper de sécurisation contre l'injection de formules Excel/Calc (OWASP CSV Formula Injection)
