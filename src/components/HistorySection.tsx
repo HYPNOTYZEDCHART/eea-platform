@@ -74,12 +74,12 @@ export default function HistorySection() {
           </p>
         </div>
 
-        {/* Continuous Golden Thread Timeline (Option 1) */}
+        {/* Continuous White Thread Timeline */}
         <div className="mt-20">
-          {/* Desktop: Horizontal Continuous Golden Thread */}
+          {/* Desktop: Horizontal Continuous White Thread */}
           <div className="hidden lg:block relative">
-            {/* The Horizontal Continuous Line */}
-            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-[#D4AF37]/30 via-[#D4AF37] to-[#D4AF37]/40 pointer-events-none" />
+            {/* The Horizontal Continuous White Line */}
+            <div className="absolute top-6 left-6 right-6 h-0.5 bg-gradient-to-r from-white/20 via-white/80 to-white/20 pointer-events-none shadow-[0_0_8px_rgba(255,255,255,0.25)]" />
 
             <div className="grid grid-cols-4 gap-8 relative z-10">
               {milestones.map((item, index) => {
@@ -98,8 +98,8 @@ export default function HistorySection() {
                       <div
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 z-10 shrink-0 ${
                           item.isCurrent
-                            ? "border-[#D4AF37] bg-[#D4AF37] text-[#060d1d] shadow-lg shadow-[#D4AF37]/40 ring-4 ring-[#D4AF37]/20"
-                            : "border-[#D4AF37]/60 bg-[#060d1d] text-[#D4AF37] group-hover:border-[#D4AF37] group-hover:scale-110 shadow-md shadow-black/60"
+                            ? "border-white bg-[#D4AF37] text-[#060d1d] shadow-lg shadow-[#D4AF37]/40 ring-4 ring-white/30"
+                            : "border-white/50 bg-[#060d1d] text-white group-hover:border-white group-hover:scale-110 shadow-md shadow-black/60"
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -132,8 +132,8 @@ export default function HistorySection() {
             </div>
           </div>
 
-          {/* Mobile / Tablet: Vertical Continuous Golden Thread */}
-          <div className="lg:hidden relative pl-8 sm:pl-10 space-y-10 before:absolute before:top-2 before:bottom-2 before:left-[15px] sm:before:left-[19px] before:w-[2px] before:bg-gradient-to-b before:from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]/30">
+          {/* Mobile / Tablet: Vertical Continuous White Thread */}
+          <div className="lg:hidden relative pl-8 sm:pl-10 space-y-10 before:absolute before:top-2 before:bottom-2 before:left-[15px] sm:before:left-[19px] before:w-[2px] before:bg-gradient-to-b before:from-white/80 via-white/50 to-white/20">
             {milestones.map((item, index) => {
               const Icon = item.icon;
               return (
@@ -149,8 +149,8 @@ export default function HistorySection() {
                   <div
                     className={`absolute -left-[31px] sm:-left-[39px] top-0 w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 ${
                       item.isCurrent
-                        ? "border-[#D4AF37] bg-[#D4AF37] text-[#060d1d] ring-4 ring-[#D4AF37]/20 shadow-md shadow-[#D4AF37]/30"
-                        : "border-[#D4AF37]/60 bg-[#060d1d] text-[#D4AF37]"
+                        ? "border-white bg-[#D4AF37] text-[#060d1d] ring-4 ring-white/30 shadow-md shadow-[#D4AF37]/30"
+                        : "border-white/50 bg-[#060d1d] text-white"
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
