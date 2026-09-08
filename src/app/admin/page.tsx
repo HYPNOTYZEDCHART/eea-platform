@@ -15,7 +15,6 @@ import {
   Clock,
   Lock,
   ArrowLeft,
-  MessageCircle,
   Eye,
   LogOut,
   RefreshCw,
@@ -34,6 +33,7 @@ import {
   ShieldAlert,
   CheckCircle2,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import {
   supabase,
   Member,
@@ -1339,7 +1339,7 @@ export default function AdminPage() {
                               className="p-1.5 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/30 text-[#25D366] transition-colors cursor-pointer"
                               title="Envoyer message officiel sur WhatsApp"
                             >
-                              <MessageCircle className="w-3.5 h-3.5" />
+                              <WhatsAppIcon className="w-3.5 h-3.5" />
                             </a>
 
                             {/* Public Verify URL */}
@@ -1550,7 +1550,7 @@ export default function AdminPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#25D366] hover:bg-[#20bd5a] shadow-md transition-all cursor-pointer"
               >
-                <MessageCircle className="w-4 h-4" />
+                <WhatsAppIcon className="w-4 h-4" />
                 <span>Envoyer sur WhatsApp ({renewalNoticeData.member.phone})</span>
               </a>
 
@@ -1653,7 +1653,7 @@ export default function AdminPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs text-white bg-[#25D366] hover:bg-[#20bd5a] shadow-sm transition-all cursor-pointer"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
+                  <WhatsAppIcon className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>
                 </a>
               </div>

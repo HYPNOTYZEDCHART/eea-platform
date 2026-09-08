@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Smartphone,
-  MessageCircle,
   ShieldCheck,
   Sparkles,
   Lock,
@@ -21,6 +20,7 @@ import {
   Clock,
 } from "lucide-react";
 import PhotoCapture from "./PhotoCapture";
+import WhatsAppIcon from "./WhatsAppIcon";
 import { supabase, Member } from "@/lib/supabase";
 
 interface RegistrationFormData {
@@ -719,7 +719,7 @@ export default function RegistrationTunnel({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-white bg-[#25D366] hover:bg-[#20bd5a] transition-all text-xs shadow-lg shadow-[#25D366]/20"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4" />
                     <span>Notifier le Secrétariat sur WhatsApp (+221 78 542 53 45)</span>
                   </a>
 

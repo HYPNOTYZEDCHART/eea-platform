@@ -12,8 +12,8 @@ import {
   QrCode,
   CheckCircle,
   AlertCircle,
-  MessageCircle,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { supabase } from "@/lib/supabase";
 
 export default function VerifyPortalPage() {
@@ -205,9 +205,9 @@ export default function VerifyPortalPage() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[#25D366] hover:underline font-semibold"
+              className="inline-flex items-center gap-1.5 text-[#25D366] hover:underline font-semibold"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <WhatsAppIcon className="w-3.5 h-3.5" />
               <span>Assistance Secrétariat (+221 78 542 53 45)</span>
             </a>
           </div>

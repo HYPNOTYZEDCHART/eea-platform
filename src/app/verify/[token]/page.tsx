@@ -11,11 +11,11 @@ import {
   Building,
   GraduationCap,
   ArrowLeft,
-  MessageCircle,
   Sparkles,
   AlertTriangle,
   Ban,
 } from "lucide-react";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { supabase, Member, getEffectiveMemberStatus, getDaysUntilExpiry } from "@/lib/supabase";
 
 export default function VerifyPage({
@@ -324,14 +324,12 @@ export default function VerifyPage({
                     Transférez votre cotisation annuelle de <strong>5 000 FCFA</strong> vers Wave ou Orange Money au <strong>+221 78 542 53 45</strong> en mentionnant votre matricule <em>{member.membership_id}</em>.
                   </p>
                   <a
-                    href={`https://wa.me/221785425345?text=${encodeURIComponent(
-                      `Bonjour Secrétariat EEA, je souhaite renouveler ma carte de membre (Matricule : ${member.membership_id}, Nom : ${member.last_name} ${member.first_name}). Pouvez-vous me guider ?`
-                    )}`}
+                    href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4" />
                     <span>Contacter le Secrétariat pour Renouvellement (+221 78 542 53 45)</span>
                   </a>
                 </div>
@@ -365,7 +363,7 @@ export default function VerifyPage({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <WhatsAppIcon className="w-4 h-4" />
                   <span>Vérifier manuellement auprès du secrétariat (+221 78 542 53 45)</span>
                 </a>
               </div>

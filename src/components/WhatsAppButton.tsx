@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X } from "lucide-react";
+import { X } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function WhatsAppButton() {
   const [showTooltip, setShowTooltip] = useState(true);
@@ -24,7 +25,7 @@ export default function WhatsAppButton() {
             exit={{ opacity: 0, scale: 0.9 }}
             className="hidden sm:flex items-center gap-2 bg-[#091733] border border-[#25D366]/40 text-white px-4 py-2.5 rounded-2xl shadow-xl shadow-black/50 text-xs font-medium max-w-xs relative"
           >
-            <span className="w-2 h-2 rounded-full bg-[#25D366] animate-ping shrink-0" />
+            <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
             <div>
               <p className="font-bold text-slate-100">Assistance & Activation WhatsApp</p>
               <p className="text-[11px] text-slate-300">
@@ -54,7 +55,7 @@ export default function WhatsAppButton() {
         <span className="absolute inset-0 rounded-full bg-[#25D366]/40 animate-ping pointer-events-none" />
 
         {/* WhatsApp Icon */}
-        <MessageCircle className="w-7 h-7 text-white fill-white relative z-10" />
+        <WhatsAppIcon className="w-8 h-8 text-white relative z-10" />
 
         {/* Badge Indicator */}
         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D4AF37] border-2 border-[#060d1d] flex items-center justify-center text-[9px] font-black text-[#060d1d]">

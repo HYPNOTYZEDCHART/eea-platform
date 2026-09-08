@@ -6,10 +6,10 @@ import {
   HelpCircle,
   ChevronDown,
   Coins,
-  MessageCircle,
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -154,7 +154,7 @@ export default function FaqSection() {
           <div className="lg:col-span-4">
             <div className="p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-[#0B2A4A] via-[#091733] to-[#08142c] border-2 border-[#25D366]/40 shadow-xl space-y-4">
               <div className="w-12 h-12 rounded-xl bg-[#25D366]/20 border border-[#25D366]/40 flex items-center justify-center text-[#25D366]">
-                <MessageCircle className="w-6 h-6" />
+                <WhatsAppIcon className="w-6 h-6" />
               </div>
 
               <h4 className="text-lg sm:text-xl font-extrabold text-white">

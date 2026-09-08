@@ -6,11 +6,11 @@ import {
   ShieldCheck,
   Phone,
   MapPin,
-  MessageCircle,
   Lock,
   ArrowUpRight,
   Heart,
 } from "lucide-react";
+import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function Footer() {
   const whatsappUrl = `https://wa.me/221785425345?text=${encodeURIComponent(
@@ -144,7 +144,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-xs font-semibold transition-colors"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <WhatsAppIcon className="w-3.5 h-3.5" />
               <span>WhatsApp : 78 542 53 45</span>
             </a>
 
