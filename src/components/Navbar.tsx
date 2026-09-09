@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShieldCheck, CreditCard } from "lucide-react";
+import { Menu, X, ShieldCheck, CreditCard, Lock } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,6 +16,21 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Keyboard shortcut: Alt + A or Ctrl + Shift + A to open /admin immediately
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.altKey && (e.key === "a" || e.key === "A")) ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "a" || e.key === "A"))
+      ) {
+        e.preventDefault();
+        window.location.href = "/admin";
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const navLinks = [
@@ -78,7 +93,16 @@ export default function Navbar() {
           </nav>
 
           {/* Call to Action Desktop */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/admin"
+              title="Portail Administrateur (Raccourci : Alt + A)"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-[#D4AF37]/15 border border-white/10 hover:border-[#D4AF37]/40 transition-all"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Espace Admin</span>
+            </Link>
+
             <a
               href="#adhesion"
               className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-md shadow-[#D4AF37]/15 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
@@ -88,14 +112,23 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center gap-3">
+          {/* Mobile Menu Toggle & Admin Quick Access */}
+          <div className="flex md:hidden items-center gap-2">
+            <Link
+              href="/admin"
+              title="Espace Administrateur"
+              className="p-2 rounded-lg text-slate-300 hover:text-white bg-white/5 border border-white/10"
+            >
+              <Lock className="w-4 h-4 text-[#D4AF37]" />
+            </Link>
+
             <a
               href="#adhesion"
               className="text-xs font-semibold px-3 py-2 rounded-md bg-[#D4AF37] text-[#060d1d]"
             >
               Adhérer
             </a>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 transition-colors"
@@ -134,7 +167,7 @@ export default function Navbar() {
                 {link.name}
               </a>
             ))}
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
               <a
                 href="#adhesion"
                 onClick={() => setMobileMenuOpen(false)}
@@ -143,6 +176,15 @@ export default function Navbar() {
                 <CreditCard className="w-4 h-4 text-[#060d1d]" />
                 Obtenir ma Carte Officielle (5 000 FCFA)
               </a>
+
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 border border-white/10"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Portail Réservé aux Administrateurs</span>
+              </Link>
             </div>
           </motion.div>
         )}

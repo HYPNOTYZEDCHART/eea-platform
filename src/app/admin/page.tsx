@@ -220,62 +220,80 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  // Fetch members from Supabase with LocalStorage and Seed fallback
-  const loadMembers = useCallback(async () => {
-    setLoading(true);
-    let combinedList: Member[] = [...INITIAL_MEMBERS_SEEDED];
+  // Fetch members from Supabase (server route with service role + client fallback + local storage)
+  const loadMembers = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
+    let loadedFromDb: Member[] | null = null;
 
-    // Load from local storage
+    // 1. Primary: Server-side API route /api/admin/members (bypasses RLS, always up-to-date)
+    try {
+      const res = await fetch("/api/admin/members");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.members)) {
+          loadedFromDb = json.members as Member[];
+        }
+      }
+    } catch {
+      // fallback
+    }
+
+    // 2. Secondary fallback: direct client Supabase query
+    if (!loadedFromDb) {
+      try {
+        const { data, error } = await supabase
+          .from("members")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (data && !error) {
+          loadedFromDb = data as Member[];
+        }
+      } catch (err) {
+        console.warn("Notice: Fallback local actif:", err);
+      }
+    }
+
+    // 3. Merge database records with seeded demo members & local storage
+    const map = new Map<string, Member>();
+
+    // Add seeded demo members as base
+    INITIAL_MEMBERS_SEEDED.forEach((m) => map.set(m.membership_id, m));
+
+    // Override with localStorage edits if any
     try {
       const localStored = JSON.parse(localStorage.getItem("eea_members") || "[]");
-      if (Array.isArray(localStored) && localStored.length > 0) {
-        localStored.forEach((lm) => {
-          if (!combinedList.some((m) => m.membership_id === lm.membership_id)) {
-            combinedList.unshift(lm);
-          } else {
-            // Update existing with local edits if needed
-            combinedList = combinedList.map((m) =>
-              m.membership_id === lm.membership_id ? lm : m
-            );
-          }
-        });
+      if (Array.isArray(localStored)) {
+        localStored.forEach((lm: Member) => map.set(lm.membership_id, lm));
       }
     } catch {
       // ignore
     }
 
-    // Try fetching from Supabase
-    try {
-      const { data, error } = await supabase
-        .from("members")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (data && !error && data.length > 0) {
-        data.forEach((sm) => {
-          if (!combinedList.some((m) => m.membership_id === sm.membership_id)) {
-            combinedList.unshift(sm as Member);
-          } else {
-            combinedList = combinedList.map((m) =>
-              m.membership_id === sm.membership_id ? (sm as Member) : m
-            );
-          }
-        });
-      }
-    } catch (err) {
-      console.warn("Notice: Mode hybride local actif :", err);
+    // Override with real database records (highest priority)
+    if (loadedFromDb && loadedFromDb.length > 0) {
+      loadedFromDb.forEach((dbm) => map.set(dbm.membership_id, dbm));
     }
+
+    const combinedList = Array.from(map.values()).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
     setMembers(combinedList);
-    setLoading(false);
+    if (!isSilent) setLoading(false);
   }, []);
 
+  // Initial load and automatic background polling every 10 seconds for real-time synchronization
   useEffect(() => {
-    if (isAuthenticated) {
-      const timer = setTimeout(() => {
-        void loadMembers();
-      }, 0);
-      return () => clearTimeout(timer);
-    }
+    if (!isAuthenticated) return;
+    void loadMembers(false);
+
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        void loadMembers(true);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [isAuthenticated, loadMembers]);
 
   // Étape 1 : Vérification des identifiants (Email + Mot de passe)
@@ -1046,8 +1064,13 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Synchro Cloud Directe (10s)</span>
+            </div>
+
             <button
-              onClick={loadMembers}
+              onClick={() => void loadMembers(false)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
