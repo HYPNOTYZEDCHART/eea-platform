@@ -1,43 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { sendEmail } from "@/lib/resend";
-
-const COOKIE_NAME = "eea_admin_session";
-
-function getSigningSecret(): string {
-  return (
-    process.env.ADMIN_SECRET_PIN ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "eea-secret-institutional-salt-2008"
-  );
-}
-
-function verifySignedToken(token: string): boolean {
-  if (!token || !token.includes(".")) return false;
-  const [payload, hmac] = token.split(".");
-  if (!payload || !hmac) return false;
-
-  const expectedHmac = crypto
-    .createHmac("sha256", getSigningSecret())
-    .update(payload)
-    .digest("hex");
-
-  const hmacBuffer = Buffer.from(hmac);
-  const expectedBuffer = Buffer.from(expectedHmac);
-
-  if (hmacBuffer.length !== expectedBuffer.length) return false;
-  return crypto.timingSafeEqual(hmacBuffer, expectedBuffer);
-}
+import { verifyAdminSession, applySecurityHeaders } from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get(COOKIE_NAME)?.value;
     const isDev = process.env.NODE_ENV === "development";
 
-    if (!isDev && (!token || !verifySignedToken(token))) {
-      return NextResponse.json(
-        { success: false, error: "Non autorisé. Session administrateur requise." },
-        { status: 401 }
+    if (!isDev && !verifyAdminSession(request)) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Non autorisé. Session administrateur requise." },
+          { status: 401 }
+        )
       );
     }
 

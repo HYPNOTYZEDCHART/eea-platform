@@ -126,6 +126,7 @@ export default function AdminPage() {
   const [otpTimer, setOtpTimer] = useState(300); // 5 minutes
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
   const [resendingOtp, setResendingOtp] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
 
   const [members, setMembers] = useState<Member[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -315,6 +316,7 @@ export default function AdminPage() {
           action: "login",
           email: adminEmail,
           password: adminPassword,
+          website_url: honeypot, // Piège anti-bot honeypot
         }),
       });
 
@@ -365,7 +367,7 @@ export default function AdminPage() {
         setOtpCode("");
         setAdminPassword("");
         setAuthError(null);
-        setToastMessage("Authentification 2FA réussie. Bienvenue M. Maham SOW !");
+        setToastMessage(data.message || "Authentification 2FA réussie. Bienvenue dans l'espace sécurisé !");
         setTimeout(() => setToastMessage(null), 6000);
       } else {
         setAuthError(data.error || "Code de sécurité à 6 chiffres incorrect ou expiré.");
@@ -838,18 +840,45 @@ export default function AdminPage() {
              =================================================================== */}
           {loginStep === "credentials" ? (
             <form onSubmit={handleStep1Login} className="space-y-4">
+              {/* Piège Honeypot Anti-Robot (Inaudible et invisible pour les humains) */}
+              <input
+                type="text"
+                name="website_url"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{
+                  opacity: 0,
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  height: 0,
+                  width: 0,
+                  zIndex: -1,
+                  pointerEvents: "none",
+                }}
+              />
+
               {/* Champ Email */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Email Administrateur
+                  Identifiant Administrateur
                 </label>
                 <div className="relative">
                   <input
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="admin@eea-afrique.org ou votre adresse email"
+                    placeholder="Identifiant sécurisé (email)"
                     required
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-xs font-medium"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -859,7 +888,7 @@ export default function AdminPage() {
               {/* Champ Mot de Passe */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                  Mot de Passe Administrateur
+                  Mot de Passe Sécurisé
                 </label>
                 <div className="relative">
                   <input
@@ -868,6 +897,12 @@ export default function AdminPage() {
                     onChange={(e) => setAdminPassword(e.target.value)}
                     placeholder="••••••••••••••••"
                     required
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    data-1p-ignore="true"
                     className="w-full pl-10 pr-10 py-3 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-xs font-medium"
                   />
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -876,6 +911,7 @@ export default function AdminPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white cursor-pointer"
                     tabIndex={-1}
+                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -897,12 +933,12 @@ export default function AdminPage() {
               >
                 <KeyRound className="w-4 h-4" />
                 <span>
-                  {authSubmitting ? "Génération du code 2FA..." : "Continuer vers l'Étape 2 (Code 2FA)"}
+                  {authSubmitting ? "Chiffrement & Vérification 2FA..." : "Continuer vers l'Étape 2 (Code 2FA)"}
                 </span>
               </button>
 
               <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                Un code de vérification secret à 6 chiffres sera instantanément expédié à votre adresse email sécurisée.
+                Un code à 6 chiffres sera expédié par voie sécurisée à l&apos;adresse de la direction enregistrée.
               </p>
             </form>
           ) : (
@@ -933,21 +969,23 @@ export default function AdminPage() {
                 <input
                   type="text"
                   maxLength={6}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
                   placeholder="• • • • • •"
                   required
                   autoFocus
+                  autoComplete="one-time-code"
                   className="w-full py-3.5 text-center rounded-xl bg-white/[0.04] border-2 border-[#D4AF37] text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/50 font-mono text-2xl font-black tracking-[0.4em]"
                 />
               </div>
 
               {/* Alerte d'assistance Développeur Local */}
-              {devOtpHint && (
+              {process.env.NODE_ENV === "development" && devOtpHint && (
                 <div className="p-2.5 rounded-lg bg-sky-950/60 border border-sky-500/40 text-[11px] text-sky-200 text-center">
-                  💡 <strong>Mode Développeur :</strong> Code OTP ={" "}
-                  <span className="font-mono font-bold text-[#D4AF37] underline">{devOtpHint}</span>{" "}
-                  (ou master : <code>200800</code>)
+                  💡 <strong>Mode Test Local :</strong> Code 2FA généré ={" "}
+                  <span className="font-mono font-bold text-[#D4AF37] underline">{devOtpHint}</span>
                 </div>
               )}
 
@@ -994,15 +1032,31 @@ export default function AdminPage() {
             </form>
           )}
 
-          <div className="pt-2 text-center border-t border-white/10">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Retourner au site public</span>
-            </Link>
+          {/* Cyber-Security Defense Badge */}
+          <div className="pt-4 border-t border-white/10 space-y-3">
+            <div className="p-3 rounded-xl bg-[#061024]/90 border border-[#D4AF37]/20 text-[10px] text-slate-400 space-y-1.5 leading-relaxed">
+              <div className="flex items-center gap-1.5 font-bold text-[#D4AF37] uppercase tracking-wider">
+                <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                <span>Protection Anti-Intrusion & Anti-Brute Force</span>
+              </div>
+              <ul className="list-disc list-inside text-slate-400 space-y-0.5">
+                <li>Verrouillage automatique après 5 tentatives erronées.</li>
+                <li>Destruction immédiate du code 2FA après 3 échecs.</li>
+                <li>Empreinte matérielle et adresse IP journalisées.</li>
+              </ul>
+            </div>
+
+            <div className="text-center">
+              <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Retourner au site public</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     );
+
   }
 
   // SCREEN 2: ADMIN DASHBOARD

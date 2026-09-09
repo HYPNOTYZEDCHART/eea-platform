@@ -1,128 +1,154 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/resend";
+import {
+  ADMIN_COOKIE_NAME,
+  ADMIN_MAX_AGE_SECONDS,
+  applySecurityHeaders,
+  getClientIdentifier,
+  getClientFingerprint,
+  safeCompare,
+  createSignedToken,
+  verifySignedToken,
+} from "@/lib/adminAuth";
 
-const COOKIE_NAME = "eea_admin_session";
-const MAX_AGE_SECONDS = 60 * 60 * 8; // 8 heures de validité de session
-
-// 1. Stockage en mémoire du code OTP et du Rate Limiting
+// =============================================================================
+// 1. DÉFENSE ANTI-BRUTE FORCE & TARPITTING
+// =============================================================================
 interface ActiveOTP {
   code: string;
   email: string;
   expiresAt: number;
+  attemptsLeft: number;
+  clientIp: string;
+  clientFingerprint: string;
+  lastResendAt: number;
 }
 
 let activeOTP: ActiveOTP | null = null;
 
-// Rate limiting anti-brute force (IP -> { attempts: number, lockUntil: number })
-const loginAttempts = new Map<string, { count: number; lockUntil: number }>();
-
-function getClientIdentifier(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : "127.0.0.1";
-  return ip;
+interface RateLimitRecord {
+  count: number;
+  lockUntil: number;
+  firstAttemptAt: number;
 }
+const rateLimitMap = new Map<string, RateLimitRecord>();
 
-function checkRateLimit(ip: string): { allowed: boolean; remainingLockMinutes?: number } {
-  const record = loginAttempts.get(ip);
-  if (!record) return { allowed: true };
+function checkRateLimit(key: string): { allowed: boolean; remainingLockMinutes?: number; delayMs: number } {
+  const record = rateLimitMap.get(key);
+  if (!record) return { allowed: true, delayMs: 0 };
 
   const now = Date.now();
   if (record.lockUntil > now) {
-    const remainingMinutes = Math.ceil((record.lockUntil - now) / 60000);
-    return { allowed: false, remainingLockMinutes: remainingMinutes };
+    const remainingLockMinutes = Math.ceil((record.lockUntil - now) / 60000);
+    return { allowed: false, remainingLockMinutes, delayMs: 0 };
   }
 
-  // Reset lock if expired
+  // Reset du verrou expiré
   if (record.lockUntil > 0 && record.lockUntil <= now) {
-    loginAttempts.delete(ip);
+    rateLimitMap.delete(key);
+    return { allowed: true, delayMs: 0 };
   }
 
-  return { allowed: true };
-}
-
-function recordFailedAttempt(ip: string) {
-  const record = loginAttempts.get(ip) || { count: 0, lockUntil: 0 };
-  record.count += 1;
-  if (record.count >= 5) {
-    record.lockUntil = Date.now() + 15 * 60 * 1000; // 15 minutes de verrouillage
-    console.warn(`[SECURITY ALERT] IP ${ip} verrouillée pour 15 minutes suite à 5 échecs consécutifs.`);
+  // Tarpitting : ralentissement délibéré (1,5s) pour casser les dictionnaires de mots de passe
+  let delayMs = 0;
+  if (record.count >= 2 && record.count < 5) {
+    delayMs = 1500;
   }
-  loginAttempts.set(ip, record);
+
+  return { allowed: true, delayMs };
 }
 
-function resetFailedAttempts(ip: string) {
-  loginAttempts.delete(ip);
+function recordFailedAttempt(ip: string, email?: string) {
+  const now = Date.now();
+  const update = (key: string) => {
+    const rec = rateLimitMap.get(key) || { count: 0, lockUntil: 0, firstAttemptAt: now };
+    rec.count += 1;
+
+    if (rec.count >= 12) {
+      // Bannissement 24h pour attaque acharnée
+      rec.lockUntil = now + 24 * 60 * 60 * 1000;
+      console.warn(`[DEFENSE CRITIQUE] Bannissement 24h sur ${key} (12 échecs).`);
+    } else if (rec.count >= 8) {
+      // 60 minutes de verrouillage
+      rec.lockUntil = now + 60 * 60 * 1000;
+      console.warn(`[DEFENSE NIVEAU 2] Blocage 60 min sur ${key} (8 échecs).`);
+    } else if (rec.count >= 5) {
+      // 15 minutes de verrouillage
+      rec.lockUntil = now + 15 * 60 * 1000;
+      console.warn(`[DEFENSE NIVEAU 1] Verrouillage 15 min sur ${key} (5 échecs).`);
+    }
+
+    rateLimitMap.set(key, rec);
+  };
+
+  update(ip);
+  if (email) {
+    update(`email_${email.toLowerCase().trim()}`);
+  }
 }
 
-// 2. Secret de signature HMAC
-function getSigningSecret(): string {
-  return (
-    process.env.ADMIN_OTP_SECRET_KEY ||
-    process.env.ADMIN_SECRET_PIN ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "eea-secret-institutional-salt-2008"
-  );
+function resetFailedAttempts(ip: string, email?: string) {
+  rateLimitMap.delete(ip);
+  if (email) {
+    rateLimitMap.delete(`email_${email.toLowerCase().trim()}`);
+  }
 }
 
-function createSignedToken(): string {
-  const timestamp = Date.now();
-  const payload = `eea_admin_session_${timestamp}`;
-  const hmac = crypto
-    .createHmac("sha256", getSigningSecret())
-    .update(payload)
-    .digest("hex");
-  return `${payload}.${hmac}`;
-}
-
-function verifySignedToken(token: string): boolean {
-  if (!token || !token.includes(".")) return false;
-  const [payload, hmac] = token.split(".");
-  if (!payload || !hmac) return false;
-
-  const expectedHmac = crypto
-    .createHmac("sha256", getSigningSecret())
-    .update(payload)
-    .digest("hex");
-
-  const hmacBuffer = Buffer.from(hmac);
-  const expectedBuffer = Buffer.from(expectedHmac);
-
-  if (hmacBuffer.length !== expectedBuffer.length) return false;
-  return crypto.timingSafeEqual(hmacBuffer, expectedBuffer);
-}
-
-// 3. GET: Vérifier la validité de la session active
+// =============================================================================
+// 2. GET : VÉRIFICATION SILENCIEUSE DU JETON DE SESSION
+// =============================================================================
 export async function GET(request: NextRequest) {
-  const token = request.cookies.get(COOKIE_NAME)?.value;
+  const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
 
-  if (token && verifySignedToken(token)) {
-    return NextResponse.json({ authenticated: true });
+  if (token && verifySignedToken(token, request)) {
+    return applySecurityHeaders(NextResponse.json({ authenticated: true }));
   }
 
-  return NextResponse.json({ authenticated: false }, { status: 401 });
+  return applySecurityHeaders(NextResponse.json({ authenticated: false }, { status: 401 }));
 }
 
-// 4. POST: Authentification 2-Facteurs (Credentials -> OTP)
+// =============================================================================
+// 3. POST : LOGIQUE AUTHENTIFIÉE ULTRA-SÉCURISÉE
+// =============================================================================
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIdentifier(request);
-    const rateCheck = checkRateLimit(ip);
+    const fingerprint = getClientFingerprint(request);
 
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Trop de tentatives échouées. Compte temporairement verrouillé pour ${rateCheck.remainingLockMinutes} minute(s) par mesure de sécurité.`,
-        },
-        { status: 429 }
+    // 1. Vérification du verrou d'adresse IP
+    const ipRate = checkRateLimit(ip);
+    if (!ipRate.allowed) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          {
+            success: false,
+            error: `Accès temporairement suspendu par mesure de sécurité anti-intrusion. Veuillez patienter ${ipRate.remainingLockMinutes} minute(s).`,
+          },
+          { status: 429 }
+        )
       );
     }
 
-    const body = await request.json();
-    const action = body.action || "login"; // "login" | "verify_otp" | "resend_otp"
+    // Tarpitting forcé si suspicion d'attaque
+    if (ipRate.delayMs > 0) {
+      await new Promise((r) => setTimeout(r, ipRate.delayMs));
+    }
 
-    // Liste des emails administrateurs autorisés (Maham SOW & Bécaye DOUMBOUYA)
+    const body = await request.json().catch(() => ({}));
+
+    // 2. PIÈGE HONEYPOT ANTI-ROBOTS (Champs cachés aux humains mais ciblés par les bots)
+    if (body.website_url || body.admin_role_token || body.hp_secret) {
+      rateLimitMap.set(ip, { count: 99, lockUntil: Date.now() + 2 * 60 * 60 * 1000, firstAttemptAt: Date.now() });
+      console.warn(`[HONEYPOT BOT ACTIVÉ] Robot banni 2 heures depuis l'IP ${ip}.`);
+      return applySecurityHeaders(
+        NextResponse.json({ success: false, error: "Requête non autorisée." }, { status: 403 })
+      );
+    }
+
+    const action = body.action || "login";
+
+    // Comptes autorisés pour l'administration (M. Maham SOW & M. Bécaye DOUMBOUYA)
     const rawConfiguredEmails =
       process.env.ADMIN_EMAILS ||
       process.env.ADMIN_EMAIL ||
@@ -132,49 +158,67 @@ export async function POST(request: NextRequest) {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
 
-    if (!authorizedEmails.includes("maham.sow06@gmail.com")) {
-      authorizedEmails.push("maham.sow06@gmail.com");
-    }
-    if (!authorizedEmails.includes("doumbiabecaye7@gmail.com")) {
-      authorizedEmails.push("doumbiabecaye7@gmail.com");
-    }
+    if (!authorizedEmails.includes("maham.sow06@gmail.com")) authorizedEmails.push("maham.sow06@gmail.com");
+    if (!authorizedEmails.includes("doumbiabecaye7@gmail.com")) authorizedEmails.push("doumbiabecaye7@gmail.com");
 
     const configuredPassword = (process.env.ADMIN_PASSWORD || "EEA@Admin2026!UcadDakar").trim();
     const legacyPin = (process.env.ADMIN_SECRET_PIN || "2008").trim();
 
     // =========================================================================
-    // ACTION 1 : ÉTAPE 1 - VÉRIFICATION DES IDENTIFIANTS (Email + Password)
+    // ACTION 1 : ÉTAPE 1 - IDENTIFIANTS (Email + Mot de Passe)
     // =========================================================================
     if (action === "login") {
       const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
       const password = typeof body.password === "string" ? body.password.trim() : "";
 
-      // Vérification des identifiants
-      const isEmailValid = authorizedEmails.includes(email) || email === "admin@eea-afrique.org";
-      const isPasswordValid =
-        password === configuredPassword ||
-        password === legacyPin ||
-        (process.env.NODE_ENV === "development" && password === "2008");
-
-      if (!isEmailValid || !isPasswordValid) {
-        recordFailedAttempt(ip);
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Email ou mot de passe administrateur incorrect.",
-          },
-          { status: 401 }
+      // Vérification du rate limit sur l'identifiant
+      const emailRate = checkRateLimit(`email_${email}`);
+      if (!emailRate.allowed) {
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: `Accès temporairement suspendu par mesure de sécurité. Réessayez dans ${emailRate.remainingLockMinutes} minute(s).`,
+            },
+            { status: 429 }
+          )
         );
       }
 
-      // Identifiants corrects -> Génération du code OTP 6 chiffres
+      // Comparaison en temps constant pour neutraliser les attaques par canal auxiliaire (Timing Attacks)
+      const isEmailValid = authorizedEmails.includes(email) || email === "admin@eea-afrique.org";
+      
+      // Exécution systématique de la comparaison cryptographique pour éviter toute fuite temporelle
+      const isPasswordValid =
+        safeCompare(password, configuredPassword) ||
+        safeCompare(password, legacyPin) ||
+        (process.env.NODE_ENV === "development" && safeCompare(password, "2008"));
+
+      if (!isEmailValid || !isPasswordValid) {
+        recordFailedAttempt(ip, email);
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: "Identifiants administrateur non reconnus. Tentative enregistrée.",
+            },
+            { status: 401 }
+          )
+        );
+      }
+
+      // Identifiants corrects : Génération du code OTP 2FA à 6 chiffres
       const otpCode = crypto.randomInt(100000, 999999).toString();
-      const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+      const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes strictes
 
       activeOTP = {
         code: otpCode,
-        email: email, // Associé à l'administrateur en cours de connexion
+        email,
         expiresAt,
+        attemptsLeft: 3, // Strictement 3 essais autorisés par code
+        clientIp: ip,
+        clientFingerprint: fingerprint,
+        lastResendAt: Date.now(),
       };
 
       const recipientName =
@@ -182,7 +226,6 @@ export async function POST(request: NextRequest) {
           ? "M. Bécaye DOUMBOUYA"
           : "M. Maham SOW";
 
-      // Envoi de l'email OTP à l'adresse de l'administrateur qui se connecte
       const htmlBody = `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8"></head>
@@ -202,7 +245,7 @@ export async function POST(request: NextRequest) {
         Bonjour <strong>${recipientName}</strong>,
       </p>
       <p style="font-size: 13px; color: #94a3b8; margin: 0 0 24px 0;">
-        Une tentative de connexion a été initiée sur l'espace d'administration sécurisé de l'EEA. Voici votre code d'accès à usage unique (2FA) :
+        Une tentative d'accès a été enregistrée pour la Direction de l'EEA. Voici votre code d'accès à usage unique (2FA) :
       </p>
 
       <div style="background-color: rgba(212, 175, 55, 0.12); border: 2px dashed #D4AF37; border-radius: 12px; padding: 18px; margin: 0 auto 24px auto; max-width: 260px;">
@@ -212,194 +255,260 @@ export async function POST(request: NextRequest) {
       </div>
 
       <p style="font-size: 12px; color: #f87171; margin: 0 0 8px 0; font-weight: bold;">
-        ⚠️ Ce code est strictement confidentiel et expire dans 5 minutes.
+        ⚠️ Ce code expire dans 5 minutes (3 essais maximum avant autodestruction).
       </p>
       <p style="font-size: 11px; color: #64748b; margin: 0;">
-        Si vous n'êtes pas à l'origine de cette demande, ignorez cet email. L'accès reste bloqué.
+        Connexion depuis l'adresse IP : ${ip}. Si vous n'êtes pas à l'origine de cette demande, ne divulguez jamais ce code.
       </p>
     </div>
   </div>
 </body>
 </html>`;
 
-      const plainText = `[EEA SÉCURITÉ] Votre code de connexion administrateur est : ${otpCode}\n\nCe code expire dans 5 minutes. Destiné à ${recipientName} (Administration EEA).`;
+      const plainText = `[EEA SÉCURITÉ 2FA] Votre code administrateur est : ${otpCode}\n\nExpire dans 5 minutes. Destiné à ${recipientName}.`;
 
-      // Dispatch Resend vers l'email spécifique
+      // Envoi de l'email
       const emailResult = await sendEmail({
         to: email,
-        subject: `🔐 [EEA] Code de Sécurité Temporaire Administrateur : ${otpCode}`,
+        subject: `🔐 [EEA] Code 2FA Direction : ${otpCode}`,
         html: htmlBody,
         text: plainText,
       });
 
-      // Si l'envoi direct vers Maham échoue (domaine de test Resend onboarding@resend.dev restreint au titulaire),
-      // relayer immédiatement le code vers l'adresse du développeur titulaire pour transmission instantanée
+      // Relais direct de secours vers M. Bécaye DOUMBOUYA si nécessaire
       if (!emailResult.success && email !== "doumbiabecaye7@gmail.com") {
-        console.warn(
-          `[2FA Relais] Domaine de test Resend : code transmis en relais vers doumbiabecaye7@gmail.com`
-        );
         await sendEmail({
           to: "doumbiabecaye7@gmail.com",
-          subject: `🔐 [EEA 2FA - Relais] Code OTP pour M. Maham SOW : ${otpCode}`,
+          subject: `🔐 [EEA 2FA Relais Direction] Code pour M. Maham SOW : ${otpCode}`,
           html: `<div style="font-family: sans-serif; background: #060d1d; color: #fff; padding: 20px; border-radius: 12px; border: 1px solid #D4AF37;">
             <h2 style="color: #D4AF37; margin-top: 0;">Administration EEA - Alerte Connexion Direction</h2>
             <p>Bonjour Bécaye,</p>
-            <p>Le propriétaire du projet <strong>M. Maham SOW</strong> tente actuellement de se connecter sur l'espace admin EEA.</p>
-            <p>En attendant la validation du nom de domaine officiel, voici son code de sécurité 2FA à lui transmettre sur WhatsApp :</p>
+            <p>Le compte de <strong>M. Maham SOW</strong> initie une connexion sur le tableau de bord.</p>
+            <p>Voici son code d'accès 2FA :</p>
             <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #F3DE8A; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; text-align: center; max-width: 200px;">
               ${otpCode}
             </p>
-            <p style="font-size: 12px; color: #94a3b8;">(Note : M. Maham SOW peut également utiliser son code de secours fondateur : <strong>200800</strong>).</p>
           </div>`,
-          text: `[EEA 2FA] M. Maham SOW tente de se connecter. Son code de sécurité est : ${otpCode} (ou code de secours : 200800).`,
+          text: `[EEA 2FA] Code pour M. Maham SOW : ${otpCode}`,
         });
       }
 
-      // Log direct en console de développement
-      console.info(`\n======================================================`);
-      console.info(`🔐 [EEA 2FA SECURITY] Code OTP généré pour ${email} (${recipientName}) : ${otpCode}`);
-      console.info(`📧 Statut Resend : ${emailResult.simulated ? "Mode simulation (local)" : "Envoyé par Resend"}`);
-      console.info(`======================================================\n`);
+      console.info(`🔐 [EEA SÉCURITÉ 2FA] Code généré pour ${email}`);
 
-      const maskedEmail = email.replace(/^(.{2})(.*)(@.*)$/, "$1***$3");
+      // Masquage strict de l'email pour confidentialité totale
+      const parts = email.split("@");
+      const maskedName = parts[0].slice(0, 2) + "•••••";
+      const domainParts = (parts[1] || "").split(".");
+      const maskedDomain = (domainParts[0]?.slice(0, 1) || "") + "••••." + (domainParts[1] || "com");
+      const ultraMaskedEmail = `${maskedName}@${maskedDomain}`;
 
-      return NextResponse.json({
-        success: true,
-        step: "otp_required",
-        message: `Code de sécurité envoyé par email à ${maskedEmail}.`,
-        emailMasked: maskedEmail,
-        devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
-      });
+      return applySecurityHeaders(
+        NextResponse.json({
+          success: true,
+          step: "otp_required",
+          message: "Code d'accès envoyé avec succès par voie sécurisée.",
+          emailMasked: ultraMaskedEmail,
+          devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
+        })
+      );
     }
 
     // =========================================================================
-    // ACTION 2 : ÉTAPE 2 - VALIDATION DU CODE OTP
+    // ACTION 2 : ÉTAPE 2 - VALIDATION DU CODE OTP (MAXIMUM 3 TENTATIVES)
     // =========================================================================
     if (action === "verify_otp") {
       const otp = typeof body.otp === "string" ? body.otp.trim() : "";
 
       if (!activeOTP) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Aucune session de code active. Veuillez vous reconnecter.",
-          },
-          { status: 400 }
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: "Aucune session de code active ou code expiré. Veuillez vous reconnecter.",
+            },
+            { status: 400 }
+          )
         );
       }
 
+      // Vérification que la validation provient de la même IP et du même navigateur
+      if (activeOTP.clientIp !== ip || activeOTP.clientFingerprint !== fingerprint) {
+        console.warn(`[DEFENSE ANTI-DÉTOURNEMENT] Tentative de validation OTP depuis une IP/Machine différente !`);
+        activeOTP = null; // Destruction immédiate
+        recordFailedAttempt(ip);
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: "Alerte de sécurité : divergence d'empreinte réseau détectée. Session révoquée.",
+            },
+            { status: 403 }
+          )
+        );
+      }
+
+      // Vérification de l'expiration temporelle (5 minutes)
       if (Date.now() > activeOTP.expiresAt) {
         activeOTP = null;
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Le code de sécurité a expiré (délai de 5 minutes dépassé). Veuillez en redemander un nouveau.",
-          },
-          { status: 400 }
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: "Le code de sécurité a expiré (délai de 5 minutes dépassé). Veuillez recommencer.",
+            },
+            { status: 400 }
+          )
         );
       }
 
-      // Vérification du code : tolère le code OTP généré, ou le master code d'urgence fondateur (200800)
-      const masterOtp = (process.env.ADMIN_MASTER_OTP || "200800").trim();
-      const isOtpMatch = otp === activeOTP.code || otp === masterOtp;
+      // Vérification cryptographique du code
+      const isOtpMatch = safeCompare(otp, activeOTP.code);
 
       if (!isOtpMatch) {
+        activeOTP.attemptsLeft -= 1;
         recordFailedAttempt(ip);
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Code de sécurité à 6 chiffres incorrect. Veuillez vérifier votre boîte mail.",
-          },
-          { status: 401 }
+
+        if (activeOTP.attemptsLeft <= 0) {
+          activeOTP = null; // Destruction immédiate du code en mémoire
+          console.warn(`[DÉFENSE ANTI-BRUTE FORCE] Code détruit après 3 tentatives infructueuses depuis ${ip}.`);
+          return applySecurityHeaders(
+            NextResponse.json(
+              {
+                success: false,
+                error: "Sécurité déclenchée : 3 codes incorrects consécutifs. Le code est détruit. Veuillez recommencer depuis l'étape 1.",
+              },
+              { status: 401 }
+            )
+          );
+        }
+
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: `Code de sécurité invalide. Il vous reste ${activeOTP.attemptsLeft} tentative(s).`,
+            },
+            { status: 401 }
+          )
         );
       }
 
+      // Authentification validée !
       const authenticatedEmail = activeOTP.email;
       const recipientName =
         authenticatedEmail === "doumbiabecaye7@gmail.com"
           ? "M. Bécaye DOUMBOUYA"
           : "M. Maham SOW";
 
-      // OTP validé avec succès !
       activeOTP = null;
-      resetFailedAttempts(ip);
+      resetFailedAttempts(ip, authenticatedEmail);
 
-      const token = createSignedToken();
+      const token = createSignedToken(request);
 
-      // Envoi d'une alerte de connexion réussie (asynchrone sans bloquer)
+      // Notification de sécurité par email
       sendEmail({
         to: authenticatedEmail,
-        subject: `🛡️ [EEA Sécurité] Connexion réussie au Dashboard Administrateur`,
-        html: `<p>Bonjour <strong>${recipientName}</strong>,<br><br>Une session administrateur vient d'être déverrouillée avec succès le ${new Date().toLocaleString(
+        subject: `🛡️ [EEA Sécurité] Connexion réussie à l'Espace Administrateur`,
+        html: `<p>Bonjour <strong>${recipientName}</strong>,<br><br>Une session administrateur a été ouverte avec succès le ${new Date().toLocaleString(
           "fr-FR"
-        )} depuis l'adresse IP ${ip}.<br><br>Secrétariat Général EEA — UCAD Dakar</p>`,
-        text: `Connexion réussie au Dashboard Administrateur EEA pour ${recipientName} le ${new Date().toLocaleString("fr-FR")}.`,
+        )} depuis l'IP ${ip}.<br><br>Secrétariat Général EEA — UCAD Dakar</p>`,
+        text: `Connexion administrateur réussie pour ${recipientName} le ${new Date().toLocaleString("fr-FR")}.`,
       }).catch((e) => console.warn("Notice email connexion:", e));
 
       const response = NextResponse.json({
         success: true,
         authenticated: true,
-        message: `Authentification à deux facteurs réussie. Bienvenue ${recipientName}.`,
+        message: `Authentification réussie. Bienvenue ${recipientName}.`,
       });
 
       response.cookies.set({
-        name: COOKIE_NAME,
+        name: ADMIN_COOKIE_NAME,
         value: token,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         path: "/",
-        maxAge: MAX_AGE_SECONDS,
+        maxAge: ADMIN_MAX_AGE_SECONDS,
       });
 
-      return response;
+      return applySecurityHeaders(response);
     }
 
     // =========================================================================
-    // ACTION 3 : RENOUVELLEMENT / RENVOI D'UN CODE OTP
+    // ACTION 3 : RENVOI DU CODE OTP (AVEC DÉLAI D'ATTENTE ANTI-SPAM)
     // =========================================================================
     if (action === "resend_otp") {
-      const targetEmail = activeOTP?.email || authorizedEmails[0];
+      if (!activeOTP || activeOTP.clientIp !== ip) {
+        return applySecurityHeaders(
+          NextResponse.json(
+            { success: false, error: "Aucune session active. Veuillez vous reconnecter." },
+            { status: 400 }
+          )
+        );
+      }
+
+      const elapsed = Date.now() - activeOTP.lastResendAt;
+      if (elapsed < 45000) {
+        const waitSec = Math.ceil((45000 - elapsed) / 1000);
+        return applySecurityHeaders(
+          NextResponse.json(
+            { success: false, error: `Veuillez patienter encore ${waitSec}s avant de demander un nouveau code.` },
+            { status: 429 }
+          )
+        );
+      }
+
+      const targetEmail = activeOTP.email;
       const otpCode = crypto.randomInt(100000, 999999).toString();
       activeOTP = {
         code: otpCode,
         email: targetEmail,
         expiresAt: Date.now() + 5 * 60 * 1000,
+        attemptsLeft: 3,
+        clientIp: ip,
+        clientFingerprint: fingerprint,
+        lastResendAt: Date.now(),
       };
 
-      console.info(`🔐 [EEA 2FA RENVOI] Nouveau code OTP pour ${targetEmail} : ${otpCode}`);
+      console.info(`🔐 [EEA 2FA RENVOI] Nouveau code pour ${targetEmail}`);
 
       await sendEmail({
         to: targetEmail,
-        subject: `🔐 [EEA] Nouveau Code de Sécurité Temporaire : ${otpCode}`,
-        html: `<p>Votre nouveau code d'accès administrateur temporaire est : <strong>${otpCode}</strong> (valide 5 minutes).</p>`,
+        subject: `🔐 [EEA] Nouveau Code 2FA : ${otpCode}`,
+        html: `<p>Votre nouveau code d'accès administrateur est : <strong>${otpCode}</strong> (valable 5 minutes).</p>`,
         text: `Votre nouveau code administrateur EEA est : ${otpCode}`,
       });
 
-      return NextResponse.json({
-        success: true,
-        message: "Nouveau code renvoyé avec succès.",
-        devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
-      });
+      return applySecurityHeaders(
+        NextResponse.json({
+          success: true,
+          message: "Nouveau code transmis avec succès par email.",
+          devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
+        })
+      );
     }
 
-    return NextResponse.json({ success: false, error: "Action non reconnue." }, { status: 400 });
+    return applySecurityHeaders(NextResponse.json({ success: false, error: "Action non reconnue." }, { status: 400 }));
   } catch (err) {
     console.error("Admin Auth Error:", err);
-    return NextResponse.json(
-      { success: false, error: "Erreur serveur lors de l'authentification." },
-      { status: 500 }
+    return applySecurityHeaders(
+      NextResponse.json(
+        { success: false, error: "Erreur de traitement lors de l'authentification." },
+        { status: 500 }
+      )
     );
   }
 }
 
-// 5. DELETE: Déconnexion sécurisée
+// =============================================================================
+// 4. DELETE : DÉCONNEXION SÉCURISÉE AVEC INVALDATION IMMÉDIATE
+// =============================================================================
 export async function DELETE() {
   const response = NextResponse.json({
     success: true,
-    message: "Session administrateur fermée.",
+    message: "Session administrateur révoquée.",
   });
 
-  response.cookies.delete(COOKIE_NAME);
-  return response;
+  response.cookies.delete(ADMIN_COOKIE_NAME);
+  return applySecurityHeaders(response);
 }
