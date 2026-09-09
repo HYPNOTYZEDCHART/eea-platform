@@ -933,7 +933,7 @@ export default function AdminPage() {
               >
                 <KeyRound className="w-4 h-4" />
                 <span>
-                  {authSubmitting ? "Chiffrement & Vérification 2FA..." : "Continuer vers l'Étape 2 (Code 2FA)"}
+                  {authSubmitting ? "Envoi du code 2FA..." : "Code 2FA"}
                 </span>
               </button>
 
