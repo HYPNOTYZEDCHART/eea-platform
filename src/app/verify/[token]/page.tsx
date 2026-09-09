@@ -15,6 +15,7 @@ import {
   Ban,
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
+import MemberCardBadge from "@/components/MemberCardBadge";
 import { supabase, Member, getEffectiveMemberStatus, getDaysUntilExpiry } from "@/lib/supabase";
 
 export default function VerifyPage({
@@ -216,65 +217,9 @@ export default function VerifyPage({
                 );
               })()}
 
-              {/* Member Visual Summary */}
-              <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-xl bg-white/[0.02] border border-white/10">
-                <div className="relative w-24 h-28 rounded-xl overflow-hidden border-2 border-[#D4AF37] bg-[#040914] shadow-md shrink-0">
-                  {member.photo_url ? (
-                    <Image
-                      src={member.photo_url}
-                      alt="Photo du membre"
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#0B3C8A]/40 font-bold text-xs">
-                      EEA
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-center sm:text-left space-y-1">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                    Membre Enregistré
-                  </span>
-                  <h3 className="text-lg font-black text-white">
-                    {member.last_name.toUpperCase()} {member.first_name}
-                  </h3>
-                  <div className="text-xs font-mono font-bold text-[#D4AF37]">
-                    Matricule : {member.membership_id}
-                  </div>
-
-                  {(() => {
-                    const effectiveStatus = getEffectiveMemberStatus(member);
-                    if (effectiveStatus === "revoked") {
-                      return (
-                        <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase">
-                          Statut : Révoqué / Éjecté
-                        </span>
-                      );
-                    }
-                    if (effectiveStatus === "expired") {
-                      return (
-                        <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">
-                          Statut : Expiré (À Renouveler)
-                        </span>
-                      );
-                    }
-                    if (effectiveStatus === "pending") {
-                      return (
-                        <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 uppercase">
-                          Statut : En attente
-                        </span>
-                      );
-                    }
-                    return (
-                      <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
-                        Statut : Actif
-                      </span>
-                    );
-                  })()}
-                </div>
+              {/* Official Member Virtual Card Badge with Download Actions */}
+              <div className="pt-2">
+                <MemberCardBadge member={member} compact={true} />
               </div>
 
               {/* Verified Details Table */}

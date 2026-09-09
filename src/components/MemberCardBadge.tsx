@@ -357,39 +357,39 @@ export default function MemberCardBadge({
   const renderVisualCard = () => (
     <div
       ref={cardElementRef}
-      className="w-full max-w-2xl min-h-[220px] sm:min-h-0 sm:aspect-[1.586/1] rounded-2xl bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37] p-3.5 sm:p-6 shadow-2xl shadow-black/80 flex flex-col justify-between relative overflow-hidden text-white"
+      className="w-full max-w-2xl aspect-[1.586/1] rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37] p-3 sm:p-6 shadow-2xl shadow-black/80 flex flex-col justify-between relative overflow-hidden text-white select-none"
     >
       {/* Watermark Logo */}
-      <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-52 h-52">
+      <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-36 h-36 sm:w-52 sm:h-52">
         <Image src="/logo-eea.jpg" alt="Logo" fill className="object-contain" />
       </div>
 
       {/* Card Header */}
-      <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm shrink-0">
+      <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-2 sm:pb-2.5 gap-2">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className="relative w-8 h-8 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm shrink-0">
             <Image src="/logo-eea.jpg" alt="Logo EEA" fill className="object-cover" />
           </div>
-          <div>
-            <h3 className="font-extrabold text-[11px] sm:text-sm tracking-wide text-white">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-[10px] sm:text-sm tracking-wide text-white truncate">
               ÉTUDIANT ENTREPRENEURIAT AFRIQUE
             </h3>
-            <p className="text-[8.5px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase">
+            <p className="text-[7px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase truncate">
               Carte Officielle de Membre • Né en 2008 • Démarrage officiel 2026
             </p>
           </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[8.5px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0">
+        <span className="px-1.5 sm:px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[7px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
           Membre Actif
         </span>
       </div>
 
       {/* Card Body */}
-      <div className="relative z-10 grid grid-cols-12 gap-2.5 sm:gap-3 items-center my-auto py-1">
+      <div className="relative z-10 grid grid-cols-12 gap-1.5 sm:gap-3 items-center my-auto py-1 sm:py-2">
         {/* Photo */}
-        <div className="col-span-4 sm:col-span-3 flex justify-center">
-          <div className="relative w-16 h-20 sm:w-24 sm:h-30 rounded-xl overflow-hidden border-2 border-[#D4AF37] bg-[#040914] shadow-md shrink-0">
+        <div className="col-span-3 flex justify-center">
+          <div className="relative w-14 h-18 sm:w-24 sm:h-30 rounded-lg sm:rounded-xl overflow-hidden border-2 border-[#D4AF37] bg-[#040914] shadow-md shrink-0">
             {member.photo_url ? (
               <Image
                 src={member.photo_url}
@@ -399,106 +399,107 @@ export default function MemberCardBadge({
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B3C8A]/50 text-white">
-                <span className="text-xs font-bold">EEA</span>
+              <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B3C8A]/50 text-white p-1">
+                <span className="text-[9px] sm:text-xs font-bold">EEA</span>
+                <span className="text-[6.5px] sm:text-[8px] text-slate-300">Photo 4x4</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Details */}
-        <div className="col-span-8 sm:col-span-6 space-y-1 pl-1">
+        <div className="col-span-6 space-y-0.5 sm:space-y-1 pl-1 min-w-0">
           <div>
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block">
+            <span className="text-[6.5px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block leading-tight">
               Nom & Prénom
             </span>
-            <div className="text-sm sm:text-base font-extrabold text-white truncate">
+            <div className="text-[10px] sm:text-base font-extrabold text-white truncate leading-tight">
               {member.last_name.toUpperCase()} {member.first_name}
             </div>
           </div>
 
           <div>
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block">
+            <span className="text-[6.5px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block leading-tight">
               Matricule Officiel
             </span>
-            <div className="text-xs sm:text-sm font-bold font-mono text-[#D4AF37]">
+            <div className="text-[8px] sm:text-sm font-bold font-mono text-[#D4AF37] truncate leading-tight">
               {member.membership_id}
             </div>
           </div>
 
           <div>
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block">
+            <span className="text-[6.5px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block leading-tight">
               Université / École & Pays
             </span>
-            <div className="text-[10px] sm:text-[11px] text-slate-200 font-medium truncate">
+            <div className="text-[8px] sm:text-[11px] text-slate-200 font-medium truncate leading-tight">
               {member.university} • {member.country}
             </div>
           </div>
 
           <div>
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block">
+            <span className="text-[6.5px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-semibold block leading-tight">
               Filière d&apos;Études
             </span>
-            <div className="text-[10px] sm:text-[11px] text-[#38BDF8] font-medium truncate">
+            <div className="text-[8px] sm:text-[11px] text-[#38BDF8] font-medium truncate leading-tight">
               {member.field_of_study}
             </div>
           </div>
         </div>
 
         {/* QR Code */}
-        <div className="hidden sm:flex col-span-3 flex-col items-center justify-center border-l border-white/10 pl-2">
+        <div className="col-span-3 flex flex-col items-center justify-center border-l border-white/10 pl-1 sm:pl-2">
           {qrCodeDataUrl ? (
-            <div className="p-1 bg-white rounded-lg shadow-md mb-1">
+            <div className="p-1 sm:p-1.5 bg-white rounded-md sm:rounded-lg shadow-md mb-0.5 sm:mb-1 shrink-0">
               <Image
                 src={qrCodeDataUrl}
                 alt="QR Code de Vérification"
                 width={74}
                 height={74}
-                className="object-contain"
+                className="w-8 h-8 sm:w-16 sm:h-16 object-contain"
               />
             </div>
           ) : (
-            <QrIcon className="w-14 h-14 text-slate-400" />
+            <QrIcon className="w-8 h-8 sm:w-14 sm:h-14 text-slate-400" />
           )}
-          <span className="text-[7.5px] text-[#D4AF37] uppercase font-bold tracking-tighter text-center">
-            Vérifier Authenticité
+          <span className="text-[6.5px] sm:text-[8px] text-[#D4AF37] uppercase font-bold tracking-tighter text-center leading-tight">
+            Scan de Vérification
           </span>
         </div>
       </div>
 
       {/* Card Footer */}
-      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-1.5 text-[9px] sm:text-[10px] text-slate-300">
-        <div className="flex items-center gap-1.5">
+      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-1 sm:pt-2 text-[7.5px] sm:text-[10px] text-slate-300">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {member.status === "revoked" ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              <span className="text-rose-400 font-bold">RÉVOQUÉ / ÉJECTÉ</span>
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500" />
+              <span className="text-rose-400 font-bold text-[7px] sm:text-[9px]">RÉVOQUÉ / ÉJECTÉ</span>
             </>
           ) : currentTime > 0 && new Date(member.expires_at).getTime() < currentTime ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-amber-400 font-bold">EXPIRÉ (À RENOUVELER)</span>
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
+              <span className="text-amber-400 font-bold text-[7px] sm:text-[9px]">EXPIRÉ (À RENOUVELER)</span>
             </>
           ) : member.status === "pending" ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="text-yellow-400 font-bold">EN ATTENTE 5 000 F</span>
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400" />
+              <span className="text-yellow-400 font-bold text-[7px] sm:text-[9px]">EN ATTENTE 5 000 F</span>
             </>
           ) : (
             <>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-semibold">Membre Actif Certifié</span>
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-emerald-400 font-semibold text-[7px] sm:text-[9px]">Membre Actif Certifié</span>
             </>
           )}
         </div>
 
-        <div className="text-slate-400 text-[8.5px] sm:text-[9px]">
+        <div className="text-slate-400 text-[7px] sm:text-[9px]">
           Expire le : {new Date(member.expires_at).toLocaleDateString("fr-FR")}
         </div>
 
         <div className="flex items-center gap-1 text-[#D4AF37]">
-          <ShieldCheck className="w-3 h-3" />
-          <span className="font-medium text-[9px]">Agréé par l&apos;État • 2026</span>
+          <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+          <span className="font-medium text-[7px] sm:text-[9px]">Agréé par l&apos;État</span>
         </div>
       </div>
     </div>

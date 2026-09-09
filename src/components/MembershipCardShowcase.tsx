@@ -125,7 +125,7 @@ export default function MembershipCardShowcase() {
                   rotateY,
                   transformStyle: "preserve-3d",
                 }}
-                className="relative aspect-[1.586/1] w-full rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37]/60 shadow-2xl shadow-black/80 flex flex-col justify-between overflow-hidden select-none"
+                className="relative aspect-[1.586/1] w-full rounded-xl sm:rounded-2xl p-3 sm:p-6 bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37]/60 shadow-2xl shadow-black/80 flex flex-col justify-between overflow-hidden select-none"
               >
                 {/* Subtle Dynamic Glare */}
                 <motion.div
@@ -139,7 +139,7 @@ export default function MembershipCardShowcase() {
                 />
 
                 {/* Card Watermark */}
-                <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-48 h-48">
+                <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-36 h-36 sm:w-48 sm:h-48">
                   <Image
                     src="/logo-eea.jpg"
                     alt="Watermark"
@@ -149,9 +149,9 @@ export default function MembershipCardShowcase() {
                 </div>
 
                 {/* Card Header */}
-                <div className="relative z-10 flex items-start justify-between border-b border-white/10 pb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#D4AF37] shadow-sm">
+                <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-2 sm:pb-3 gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-[#D4AF37] shadow-sm shrink-0">
                       <Image
                         src="/logo-eea.jpg"
                         alt="Logo EEA"
@@ -159,86 +159,86 @@ export default function MembershipCardShowcase() {
                         className="object-cover"
                       />
                     </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-extrabold text-white tracking-wide">
+                    <div className="min-w-0">
+                      <div className="text-[10px] sm:text-sm font-extrabold text-white tracking-wide truncate">
                         ÉTUDIANT ENTREPRENEURIAT AFRIQUE
                       </div>
-                      <div className="text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase">
+                      <div className="text-[7px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase truncate">
                         Carte Officielle de Membre • Né en 2008 • Démarrage officiel 2026
                       </div>
                     </div>
                   </div>
 
-                  <div className="px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider">
+                  <div className="px-1.5 sm:px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[7px] sm:text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
                     Actif 2026-2027
                   </div>
                 </div>
 
                 {/* Card Body: Member Details & QR */}
-                <div className="relative z-10 grid grid-cols-12 gap-3 items-center my-auto py-2">
+                <div className="relative z-10 grid grid-cols-12 gap-1.5 sm:gap-3 items-center my-auto py-1 sm:py-2">
                   {/* Member Photo */}
-                  <div className="col-span-4 sm:col-span-3 flex justify-center">
-                    <div className="relative w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 border-[#D4AF37] bg-slate-800 shadow-md">
+                  <div className="col-span-3 flex justify-center">
+                    <div className="relative w-14 h-18 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 border-[#D4AF37] bg-slate-800 shadow-md shrink-0">
                       {/* Placeholder Model Avatar */}
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-t from-[#0B3C8A] to-[#1E3A8A] text-white">
-                        <div className="w-8 h-8 rounded-full bg-white/20 mb-1 flex items-center justify-center font-bold text-xs">
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-t from-[#0B3C8A] to-[#1E3A8A] text-white p-1">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 mb-0.5 sm:mb-1 flex items-center justify-center font-bold text-[9px] sm:text-xs">
                           JD
                         </div>
-                        <span className="text-[9px] text-slate-200">Photo 4x4</span>
+                        <span className="text-[7px] sm:text-[9px] text-slate-200 leading-none">Photo 4x4</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Member Information */}
-                  <div className="col-span-8 sm:col-span-6 space-y-1 pl-1">
+                  <div className="col-span-6 space-y-0.5 sm:space-y-1 pl-1 min-w-0">
                     <div>
-                      <span className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold block">
+                      <span className="text-[6.5px] sm:text-[9px] text-slate-400 uppercase tracking-wider font-semibold block leading-tight">
                         Nom & Prénom
                       </span>
-                      <div className="text-xs sm:text-sm font-bold text-white truncate">
+                      <div className="text-[10px] sm:text-sm font-bold text-white truncate leading-tight">
                         KOUASSI Jean-David
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold block">
+                      <span className="text-[6.5px] sm:text-[9px] text-slate-400 uppercase tracking-wider font-semibold block leading-tight">
                         Université & Pays
                       </span>
-                      <div className="text-[11px] sm:text-xs text-slate-200 font-medium truncate">
+                      <div className="text-[8px] sm:text-xs text-slate-200 font-medium truncate leading-tight">
                         Univ. Félix Houphouët-Boigny • CI
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold block">
+                      <span className="text-[6.5px] sm:text-[9px] text-slate-400 uppercase tracking-wider font-semibold block leading-tight">
                         Filière & Spécialité
                       </span>
-                      <div className="text-[11px] sm:text-xs text-slate-200 font-medium truncate">
+                      <div className="text-[8px] sm:text-xs text-slate-200 font-medium truncate leading-tight">
                         Génie Logiciel & Agrobusiness
                       </div>
                     </div>
                   </div>
 
                   {/* QR Code & Security Stamp */}
-                  <div className="hidden sm:flex col-span-3 flex-col items-center justify-center border-l border-white/10 pl-2">
-                    <div className="p-1.5 bg-white rounded-lg shadow-md mb-1">
-                      <QrCode className="w-12 h-12 text-[#060d1d]" />
+                  <div className="col-span-3 flex flex-col items-center justify-center border-l border-white/10 pl-1 sm:pl-2">
+                    <div className="p-1 sm:p-1.5 bg-white rounded-md sm:rounded-lg shadow-md mb-0.5 sm:mb-1 shrink-0">
+                      <QrCode className="w-8 h-8 sm:w-12 sm:h-12 text-[#060d1d]" />
                     </div>
-                    <span className="text-[8px] text-slate-400 tracking-tighter text-center">
+                    <span className="text-[6.5px] sm:text-[8px] text-slate-400 tracking-tighter text-center leading-tight">
                       Scan de Vérification
                     </span>
                   </div>
                 </div>
 
                 {/* Card Footer */}
-                <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-2 text-[10px] text-slate-300">
+                <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-1 sm:pt-2 text-[7.5px] sm:text-[10px] text-slate-300">
                   <div className="flex items-center gap-1 font-mono text-[#D4AF37]">
-                    <Lock className="w-3 h-3 text-[#D4AF37]" />
+                    <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#D4AF37]" />
                     <span>ID : EEA-2026-CI-0492</span>
                   </div>
 
-                  <div className="flex items-center gap-1 text-slate-400 text-[9px]">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  <div className="flex items-center gap-1 text-slate-400 text-[7px] sm:text-[9px]">
+                    <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                     <span>Authenticité garantie par l&apos;État</span>
                   </div>
                 </div>
