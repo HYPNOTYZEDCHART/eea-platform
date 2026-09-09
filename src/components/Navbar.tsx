@@ -111,16 +111,8 @@ export default function Navbar() {
             </a>
           </div>
 
-          {/* Mobile Menu Toggle & Admin Quick Access */}
+          {/* Mobile Menu Toggle */}
           <div className="flex md:hidden items-center gap-2">
-            <Link
-              href="/admin"
-              title="Espace Administrateur"
-              className="p-2 rounded-lg text-slate-300 hover:text-white bg-white/5 border border-white/10"
-            >
-              <Lock className="w-4 h-4 text-[#D4AF37]" />
-            </Link>
-
             <a
               href="#adhesion"
               className="text-xs font-semibold px-3 py-2 rounded-md bg-[#D4AF37] text-[#060d1d]"
