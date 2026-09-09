@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import PhotoCapture from "./PhotoCapture";
 import WhatsAppIcon from "./WhatsAppIcon";
+import MemberCardBadge from "./MemberCardBadge";
 import { supabase, Member } from "@/lib/supabase";
 
 interface RegistrationFormData {
@@ -679,8 +680,19 @@ export default function RegistrationTunnel({
                     Merci pour votre adhésion, {createdMember.first_name} !
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-lg mx-auto">
-                    Votre demande a été transmise au Secrétariat Général. Dès réception de votre transfert de <strong>5 000 FCFA</strong> sur le <strong>+221 78 542 53 45</strong>, votre carte officielle de membre au format PDF vous sera envoyée.
+                    Votre demande a été transmise au Secrétariat Général. Vous pouvez dès à présent prévisualiser et télécharger votre carte officielle de membre au format PDF ci-dessous. Dès confirmation de votre transfert de <strong>5 000 FCFA</strong> sur le <strong>+221 78 542 53 45</strong>, votre statut sera certifié actif.
                   </p>
+                </div>
+
+                {/* Visual Official Member Card Preview & Instant PDF Download */}
+                <div className="max-w-xl mx-auto py-2">
+                  <div className="mb-3 text-left">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      Votre Carte Officielle Numérique Générée (Format Standard CR80) :
+                    </span>
+                  </div>
+                  <MemberCardBadge member={createdMember} compact={true} />
                 </div>
 
                 {/* Recap Box */}
