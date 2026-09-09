@@ -97,10 +97,9 @@ export default function Navbar() {
             <Link
               href="/admin"
               title="Portail Administrateur (Raccourci : Alt + A)"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-[#D4AF37]/15 border border-white/10 hover:border-[#D4AF37]/40 transition-all"
+              className="p-2.5 rounded-lg text-slate-300 hover:text-white bg-white/5 hover:bg-[#D4AF37]/15 border border-white/10 hover:border-[#D4AF37]/40 transition-all"
             >
-              <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Espace Admin</span>
+              <Lock className="w-4 h-4 text-[#D4AF37]" />
             </Link>
 
             <a

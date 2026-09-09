@@ -117,12 +117,12 @@ export default function AdminPage() {
 
   // Authentification Haute Sécurité 2-Facteurs (2FA / OTP)
   const [loginStep, setLoginStep] = useState<"credentials" | "otp">("credentials");
-  const [adminEmail, setAdminEmail] = useState("maham.sow06@gmail.com");
+  const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
-  const [emailMasked, setEmailMasked] = useState("maham.sow06@gmail.com");
+  const [emailMasked, setEmailMasked] = useState("");
   const [otpTimer, setOtpTimer] = useState(300); // 5 minutes
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
   const [resendingOtp, setResendingOtp] = useState(false);
@@ -838,38 +838,6 @@ export default function AdminPage() {
              =================================================================== */}
           {loginStep === "credentials" ? (
             <form onSubmit={handleStep1Login} className="space-y-4">
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-slate-300 space-y-1.5">
-                <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                  Sélection Rapide du Compte Administrateur :
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setAdminEmail("maham.sow06@gmail.com")}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                      adminEmail === "maham.sow06@gmail.com"
-                        ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                        : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                    <span>Maham SOW (Propriétaire)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAdminEmail("doumbiabecaye7@gmail.com")}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                      adminEmail === "doumbiabecaye7@gmail.com"
-                        ? "bg-sky-500/20 border-sky-400 text-sky-300"
-                        : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                    }`}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                    <span>Bécaye DOUMBOUYA (Développeur)</span>
-                  </button>
-                </div>
-              </div>
-
               {/* Champ Email */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -880,7 +848,7 @@ export default function AdminPage() {
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="maham.sow06@gmail.com"
+                    placeholder="admin@eea-afrique.org ou votre adresse email"
                     required
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-xs font-medium"
                   />
@@ -934,8 +902,7 @@ export default function AdminPage() {
               </button>
 
               <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                Un code de vérification secret à 6 chiffres sera instantanément expédié à{" "}
-                <strong className="text-slate-300">maham.sow06@gmail.com</strong>.
+                Un code de vérification secret à 6 chiffres sera instantanément expédié à votre adresse email sécurisée.
               </p>
             </form>
           ) : (
