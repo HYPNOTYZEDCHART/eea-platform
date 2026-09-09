@@ -936,10 +936,6 @@ export default function AdminPage() {
                   {authSubmitting ? "Envoi du code 2FA..." : "Code 2FA"}
                 </span>
               </button>
-
-              <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-                Un code à 6 chiffres sera expédié par voie sécurisée à l&apos;adresse de la direction enregistrée.
-              </p>
             </form>
           ) : (
             /* ===================================================================
