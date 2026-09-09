@@ -164,19 +164,9 @@ export default function Footer() {
 
         {/* Bottom Bar: Copyright & Attribution */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <p>
-              © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Projet né en 2008 • Démarrage officiel en 2026.
-            </p>
-            <Link
-              href="/admin"
-              title="Accès Administrateur (Raccourci : Alt + A)"
-              className="text-slate-600 hover:text-[#D4AF37] transition-colors p-1"
-              aria-label="Accès Administrateur"
-            >
-              <Lock className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+          <p>
+            © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Projet né en 2008 • Démarrage officiel en 2026.
+          </p>
 
           <div className="flex items-center gap-1 text-slate-400">
             <span>Pour la souveraineté économique de la jeunesse africaine</span>

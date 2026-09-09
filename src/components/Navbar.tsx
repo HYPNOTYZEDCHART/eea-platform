@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShieldCheck, CreditCard, Lock } from "lucide-react";
+import { Menu, X, ShieldCheck, CreditCard } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -94,14 +94,6 @@ export default function Navbar() {
 
           {/* Call to Action Desktop */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/admin"
-              title="Portail Administrateur (Raccourci : Alt + A)"
-              className="p-2.5 rounded-lg text-slate-300 hover:text-white bg-white/5 hover:bg-[#D4AF37]/15 border border-white/10 hover:border-[#D4AF37]/40 transition-all"
-            >
-              <Lock className="w-4 h-4 text-[#D4AF37]" />
-            </Link>
-
             <a
               href="#adhesion"
               className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-md shadow-[#D4AF37]/15 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
