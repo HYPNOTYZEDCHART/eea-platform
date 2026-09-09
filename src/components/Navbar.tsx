@@ -167,15 +167,6 @@ export default function Navbar() {
                 <CreditCard className="w-4 h-4 text-[#060d1d]" />
                 Obtenir ma Carte Officielle (5 000 FCFA)
               </a>
-
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-white/5 border border-white/10"
-              >
-                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Portail Réservé aux Administrateurs</span>
-              </Link>
             </div>
           </motion.div>
         )}

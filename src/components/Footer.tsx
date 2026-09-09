@@ -148,13 +148,15 @@ export default function Footer() {
               <span>WhatsApp : 78 542 53 45</span>
             </a>
 
-            <div className="pt-3 border-t border-white/5">
+            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500">Secrétariat Général</span>
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                title="Accès Administrateur"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-[#D4AF37] hover:bg-white/5 border border-white/5 hover:border-[#D4AF37]/30 transition-all"
+                aria-label="Accès Administrateur"
               >
-                <Lock className="w-3 h-3" />
-                <span>Portail Réservé aux Administrateurs</span>
+                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
               </Link>
             </div>
           </div>
@@ -162,9 +164,19 @@ export default function Footer() {
 
         {/* Bottom Bar: Copyright & Attribution */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>
-            © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Projet né en 2008 • Démarrage officiel en 2026.
-          </p>
+          <div className="flex items-center gap-2">
+            <p>
+              © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Projet né en 2008 • Démarrage officiel en 2026.
+            </p>
+            <Link
+              href="/admin"
+              title="Accès Administrateur (Raccourci : Alt + A)"
+              className="text-slate-600 hover:text-[#D4AF37] transition-colors p-1"
+              aria-label="Accès Administrateur"
+            >
+              <Lock className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
           <div className="flex items-center gap-1 text-slate-400">
             <span>Pour la souveraineté économique de la jeunesse africaine</span>
