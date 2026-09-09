@@ -30,8 +30,10 @@ export const viewport: Viewport = {
   themeColor: "#060d1d",
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://eea-afrique.org"),
+  metadataBase: new URL(siteUrl),
   title: "Étudiant Entrepreneuriat Afrique (EEA) | Plateforme Officielle",
   description:
     "Organisation reconnue par l'État. Projet né en 2008 à l'UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Fédérer les étudiants d'Afrique et de la diaspora autour de projets d'entrepreneuriat, de technologie et d'agriculture moderne.",
@@ -59,7 +61,7 @@ export const metadata: Metadata = {
     title: "Étudiant Entrepreneuriat Afrique (EEA) | Plateforme Officielle",
     description:
       "Organisation panafricaine initiée en 2008 à l'UCAD de Dakar. Fédérer l'élite estudiantine africaine en Tech & Agrobusiness. Carte officielle de membre sécurisée par QR Code.",
-    url: "https://eea-afrique.org",
+    url: siteUrl,
     siteName: "EEA - Étudiant Entrepreneuriat Afrique",
     images: [
       {
@@ -86,11 +88,11 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "https://eea-afrique.org/#organization",
+      "@id": `${siteUrl}/#organization`,
       name: "Étudiant Entrepreneuriat Afrique",
       alternateName: ["EEA", "EEA Afrique"],
-      url: "https://eea-afrique.org",
-      logo: "https://eea-afrique.org/logo-eea.jpg",
+      url: siteUrl,
+      logo: `${siteUrl}/logo-eea.jpg`,
       foundingDate: "2008",
       foundingLocation: {
         "@type": "Place",
@@ -107,11 +109,11 @@ const jsonLd = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://eea-afrique.org/#website",
-      url: "https://eea-afrique.org",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
       name: "Plateforme Officielle EEA",
       publisher: {
-        "@id": "https://eea-afrique.org/#organization",
+        "@id": `${siteUrl}/#organization`,
       },
       inLanguage: "fr-FR",
     },
