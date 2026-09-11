@@ -5,8 +5,6 @@ import {
   ShieldCheck,
   ArrowRight,
   Sparkles,
-  Sprout,
-  Cpu,
   GraduationCap,
   Globe2,
   Rocket,
@@ -97,26 +95,26 @@ export default function HeroSection() {
             </p>
           </motion.div>
 
-          {/* 4 Core Pillars Pills */}
+          {/* 4 Core Focus Pills */}
           <motion.div
             variants={itemVariants}
             className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 w-full max-w-2xl"
           >
             <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
-              <Cpu className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
-              <span>Tech & IA</span>
+              <Coins className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+              <span>Financement</span>
             </div>
             <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
-              <Sprout className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>Agro-business</span>
+              <Rocket className="w-3.5 h-3.5 text-[#38BDF8] shrink-0" />
+              <span>Entrepreneuriat</span>
             </div>
             <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
-              <GraduationCap className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-              <span>Excellence</span>
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>Projets étudiants</span>
             </div>
             <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] sm:text-xs font-medium text-slate-200">
               <Globe2 className="w-3.5 h-3.5 text-[#60A5FA] shrink-0" />
-              <span>Diaspora</span>
+              <span>Impact africain</span>
             </div>
           </motion.div>
 
