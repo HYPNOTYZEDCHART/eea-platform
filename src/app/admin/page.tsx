@@ -559,7 +559,7 @@ export default function AdminPage() {
     }
 
     setToastMessage(
-      `Paiement de 5 000 FCFA validé pour ${member.last_name.toUpperCase()} ${member.first_name} ! La carte officielle est active.`
+      `Paiement de 3 000 FCFA validé pour ${member.last_name.toUpperCase()} ${member.first_name} ! La carte officielle est active.`
     );
     setTimeout(() => setToastMessage(null), 6000);
   };
@@ -765,7 +765,7 @@ export default function AdminPage() {
           `⚠️ [EEA] Renouvellement Obligatoire de votre Carte de Membre Annuelle - ${member.membership_id}`
         );
         const body = encodeURIComponent(
-          `Bonjour ${member.first_name} ${member.last_name},\n\nLa validité statutaire de votre carte de membre arrive à son terme (ou est échue le ${expiryFormatted}).\n\nPour conserver vos droits et la validité de votre carte officielle et QR Code, merci de renouveler votre cotisation annuelle de 5 000 FCFA vers le compte trésorier officiel Wave / Orange Money : +221 78 542 53 45.\n\nSecrétariat Général EEA — UCAD Dakar`
+          `Bonjour ${member.first_name} ${member.last_name},\n\nLa validité statutaire de votre carte de membre arrive à son terme (ou est échue le ${expiryFormatted}).\n\nPour conserver vos droits et la validité de votre carte officielle et QR Code, merci de renouveler votre cotisation annuelle de 3 000 FCFA vers le compte trésorier officiel Wave / Orange Money : +221 78 542 53 45.\n\nSecrétariat Général EEA — UCAD Dakar`
         );
         window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
         setToastMessage(`Avis officiel de renouvellement préparé pour ${member.email} !`);
@@ -789,7 +789,7 @@ export default function AdminPage() {
     (m) => getEffectiveMemberStatus(m) === "active" && getDaysUntilExpiry(m.expires_at) <= 30
   ).length;
 
-  const totalFundsCollected = activeMembers * 5000;
+  const totalFundsCollected = activeMembers * 3000;
 
   // Filtered members list
   const filteredMembers = members.filter((m) => {
@@ -1077,7 +1077,7 @@ export default function AdminPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Gestion des Membres, Révocations, Expirations & Renouvellements Annuels (5 000 FCFA)
+                Gestion des Membres, Révocations, Expirations & Renouvellements Annuels (3 000 FCFA)
               </p>
             </div>
           </div>
@@ -1176,7 +1176,7 @@ export default function AdminPage() {
               {totalFundsCollected.toLocaleString("fr-FR")} FCFA
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Base : 5 000 FCFA / adhésion & renouvellement
+              Base : 3 000 FCFA / adhésion & renouvellement
             </p>
           </div>
 
@@ -1334,7 +1334,7 @@ export default function AdminPage() {
                           ) : m.status === "pending" ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase">
                               <Clock className="w-3 h-3 text-amber-400" />
-                              <span>En attente 5 000 F</span>
+                              <span>En attente 3 000 F</span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
@@ -1370,10 +1370,10 @@ export default function AdminPage() {
                                 type="button"
                                 onClick={() => handleValidatePayment(m)}
                                 className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#060d1d] font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all cursor-pointer"
-                                title="Valider le transfert de 5 000 FCFA"
+                                title="Valider le transfert de 3 000 FCFA"
                               >
                                 <CheckCircle className="w-3.5 h-3.5 text-[#060d1d]" />
-                                <span>Valider 5 000 F</span>
+                                <span>Valider 3 000 F</span>
                               </button>
                             )}
 
@@ -1428,10 +1428,10 @@ export default function AdminPage() {
                             <a
                               href={`https://wa.me/${m.phone.replace(/[^0-9]/g, "") || "221785425345"}?text=${encodeURIComponent(
                                 effStatus === "expired"
-                                  ? `Bonjour ${m.first_name} ${m.last_name},\n\nVotre carte annuelle EEA (Matricule : ${m.membership_id}) est arrivée à échéance. Merci de procéder au renouvellement de votre cotisation statutaire (5 000 FCFA) par Wave/Orange Money vers le +221 78 542 53 45 pour maintenir vos accès et votre carte active.\n\nSecrétariat Général EEA`
+                                  ? `Bonjour ${m.first_name} ${m.last_name},\n\nVotre carte annuelle EEA (Matricule : ${m.membership_id}) est arrivée à échéance. Merci de procéder au renouvellement de votre cotisation statutaire (3 000 FCFA) par Wave/Orange Money vers le +221 78 542 53 45 pour maintenir vos accès et votre carte active.\n\nSecrétariat Général EEA`
                                   : effStatus === "active"
                                   ? `Bonjour ${m.first_name} ${m.last_name},\n\nFélicitations ! Votre adhésion à l'Étudiant Entrepreneuriat Afrique (EEA) a bien été validée par le Secrétariat Général.\n\n- Matricule Officiel : ${m.membership_id}\n- Statut : MEMBRE ACTIF VALIDE\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(m.qr_code_token)}\n\nVotre carte officielle de membre au format PDF est prête et disponible.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
-                                  : `Bonjour ${m.first_name} ${m.last_name},\n\nNous avons bien reçu votre demande d'adhésion EEA (Matricule : ${m.membership_id}). Merci de nous confirmer votre transfert de 5 000 FCFA vers le +221 78 542 53 45 pour que nous puissions activer votre statut et vous transmettre votre carte officielle au format PDF.\n\nSecrétariat Général EEA`
+                                  : `Bonjour ${m.first_name} ${m.last_name},\n\nNous avons bien reçu votre demande d'adhésion EEA (Matricule : ${m.membership_id}). Merci de nous confirmer votre transfert de 3 000 FCFA vers le +221 78 542 53 45 pour que nous puissions activer votre statut et vous transmettre votre carte officielle au format PDF.\n\nSecrétariat Général EEA`
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -1713,7 +1713,7 @@ export default function AdminPage() {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs text-[#060d1d] bg-emerald-400 hover:bg-emerald-300 shadow-sm transition-all cursor-pointer"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Valider Paiement (5 000 F)</span>
+                    <span>Valider Paiement (3 000 F)</span>
                   </button>
                 )}
 

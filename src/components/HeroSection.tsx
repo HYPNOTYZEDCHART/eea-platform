@@ -127,7 +127,7 @@ export default function HeroSection() {
               href="#adhesion"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-xl shadow-[#D4AF37]/20 transition-all duration-300 text-sm sm:text-base group cursor-pointer text-center"
             >
-              <span>Rejoindre le Mouvement • 5 000 FCFA</span>
+              <span>Rejoindre le Mouvement • 3 000 FCFA</span>
               <ArrowRight className="w-4 h-4 text-[#060d1d]" />
             </a>
 
@@ -143,7 +143,7 @@ export default function HeroSection() {
           <motion.p variants={itemVariants} className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>
-              Accès libre aux informations • Adhésion officielle avec carte numérique sécurisée à 5 000 FCFA.
+              Accès libre aux informations • Adhésion officielle avec carte numérique sécurisée à 3 000 FCFA.
             </span>
           </motion.p>
         </motion.div>
@@ -189,7 +189,7 @@ export default function HeroSection() {
               </div>
               <div>
                 <div className="text-sm sm:text-base font-bold text-white">
-                  5 000 FCFA / an
+                  3 000 FCFA / an
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
                   Adhésion annuelle accessible à tous

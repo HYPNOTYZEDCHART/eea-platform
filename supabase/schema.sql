@@ -38,7 +38,7 @@ create index if not exists idx_members_country on public.members(country);
 create table if not exists public.payments (
     id uuid default gen_random_uuid() primary key,
     member_id uuid not null references public.members(id) on delete cascade,
-    amount numeric not null default 5000,
+    amount numeric not null default 3000,
     currency text not null default 'XOF',
     provider text not null check (provider in ('wave', 'orange_money', 'stripe', 'cinetpay', 'paydunya', 'whatsapp_manual')),
     transaction_reference text,
@@ -96,7 +96,7 @@ drop policy if exists "Insertion d'un paiement en attente" on public.payments;
 create policy "Insertion d'un paiement en attente"
     on public.payments
     for insert
-    with check (amount >= 5000);
+    with check (amount >= 3000);
 
 -- E. Table payments: Lecture strictement réservée aux administrateurs
 drop policy if exists "Lecture des paiements par service role ou authentifié" on public.payments;

@@ -101,7 +101,7 @@ export default function Navbar() {
               className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-md shadow-[#D4AF37]/15 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
             >
               <CreditCard className="w-4 h-4 text-[#060d1d]" />
-              <span>Adhérer • 5 000 FCFA</span>
+              <span>Adhérer • 3 000 FCFA</span>
             </a>
           </div>
 
@@ -159,7 +159,7 @@ export default function Navbar() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]"
               >
                 <CreditCard className="w-4 h-4 text-[#060d1d]" />
-                Obtenir ma Carte Officielle (5 000 FCFA)
+                Obtenir ma Carte Officielle (3 000 FCFA)
               </a>
             </div>
           </motion.div>

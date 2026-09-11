@@ -259,7 +259,7 @@ export default function RegistrationTunnel({
           </h2>
 
           <p className="mt-3 text-sm sm:text-base text-slate-300 font-normal">
-            Cotisation annuelle de <strong>5 000 FCFA</strong>. Remplissez vos informations et demandez votre carte officielle de membre au format PDF.
+            Cotisation annuelle de <strong>3 000 FCFA</strong>. Remplissez vos informations et demandez votre carte officielle de membre au format PDF.
           </p>
         </div>
 
@@ -532,14 +532,14 @@ export default function RegistrationTunnel({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-[#D4AF37]" />
-                      <span>Cotisation Annuelle • 5 000 FCFA</span>
+                      <span>Cotisation Annuelle • 3 000 FCFA</span>
                     </h3>
                     <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
                       Certification
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal mt-1">
-                    Effectuez votre transfert de <strong>5 000 FCFA</strong> vers notre compte officiel pour déclencher la validation et l&apos;envoi de votre carte officielle au format PDF.
+                    Effectuez votre transfert de <strong>3 000 FCFA</strong> vers notre compte officiel pour déclencher la validation et l&apos;envoi de votre carte officielle au format PDF.
                   </p>
                 </div>
 
@@ -630,7 +630,7 @@ export default function RegistrationTunnel({
                       className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 text-white placeholder-slate-500 focus:outline-none focus:border-[#D4AF37] text-base sm:text-xs font-mono"
                     />
                     <p className="text-[11px] text-slate-400 mt-1">
-                      Cette information permet à l&apos;administrateur de valider instantanément votre versement de 5 000 FCFA dans le back-office.
+                      Cette information permet à l&apos;administrateur de valider instantanément votre versement de 3 000 FCFA dans le back-office.
                     </p>
                   </div>
                 </div>
@@ -653,7 +653,7 @@ export default function RegistrationTunnel({
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#060d1d]" />
                     <span>
-                      {loading ? "Enregistrement en cours..." : "J'ai envoyé mes 5 000 FCFA • Valider mon Inscription"}
+                      {loading ? "Enregistrement en cours..." : "J'ai envoyé mes 3 000 FCFA • Valider mon Inscription"}
                     </span>
                   </button>
                 </div>
@@ -680,7 +680,7 @@ export default function RegistrationTunnel({
                     Merci pour votre adhésion, {createdMember.first_name} !
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-lg mx-auto">
-                    Votre demande a été transmise au Secrétariat Général. Vous pouvez dès à présent prévisualiser et télécharger votre carte officielle de membre au format PDF ci-dessous. Dès confirmation de votre transfert de <strong>5 000 FCFA</strong> sur le <strong>+221 78 542 53 45</strong>, votre statut sera certifié actif.
+                    Votre demande a été transmise au Secrétariat Général. Vous pouvez dès à présent prévisualiser et télécharger votre carte officielle de membre au format PDF ci-dessous. Dès confirmation de votre transfert de <strong>3 000 FCFA</strong> sur le <strong>+221 78 542 53 45</strong>, votre statut sera certifié actif.
                   </p>
                 </div>
 
@@ -707,7 +707,7 @@ export default function RegistrationTunnel({
                     <span className="text-slate-400">Statut du Dossier :</span>
                     <span className="text-amber-400 font-bold flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                      EN ATTENTE DE CONFIRMATION (5 000 FCFA)
+                      EN ATTENTE DE CONFIRMATION (3 000 FCFA)
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -734,7 +734,7 @@ export default function RegistrationTunnel({
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <a
                     href={`https://wa.me/221785425345?text=${encodeURIComponent(
-                      `Bonjour Secrétariat EEA, je viens d'enregistrer mon adhésion sur la plateforme :\n\n- Nom : ${createdMember.last_name} ${createdMember.first_name}\n- Matricule : ${createdMember.membership_id}\n- Téléphone : ${createdMember.phone}\n- Université : ${createdMember.university}\n- Référence Transfert (5 000 FCFA) : ${createdMember.payment_reference || "Transfert effectué vers 78 542 53 45"}\n\nMerci de valider mon paiement et de m'envoyer ma carte officielle de membre au format PDF.`
+                      `Bonjour Secrétariat EEA, je viens d'enregistrer mon adhésion sur la plateforme :\n\n- Nom : ${createdMember.last_name} ${createdMember.first_name}\n- Matricule : ${createdMember.membership_id}\n- Téléphone : ${createdMember.phone}\n- Université : ${createdMember.university}\n- Référence Transfert (3 000 FCFA) : ${createdMember.payment_reference || "Transfert effectué vers 78 542 53 45"}\n\nMerci de valider mon paiement et de m'envoyer ma carte officielle de membre au format PDF.`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

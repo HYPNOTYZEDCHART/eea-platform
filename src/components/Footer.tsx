@@ -14,7 +14,7 @@ import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function Footer() {
   const whatsappUrl = `https://wa.me/221785425345?text=${encodeURIComponent(
-    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (5 000 FCFA) pour activation à distance."
+    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (3 000 FCFA) pour activation à distance."
   )}`;
 
   return (
@@ -107,7 +107,7 @@ export default function Footer() {
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <a href="#carte" className="hover:text-white transition-colors">
-                  Carte Numérique (5 000 F)
+                  Carte Numérique (3 000 F)
                 </a>
               </li>
               <li>

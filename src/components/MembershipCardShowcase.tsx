@@ -94,7 +94,7 @@ export default function MembershipCardShowcase() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-slate-300 font-normal">
-            Le site et les informations sont en libre accès pour tous. L&apos;adhésion à <strong className="text-white">5 000 FCFA</strong> est un investissement unique qui vous confère le statut de membre officiel et déverrouille l&apos;ensemble de l&apos;écosystème.
+            Le site et les informations sont en libre accès pour tous. L&apos;adhésion à <strong className="text-white">3 000 FCFA</strong> est un investissement unique qui vous confère le statut de membre officiel et déverrouille l&apos;ensemble de l&apos;écosystème.
           </p>
         </div>
 
@@ -268,9 +268,9 @@ export default function MembershipCardShowcase() {
                     Cotisation Annuelle
                   </span>
                   <div className="text-3xl sm:text-4xl font-black text-white mt-1">
-                    5 000 FCFA
+                    3 000 FCFA
                     <span className="text-xs sm:text-sm font-normal text-slate-400 ml-2">
-                      (~7,60 € / an)
+                      (~4,60 € / an)
                     </span>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export default function MembershipCardShowcase() {
                   href="#adhesion"
                   className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all duration-300 shadow-xl shadow-[#D4AF37]/20 text-base"
                 >
-                  <span>Rejoindre et obtenir ma carte (5 000 FCFA)</span>
+                  <span>Rejoindre et obtenir ma carte (3 000 FCFA)</span>
                   <ArrowRight className="w-5 h-5 text-[#060d1d]" />
                 </a>
                 <p className="text-center text-[11px] text-slate-400 mt-2">

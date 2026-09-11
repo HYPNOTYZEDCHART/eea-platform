@@ -79,7 +79,7 @@ export type PaymentStatus = "pending" | "successful" | "failed";
 export interface Payment {
   id: string;
   member_id: string;
-  amount: number; // 5000
+  amount: number; // 3000
   currency: string; // XOF
   provider: PaymentProvider;
   transaction_reference?: string | null;

@@ -15,22 +15,22 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const currencies = [
-    { country: "Zone CFA (Sénégal, CI, Cameroun, Bénin, etc.)", amount: "5 000 FCFA", flag: "🌍" },
-    { country: "Diaspora Europe (Zone Euro)", amount: "≈ 7,60 €", flag: "🇪🇺" },
-    { country: "Diaspora Amériques & International", amount: "≈ 8,20 $", flag: "🇺🇸" },
-    { country: "Ghana (GHS)", amount: "≈ 75 GHS", flag: "🇬🇭" },
-    { country: "Nigeria (NGN)", amount: "≈ 12 500 NGN", flag: "🇳🇬" },
-    { country: "RD Congo (CDF)", amount: "≈ 22 000 CDF", flag: "🇨🇩" },
-    { country: "Guinée (GNF)", amount: "≈ 70 000 GNF", flag: "🇬🇳" },
+    { country: "Zone CFA (Sénégal, CI, Cameroun, Bénin, etc.)", amount: "3 000 FCFA", flag: "🌍" },
+    { country: "Diaspora Europe (Zone Euro)", amount: "≈ 4,60 €", flag: "🇪🇺" },
+    { country: "Diaspora Amériques & International", amount: "≈ 5,00 $", flag: "🇺🇸" },
+    { country: "Ghana (GHS)", amount: "≈ 45 GHS", flag: "🇬🇭" },
+    { country: "Nigeria (NGN)", amount: "≈ 7 500 NGN", flag: "🇳🇬" },
+    { country: "RD Congo (CDF)", amount: "≈ 13 200 CDF", flag: "🇨🇩" },
+    { country: "Guinée (GNF)", amount: "≈ 42 000 GNF", flag: "🇬🇳" },
   ];
 
   const faqs = [
     {
       q: "L'accès au site et aux informations est-il payant ?",
-      a: "Non, absolument pas. La consultation de la plateforme, l'exploration de nos piliers, l'accès à nos actualités et le partage d'idées sont 100 % libres et gratuits pour tous les étudiants et visiteurs. L'adhésion à 5 000 FCFA est une démarche volontaire réservée à ceux qui souhaitent devenir membres officiels, recevoir leur badge certifié et accéder aux financements et incubateurs.",
+      a: "Non, absolument pas. La consultation de la plateforme, l'exploration de nos piliers, l'accès à nos actualités et le partage d'idées sont 100 % libres et gratuits pour tous les étudiants et visiteurs. L'adhésion à 3 000 FCFA est une démarche volontaire réservée à ceux qui souhaitent devenir membres officiels, recevoir leur badge certifié et accéder aux financements et incubateurs.",
     },
     {
-      q: "Quels sont les moyens de paiement acceptés pour les 5 000 FCFA ?",
+      q: "Quels sont les moyens de paiement acceptés pour les 3 000 FCFA ?",
       a: "Nous acceptons tous les moyens de paiement usuels sur le continent : Wave, Orange Money, MTN MoMo, Moov Money, ainsi que les cartes bancaires (Visa, Mastercard) pour les étudiants de la diaspora ou à l'international.",
     },
     {
@@ -52,7 +52,7 @@ export default function FaqSection() {
   ];
 
   const whatsappUrl = `https://wa.me/221785425345?text=${encodeURIComponent(
-    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (5 000 FCFA) pour activation à distance."
+    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (3 000 FCFA) pour activation à distance."
   )}`;
 
   return (
@@ -82,7 +82,7 @@ export default function FaqSection() {
                 <Coins className="w-4 h-4" />
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white">
-                Équivalences Régionales pour la Cotisation de 5 000 FCFA
+                Équivalences Régionales pour la Cotisation de 3 000 FCFA
               </h3>
             </div>
             <span className="text-xs text-[#D4AF37] font-semibold">

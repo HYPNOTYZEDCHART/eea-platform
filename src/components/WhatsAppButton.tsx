@@ -10,7 +10,7 @@ export default function WhatsAppButton() {
 
   const phoneNumber = "221785425345";
   const defaultMessage = encodeURIComponent(
-    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (5 000 FCFA) pour activation à distance."
+    "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (3 000 FCFA) pour activation à distance."
   );
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 

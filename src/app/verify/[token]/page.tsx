@@ -175,7 +175,7 @@ export default function VerifyPage({
                           CARTE EXPIRÉE — RENOUVELLEMENT REQUIS
                         </div>
                         <p className="text-xs text-amber-200/90 leading-relaxed">
-                          La validité statutaire d&apos;un (1) an de cette carte de membre est arrivée à son terme. Les droits d&apos;accès aux programmes d&apos;incubation, hackathons et financements EEA sont suspendus tant que la cotisation annuelle (5 000 FCFA) n&apos;est pas renouvelée.
+                          La validité statutaire d&apos;un (1) an de cette carte de membre est arrivée à son terme. Les droits d&apos;accès aux programmes d&apos;incubation, hackathons et financements EEA sont suspendus tant que la cotisation annuelle (3 000 FCFA) n&apos;est pas renouvelée.
                         </p>
                       </div>
                     </div>
@@ -193,7 +193,7 @@ export default function VerifyPage({
                           ADHÉSION EN ATTENTE DE VALIDATION
                         </div>
                         <p className="text-xs text-slate-300">
-                          Le dossier a été soumis et attend la confirmation du versement de 5 000 FCFA par la trésorerie.
+                          Le dossier a été soumis et attend la confirmation du versement de 3 000 FCFA par la trésorerie.
                         </p>
                       </div>
                     </div>
@@ -265,7 +265,7 @@ export default function VerifyPage({
                     Besoin de réactiver votre carte de membre et vos droits EEA ?
                   </p>
                   <p className="text-[11px] text-slate-300">
-                    Transférez votre cotisation annuelle de <strong>5 000 FCFA</strong> vers Wave ou Orange Money au <strong>+221 78 542 53 45</strong> en mentionnant votre matricule <em>{member.membership_id}</em>.
+                    Transférez votre cotisation annuelle de <strong>3 000 FCFA</strong> vers Wave ou Orange Money au <strong>+221 78 542 53 45</strong> en mentionnant votre matricule <em>{member.membership_id}</em>.
                   </p>
                   <a
                     href={whatsappUrl}

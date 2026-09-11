@@ -267,7 +267,7 @@ export default function MemberCardBadge({
     } else if (member.status === "pending") {
       ctx.fillStyle = "#fbbf24";
       ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : ADHÉSION EN ATTENTE (5 000 F)", 50, 605);
+      ctx.fillText("● STATUT : ADHÉSION EN ATTENTE (3 000 F)", 50, 605);
     } else {
       ctx.fillStyle = "#10b981";
       ctx.font = "bold 15px sans-serif";
@@ -486,7 +486,7 @@ export default function MemberCardBadge({
           ) : member.status === "pending" ? (
             <>
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400" />
-              <span className="text-yellow-400 font-bold text-[7px] sm:text-[9px]">EN ATTENTE 5 000 F</span>
+              <span className="text-yellow-400 font-bold text-[7px] sm:text-[9px]">EN ATTENTE 3 000 F</span>
             </>
           ) : (
             <>

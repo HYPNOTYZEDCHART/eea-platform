@@ -121,9 +121,9 @@ eea-platform/
 │   │   ├── Navbar.tsx          # Navigation institutionnelle avec sceau officiel
 │   │   ├── HeroSection.tsx     # En-tête avec visuel historique de l'UCAD Dakar
 │   │   ├── HistorySection.tsx  # Timeline 2008 - 2026 & Berceau UCAD
-│   │   ├── RegistrationTunnel  # Tunnel d'inscription, webcam et paiement 5 000 FCFA
+│   │   ├── RegistrationTunnel  # Tunnel d'inscription, webcam et paiement 3 000 FCFA
 │   │   ├── MemberCardBadge.tsx # Moteur de génération des cartes (Canvas, PNG HD, jsPDF)
-│   │   └── Footer.tsx          # Mentions d'agrément de l'État & coordonnées UCAD
+│   │   └── Footer.tsx          # Certification Officielle & coordonnées UCAD
 │   └── lib/
 │       └── supabase.ts         # Client Supabase typé et gestion des types TypeScript
 ├── supabase/
