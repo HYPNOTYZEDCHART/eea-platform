@@ -281,7 +281,7 @@ export default function VerifyPage({
 
               {/* Institution Legal Note */}
               <p className="text-[11px] text-slate-400 leading-relaxed text-center bg-white/[0.02] p-3 rounded-lg border border-white/5">
-                Organisation agréée par l&apos;État, fondée en 2008 à l&apos;Université Cheikh Anta Diop (UCAD) de Dakar. Tout usage frauduleux ou falsification expose son auteur aux poursuites prévues par la législation.
+                Organisation certifiée, fondée en 2008 à l&apos;Université Cheikh Anta Diop (UCAD) de Dakar. Tout usage frauduleux ou falsification expose son auteur aux poursuites prévues par la législation.
               </p>
             </>
           ) : (

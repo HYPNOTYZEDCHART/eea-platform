@@ -51,17 +51,19 @@ export async function POST(req: NextRequest) {
       }
 
       return NextResponse.json({ success: true, member: data });
-    } catch (dbErr: any) {
-      console.warn("Notice: Base Supabase indisponible côté serveur:", dbErr?.message);
+    } catch (dbErr: unknown) {
+      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur db";
+      console.warn("Notice: Base Supabase indisponible côté serveur:", dbMsg);
       return NextResponse.json(
         { success: true, localOnly: true, member: body },
         { status: 200 }
       );
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Erreur serveur lors de l'enregistrement";
     console.error("Erreur route /api/register:", err);
     return NextResponse.json(
-      { error: err?.message || "Erreur serveur lors de l'enregistrement" },
+      { error: errorMsg },
       { status: 500 }
     );
   }

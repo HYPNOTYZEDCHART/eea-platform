@@ -239,7 +239,7 @@ export default function MembershipCardShowcase() {
 
                   <div className="flex items-center gap-1 text-slate-400 text-[7px] sm:text-[9px]">
                     <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
-                    <span>Authenticité garantie par l&apos;État</span>
+                    <span>Certification d&apos;Authenticité Officielle</span>
                   </div>
                 </div>
               </motion.div>

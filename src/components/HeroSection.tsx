@@ -57,7 +57,7 @@ export default function HeroSection() {
             <div className="inline-flex flex-wrap items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#0F224A]/90 border border-[#D4AF37]/40 shadow-sm text-[11px] sm:text-xs font-semibold text-white max-w-full">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-                <span>Reconnu par l&apos;État</span>
+                <span>Certification</span>
               </div>
               <span className="text-[#D4AF37] hidden sm:inline">•</span>
               <span className="text-slate-300 font-normal text-[10px] sm:text-xs">Initié en 2008 à l&apos;UCAD • Démarrage 2026</span>

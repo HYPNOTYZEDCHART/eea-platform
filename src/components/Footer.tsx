@@ -46,13 +46,13 @@ export default function Footer() {
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md font-normal">
-              Organisation estudiantine panafricaine reconnue par l&apos;État. Projet conçu en 2008 à l&apos;UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Notre mission : former, financer et fédérer la nouvelle génération d&apos;entrepreneurs africains en agro-business et en technologies.
+              Organisation estudiantine panafricaine. Projet conçu en 2008 à l&apos;UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Notre mission : former, financer et fédérer la nouvelle génération d&apos;entrepreneurs africains en agro-business et en technologies.
             </p>
 
             <div className="flex flex-col gap-2 pt-2 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                <span>Organisation Agréée et Reconnue par l&apos;État</span>
+                <span>Certification Officielle EEA</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#D4AF37] shrink-0" />

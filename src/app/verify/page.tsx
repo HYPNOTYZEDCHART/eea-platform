@@ -215,7 +215,7 @@ export default function VerifyPortalPage() {
 
         {/* Legal Authority Note */}
         <p className="text-[11px] text-slate-400 text-center leading-relaxed max-w-md mx-auto">
-          Organisation reconnue par l&apos;État, fondée en 2008 à l&apos;UCAD (Dakar, Sénégal). Tout certificat ou carte non répertorié dans ce registre central est nul et non avenu.
+          Organisation certifiée, fondée en 2008 à l&apos;UCAD (Dakar, Sénégal). Tout certificat ou carte non répertorié dans ce registre central est nul et non avenu.
         </p>
       </div>
     </div>

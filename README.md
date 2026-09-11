@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-19-blue?style=flat&logo=react)](https://react.dev/)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-3ecf8e?style=flat&logo=supabase)](https://supabase.com/)
-[![License](https://img.shields.io/badge/Agrément-État_du_Sénégal-D4AF37?style=flat)](#histoire--genèse)
+[![Certification](https://img.shields.io/badge/Certification-Officielle_EEA-D4AF37?style=flat)](#histoire--genèse)
 
 ---
 
@@ -139,5 +139,5 @@ eea-platform/
 - **Organisation :** Étudiant Entrepreneuriat Afrique (EEA)
 - **Fondation :** Idée et initiative nées en 2008 à l'Université Cheikh Anta Diop (UCAD) de Dakar, Sénégal.
 - **Lancement Opérationnel :** Déploiement officiel et entrée en activité en 2026.
-- **Agrément :** Organisation agréée et reconnue par les autorités publiques.
+- **Certification :** Organisation certifiée avec registre officiel des membres.
 - **Tous droits réservés © 2008 — 2026.**

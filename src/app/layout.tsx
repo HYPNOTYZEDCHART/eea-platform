@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Étudiant Entrepreneuriat Afrique (EEA) | Plateforme Officielle",
   description:
-    "Organisation reconnue par l'État. Projet né en 2008 à l'UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Fédérer les étudiants d'Afrique et de la diaspora autour de projets d'entrepreneuriat, de technologie et d'agriculture moderne.",
+    "Organisation certifiée. Projet né en 2008 à l'UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Fédérer les étudiants d'Afrique et de la diaspora autour de projets d'entrepreneuriat, de technologie et d'agriculture moderne.",
   keywords: [
     "EEA",
     "Étudiant Entrepreneuriat Afrique",
@@ -99,7 +99,7 @@ const jsonLd = {
         name: "Université Cheikh Anta Diop (UCAD), Dakar, Sénégal",
       },
       description:
-        "Organisation panafricaine reconnue par l'État. Fédérer l'élite estudiantine africaine autour des pôles d'excellence en Entrepreneuriat, Haute Technologie et Agrobusiness.",
+        "Organisation panafricaine certifiée. Fédérer l'élite estudiantine africaine autour des pôles d'excellence en Entrepreneuriat, Haute Technologie et Agrobusiness.",
       contactPoint: {
         "@type": "ContactPoint",
         telephone: "+221785425345",

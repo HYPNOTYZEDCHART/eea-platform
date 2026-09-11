@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ShieldCheck, CreditCard } from "lucide-react";
 
 export default function Navbar() {
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -26,12 +28,12 @@ export default function Navbar() {
         ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "a" || e.key === "A"))
       ) {
         e.preventDefault();
-        window.location.href = "/admin";
+        router.push("/admin");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [router]);
 
   const navLinks = [
     { name: "Le Mouvement", href: "#mouvement" },
@@ -69,7 +71,7 @@ export default function Navbar() {
                 </span>
                 <span className="inline-flex items-center gap-1 text-[10px] uppercase font-semibold tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
                   <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
-                  Reconnu par l&apos;État
+                  Certification
                 </span>
               </div>
               <span className="text-[11px] text-slate-300 hidden sm:inline-block font-medium">

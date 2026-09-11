@@ -55,17 +55,20 @@ export default function MemberCardBadge({
 
   // Set client-side timestamp and fallback to localStorage if no prop provided
   useEffect(() => {
-    setCurrentTime(Date.now());
-    if (!initialMember && typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("eea_current_member");
-        if (stored) {
-          setLocalMember(JSON.parse(stored));
+    const timer = setTimeout(() => {
+      setCurrentTime(Date.now());
+      if (!initialMember && typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("eea_current_member");
+          if (stored) {
+            setLocalMember(JSON.parse(stored));
+          }
+        } catch (err) {
+          console.error(err);
         }
-      } catch (err) {
-        console.error(err);
       }
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [initialMember]);
 
   // Generate dynamic QR Code for official verification URL
@@ -499,7 +502,7 @@ export default function MemberCardBadge({
 
         <div className="flex items-center gap-1 text-[#D4AF37]">
           <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          <span className="font-medium text-[7px] sm:text-[9px]">Agréé par l&apos;État</span>
+          <span className="font-medium text-[7px] sm:text-[9px]">Certification Officielle</span>
         </div>
       </div>
     </div>

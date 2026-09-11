@@ -535,7 +535,7 @@ export default function RegistrationTunnel({
                       <span>Cotisation Annuelle • 5 000 FCFA</span>
                     </h3>
                     <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
-                      Agrément d&apos;État
+                      Certification
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal mt-1">

@@ -8,7 +8,6 @@ import {
   Users,
   Coins,
   TrendingUp,
-  Building,
   Search,
   Download,
   CheckCircle,
@@ -31,13 +30,11 @@ import {
   EyeOff,
   KeyRound,
   ShieldAlert,
-  CheckCircle2,
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import {
   supabase,
   Member,
-  MemberStatus,
   getEffectiveMemberStatus,
   getDaysUntilExpiry,
 } from "@/lib/supabase";
@@ -286,7 +283,9 @@ export default function AdminPage() {
   // Initial load and automatic background polling every 10 seconds for real-time synchronization
   useEffect(() => {
     if (!isAuthenticated) return;
-    void loadMembers(false);
+    const timer = setTimeout(() => {
+      void loadMembers(false);
+    }, 0);
 
     const interval = setInterval(() => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
@@ -294,7 +293,10 @@ export default function AdminPage() {
       }
     }, 10000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [isAuthenticated, loadMembers]);
 
   // Étape 1 : Vérification des identifiants (Email + Mot de passe)

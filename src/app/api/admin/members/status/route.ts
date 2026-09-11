@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const supabaseAdmin = getSupabaseAdmin();
-      const updatePayload: Record<string, any> = { status };
+      const updatePayload: Record<string, unknown> = { status };
       if (expires_at) {
         updatePayload.expires_at = expires_at;
       }
@@ -51,16 +51,18 @@ export async function POST(req: NextRequest) {
       return applySecurityHeaders(
         NextResponse.json({ success: true, member: data })
       );
-    } catch (dbErr: any) {
-      console.warn("Notice: Base Supabase indisponible côté serveur:", dbErr?.message);
+    } catch (dbErr: unknown) {
+      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur db";
+      console.warn("Notice: Base Supabase indisponible côté serveur:", dbMsg);
       return applySecurityHeaders(
         NextResponse.json({ success: true, localFallback: true }, { status: 200 })
       );
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Erreur serveur";
     return applySecurityHeaders(
       NextResponse.json(
-        { error: err?.message || "Erreur serveur" },
+        { error: errorMsg },
         { status: 500 }
       )
     );

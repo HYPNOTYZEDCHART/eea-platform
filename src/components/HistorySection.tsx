@@ -22,7 +22,7 @@ export default function HistorySection() {
     },
     {
       year: "2008 - 2025",
-      title: "Maturation & Agrément d'État",
+      title: "Maturation & Structuration Institutionnelle",
       description:
         "Structuration des 7 statuts officiels, consolidation des piliers Tech & Agro-business et obtention de la reconnaissance formelle des pouvoirs publics.",
       icon: Users,
@@ -70,7 +70,7 @@ export default function HistorySection() {
           </h2>
 
           <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            L&apos;association <strong className="text-white">Étudiant Entrepreneuriat Afrique (EEA)</strong> a vu le jour au sein de l&apos;UCAD en 2008. Reconnue par l&apos;État, elle entre officiellement en pleine activité opérationnelle en 2026 pour doter la jeunesse africaine d&apos;outils concrets d&apos;incubation, de certification et de financement.
+            L&apos;association <strong className="text-white">Étudiant Entrepreneuriat Afrique (EEA)</strong> a vu le jour au sein de l&apos;UCAD en 2008. Elle entre officiellement en pleine activité opérationnelle en 2026 pour doter la jeunesse africaine d&apos;outils concrets d&apos;incubation, de certification et de financement.
           </p>
         </div>
 
@@ -241,7 +241,7 @@ export default function HistorySection() {
                 <span className="text-slate-500">•</span>
                 <span className="flex items-center gap-1.5 font-medium text-white">
                   <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                  Agréé par l&apos;État
+                  Certification Officielle
                 </span>
               </div>
             </div>
