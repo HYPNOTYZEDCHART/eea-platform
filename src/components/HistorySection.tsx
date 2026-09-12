@@ -9,6 +9,7 @@ import {
   Users,
   Compass,
   CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 
 export default function HistorySection() {
@@ -260,9 +261,10 @@ export default function HistorySection() {
           </div>
           <a
             href="#piliers"
-            className="shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-[#D4AF37]/20 hover:shadow-[#D4AF37]/30 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 text-center cursor-pointer"
           >
-            Découvrir nos piliers d&apos;action
+            <span>Découvrir nos piliers d&apos;action</span>
+            <ArrowRight className="w-4 h-4 text-[#060d1d]" />
           </a>
         </div>
       </div>
