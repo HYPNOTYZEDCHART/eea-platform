@@ -47,7 +47,7 @@ export default function FaqSection() {
     },
     {
       q: "Quelle est la durée de validité de l'adhésion ?",
-      a: "L'adhésion est valable pour une année académique complète (12 mois). Aucun renouvellement n'est prélevé de manière automatique. Vous gardez le contrôle total.",
+      a: "L'adhésion est valable pour toujours (à vie). Il s'agit d'un paiement unique de 3 000 FCFA : aucun renouvellement annuel n'est exigé. Une fois votre statut certifié, votre carte officielle et vos accès aux opportunités restent valides en permanence.",
     },
   ];
 
@@ -86,7 +86,7 @@ export default function FaqSection() {
               </h3>
             </div>
             <span className="text-xs text-[#D4AF37] font-semibold">
-              Tarif unique étudiant • Valable 1 an
+              Tarif unique étudiant • Valable à vie (sans renouvellement)
             </span>
           </div>
 

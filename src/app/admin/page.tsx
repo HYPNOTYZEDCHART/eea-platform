@@ -26,7 +26,6 @@ import {
   UserCheck,
   Trash2,
   Bell,
-  RotateCw,
   EyeOff,
   KeyRound,
   ShieldAlert,
@@ -36,7 +35,6 @@ import {
   supabase,
   Member,
   getEffectiveMemberStatus,
-  getDaysUntilExpiry,
 } from "@/lib/supabase";
 import MemberCardBadge from "@/components/MemberCardBadge";
 
@@ -431,13 +429,11 @@ export default function AdminPage() {
       "Statut_Brut",
       "Statut_Effectif",
       "Date_Adhésion",
-      "Date_Expiration",
-      "Jours_Restants",
+      "Validité",
     ];
 
     const rows = members.map((m) => {
       const effStatus = getEffectiveMemberStatus(m);
-      const days = getDaysUntilExpiry(m.expires_at);
       return [
         sanitizeCSVCell(m.membership_id),
         sanitizeCSVCell(m.last_name),
@@ -450,8 +446,7 @@ export default function AdminPage() {
         sanitizeCSVCell(m.status),
         sanitizeCSVCell(effStatus),
         sanitizeCSVCell(new Date(m.created_at).toLocaleDateString("fr-FR")),
-        sanitizeCSVCell(new Date(m.expires_at).toLocaleDateString("fr-FR")),
-        sanitizeCSVCell(days),
+        sanitizeCSVCell(effStatus === "revoked" ? "Révoqué" : "Permanente (À vie)"),
       ];
     });
 
@@ -564,53 +559,7 @@ export default function AdminPage() {
     setTimeout(() => setToastMessage(null), 6000);
   };
 
-  // 2. Renouvellement Annuel (+1 an) d'un membre expiré ou proche d'échéance
-  const handleRenewMembership = async (member: Member) => {
-    const currentExpiryTime = new Date(member.expires_at).getTime();
-    const baseTime = currentExpiryTime > Date.now() ? currentExpiryTime : Date.now();
-    const newExpiresAt = new Date(baseTime + 365 * 24 * 60 * 60 * 1000).toISOString();
 
-    const updatedList = members.map((m) =>
-      m.membership_id === member.membership_id
-        ? { ...m, status: "active" as const, expires_at: newExpiresAt }
-        : m
-    );
-    setMembers(updatedList);
-
-    try {
-      localStorage.setItem("eea_members", JSON.stringify(updatedList));
-    } catch {
-      // ignore
-    }
-
-    try {
-      await fetch("/api/admin/members/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          membership_id: member.membership_id,
-          status: "active",
-          expires_at: newExpiresAt,
-        }),
-      });
-    } catch {
-      try {
-        await supabase
-          .from("members")
-          .update({ status: "active", expires_at: newExpiresAt })
-          .eq("membership_id", member.membership_id);
-      } catch (err) {
-        console.warn("Mise à jour locale réussie:", err);
-      }
-    }
-
-    setToastMessage(
-      `Cotisation annuelle validée pour ${member.last_name.toUpperCase()} ${member.first_name} ! Carte renouvelée jusqu'au ${new Date(
-        newExpiresAt
-      ).toLocaleDateString("fr-FR")}.`
-    );
-    setTimeout(() => setToastMessage(null), 7000);
-  };
 
   // 3. Éjection / Révocation de membre
   const handleConfirmEject = async () => {
@@ -736,48 +685,7 @@ export default function AdminPage() {
     setTimeout(() => setToastMessage(null), 6000);
   };
 
-  // 6. Envoi de notification de rappel de renouvellement (Email + WhatsApp)
-  const handleNotifyRenewal = async (member: Member) => {
-    try {
-      const res = await fetch("/api/admin/notify-renewal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          membership_id: member.membership_id,
-          first_name: member.first_name,
-          last_name: member.last_name,
-          email: member.email,
-          phone: member.phone,
-          expires_at: member.expires_at,
-        }),
-      });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setRenewalNoticeData({
-          member,
-          preview: data.notification,
-        });
-      } else {
-        // Fallback email client
-        const expiryFormatted = new Date(member.expires_at).toLocaleDateString("fr-FR");
-        const subject = encodeURIComponent(
-          `⚠️ [EEA] Renouvellement Obligatoire de votre Carte de Membre Annuelle - ${member.membership_id}`
-        );
-        const body = encodeURIComponent(
-          `Bonjour ${member.first_name} ${member.last_name},\n\nLa validité statutaire de votre carte de membre arrive à son terme (ou est échue le ${expiryFormatted}).\n\nPour conserver vos droits et la validité de votre carte officielle et QR Code, merci de renouveler votre cotisation annuelle de 3 000 FCFA vers le compte trésorier officiel Wave / Orange Money : +221 78 542 53 45.\n\nSecrétariat Général EEA — UCAD Dakar`
-        );
-        window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
-        setToastMessage(`Avis officiel de renouvellement préparé pour ${member.email} !`);
-        setTimeout(() => setToastMessage(null), 6000);
-      }
-    } catch {
-      const subject = encodeURIComponent(
-        `⚠️ [EEA] Renouvellement Obligatoire de votre Carte - ${member.membership_id}`
-      );
-      window.open(`mailto:${member.email}?subject=${subject}`, "_blank");
-    }
-  };
 
   // Metrics calculation
   const totalMembers = members.length;
@@ -785,9 +693,6 @@ export default function AdminPage() {
   const expiredMembers = members.filter((m) => getEffectiveMemberStatus(m) === "expired").length;
   const pendingMembers = members.filter((m) => m.status === "pending").length;
   const revokedMembers = members.filter((m) => m.status === "revoked").length;
-  const expiringSoonMembers = members.filter(
-    (m) => getEffectiveMemberStatus(m) === "active" && getDaysUntilExpiry(m.expires_at) <= 30
-  ).length;
 
   const totalFundsCollected = activeMembers * 3000;
 
@@ -1077,7 +982,7 @@ export default function AdminPage() {
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Gestion des Membres, Révocations, Expirations & Renouvellements Annuels (3 000 FCFA)
+                Gestion des Membres & Certifications Permanentes (3 000 FCFA • Adhésion à vie)
               </p>
             </div>
           </div>
@@ -1114,26 +1019,21 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Global Alert for Expired / Expiring Cards */}
-        {(expiredMembers > 0 || expiringSoonMembers > 0) && (
+        {/* Global Alert for Pending Validations */}
+        {pendingMembers > 0 && (
           <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+                <Clock className="w-5 h-5" />
               </div>
               <div>
                 <h4 className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">
-                  Attention : Cartes de membre nécessitant un renouvellement
+                  Nouvelles adhésions en attente de validation
                 </h4>
                 <p className="text-xs text-slate-300">
-                  {expiredMembers > 0 && (
-                    <strong className="text-rose-400">
-                      {expiredMembers} carte(s) expirée(s) (caduques sans renouvellement).{" "}
-                    </strong>
-                  )}
-                  {expiringSoonMembers > 0 && (
-                    <span>{expiringSoonMembers} carte(s) arrivent à échéance sous 30 jours.</span>
-                  )}
+                  <strong className="text-amber-300">
+                    {pendingMembers} adhésion(s) soumise(s) attendent la confirmation du transfert de 3 000 FCFA.
+                  </strong>
                 </p>
               </div>
             </div>
@@ -1141,11 +1041,11 @@ export default function AdminPage() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setStatusFilter("expired")}
+                onClick={() => setStatusFilter("pending")}
                 className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#060d1d] font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
               >
-                <Bell className="w-3.5 h-3.5" />
-                <span>Afficher les cartes expirées</span>
+                <Clock className="w-3.5 h-3.5" />
+                <span>Afficher les dossiers en attente</span>
               </button>
             </div>
           </div>
@@ -1176,20 +1076,20 @@ export default function AdminPage() {
               {totalFundsCollected.toLocaleString("fr-FR")} FCFA
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Base : 3 000 FCFA / adhésion & renouvellement
+              Base : 3 000 FCFA / adhésion unique à vie
             </p>
           </div>
 
-          {/* Card 3: Expirations & Révocations */}
+          {/* Card 3: En Attente de Validation */}
           <div className="p-5 rounded-2xl bg-[#091733] border border-white/10 shadow-lg">
             <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-bold tracking-wider">Expirés / Révoqués</span>
-              <AlertTriangle className="w-5 h-5 text-amber-400" />
+              <span className="text-xs uppercase font-bold tracking-wider">En Attente Validation</span>
+              <Clock className="w-5 h-5 text-amber-400" />
             </div>
-            <div className="text-3xl font-extrabold text-amber-300">{expiredMembers}</div>
+            <div className="text-3xl font-extrabold text-amber-300">{pendingMembers}</div>
             <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
               <UserX className="w-3 h-3 text-rose-400" />
-              <span>{revokedMembers} révoqué(s) • {pendingMembers} en attente</span>
+              <span>{revokedMembers} révoqué(s) • Adhésion à vie</span>
             </p>
           </div>
 
@@ -1255,8 +1155,8 @@ export default function AdminPage() {
                   <th className="pb-3 px-3">Matricule Officiel</th>
                   <th className="pb-3 px-3">Université & Pays</th>
                   <th className="pb-3 px-3">Filière</th>
-                  <th className="pb-3 px-3">Statut & Validité</th>
-                  <th className="pb-3 px-3">Échéance Carte</th>
+                  <th className="pb-3 px-3">Statut</th>
+                  <th className="pb-3 px-3">Validité</th>
                   <th className="pb-3 px-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -1270,7 +1170,6 @@ export default function AdminPage() {
                 ) : (
                   filteredMembers.map((m) => {
                     const effStatus = getEffectiveMemberStatus(m);
-                    const daysRemaining = getDaysUntilExpiry(m.expires_at);
 
                     return (
                       <tr key={m.id} className="hover:bg-white/[0.02] transition-colors">
@@ -1339,25 +1238,21 @@ export default function AdminPage() {
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
                               <CheckCircle className="w-3 h-3 text-emerald-400" />
-                              <span>
-                                Actif ({daysRemaining > 0 ? `${daysRemaining}j` : "1j"})
-                              </span>
+                              <span>Actif Permanent</span>
                             </span>
                           )}
                         </td>
 
-                        {/* Expiry Date */}
+                        {/* Validity */}
                         <td className="py-3.5 px-3 text-slate-300">
                           <span
                             className={
-                              effStatus === "expired"
-                                ? "text-amber-400 font-bold underline"
-                                : effStatus === "revoked"
-                                ? "text-rose-400 line-through"
-                                : "text-slate-300"
+                              effStatus === "revoked"
+                                ? "text-rose-400 line-through font-bold"
+                                : "text-emerald-400 font-semibold"
                             }
                           >
-                            {new Date(m.expires_at).toLocaleDateString("fr-FR")}
+                            {effStatus === "revoked" ? "Révoqué" : "Permanente (À vie)"}
                           </span>
                         </td>
 
@@ -1377,31 +1272,7 @@ export default function AdminPage() {
                               </button>
                             )}
 
-                            {/* Renewal Button (+1 year) */}
-                            {(effStatus === "expired" || (effStatus === "active" && daysRemaining <= 60)) && (
-                              <button
-                                type="button"
-                                onClick={() => handleRenewMembership(m)}
-                                className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A] hover:brightness-110 text-[#060d1d] font-extrabold text-[11px] flex items-center gap-1 shadow-sm transition-all cursor-pointer"
-                                title="Enregistrer le renouvellement de la cotisation annuelle (+1 an)"
-                              >
-                                <RotateCw className="w-3.5 h-3.5" />
-                                <span>Renouveler (1 an)</span>
-                              </button>
-                            )}
 
-                            {/* Renewal Notification Reminder (Email & WhatsApp) */}
-                            {(effStatus === "expired" || daysRemaining <= 30) && (
-                              <button
-                                type="button"
-                                onClick={() => handleNotifyRenewal(m)}
-                                className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 transition-colors flex items-center gap-1 text-[11px] font-bold cursor-pointer"
-                                title="Envoyer une notification officielle de rappel de renouvellement"
-                              >
-                                <Bell className="w-3.5 h-3.5" />
-                                <span className="hidden xl:inline">Rappel</span>
-                              </button>
-                            )}
 
                             {/* PDF Badge Modal Preview */}
                             <button
@@ -1714,24 +1585,6 @@ export default function AdminPage() {
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     <span>Valider Paiement (3 000 F)</span>
-                  </button>
-                )}
-
-                {getEffectiveMemberStatus(selectedMemberForBadge) === "expired" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleRenewMembership(selectedMemberForBadge);
-                      setSelectedMemberForBadge({
-                        ...selectedMemberForBadge,
-                        status: "active",
-                        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-                      });
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs text-[#060d1d] bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A] hover:brightness-110 shadow-sm transition-all cursor-pointer"
-                  >
-                    <RotateCw className="w-3.5 h-3.5" />
-                    <span>Renouveler (1 an)</span>
                   </button>
                 )}
 

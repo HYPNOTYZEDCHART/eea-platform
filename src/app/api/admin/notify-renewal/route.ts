@@ -57,19 +57,17 @@ Bonjour ${first_name} ${last_name},
 Conformément aux statuts et au règlement intérieur de l'Étudiant Entrepreneuriat Afrique (EEA), la validité de votre carte officielle de membre arrive à échéance (ou est arrivée à son terme le ${expiryFormatted}).
 
 IMPORTANT :
-Le renouvellement annuel de votre cotisation statutaire (3 000 FCFA) est obligatoire pour :
-- Maintenir la validité officielle de votre carte et de votre QR Code de certification.
-- Conserver votre accès prioritaire aux programmes d'incubation, hackathons et financements de projets.
-- Préserver vos droits de vote et de représentation au sein du réseau continental.
-
-Sans renouvellement de votre cotisation, votre carte est désactivée dans le registre central officiel, son QR Code indiquera la mention « CARTE EXPIRÉE » et l'accès aux privilèges EEA sera suspendu.
+Le règlement de votre cotisation statutaire unique (3 000 FCFA) est requis pour :
+- Valider la validité officielle de votre carte et de votre QR Code de certification permanente.
+- Accéder aux programmes d'incubation, hackathons et financements de projets.
+- Bénéficier de votre statut de membre à vie au sein du réseau continental.
 
 MODALITÉS DE RÈGLEMENT :
-- Montant annuel : 3 000 FCFA
+- Montant unique : 3 000 FCFA (Adhésion à vie)
 - Numéro officiel Trésorerie EEA : +221 78 542 53 45 (Wave & Orange Money)
-- Motif du transfert : Renouvellement ${membership_id}
+- Motif du transfert : Adhésion ${membership_id}
 
-Dès réception de votre transfert, le Secrétariat Général validera immédiatement votre renouvellement pour 1 an supplémentaire et vous transmettra votre nouvelle carte PDF certifiée avec QR Code actualisé.
+Dès réception de votre transfert, le Secrétariat Général validera immédiatement votre statut permanent et vous transmettra votre carte PDF certifiée avec QR Code officiel.
 
 Contact Trésorerie & Assistance WhatsApp : +221 78 542 53 45
 Site Officiel : ${siteUrl}
@@ -150,7 +148,7 @@ Bibliothèque Centrale UCAD, Dakar, Sénégal`;
     });
 
     // 4. Message WhatsApp préformaté
-    const whatsappMessage = `⚠️ *AVIS OFFICIEL DE RENOUVELLEMENT EEA*\n\nBonjour ${first_name} ${last_name},\n\nVotre carte de membre annuelle de l'Étudiant Entrepreneuriat Afrique (Matricule : *${membership_id}*) arrive à échéance (ou est expirée).\n\nPour conserver vos accès aux programmes d'incubation et maintenir votre carte et QR code actifs, merci de renouveler votre cotisation annuelle de *3 000 FCFA* par Wave ou Orange Money vers le numéro officiel de la trésorerie :\n👉 *+221 78 542 53 45*\n\nDès réception, le secrétariat général validera votre carte pour 1 an supplémentaire et vous enverra votre nouveau badge PDF.\n\n_Secrétariat Général EEA — UCAD Dakar_`;
+    const whatsappMessage = `⚠️ *AVIS OFFICIEL EEA — ADHÉSION PERMANENTE*\n\nBonjour ${first_name} ${last_name},\n\nVotre demande d'adhésion à l'Étudiant Entrepreneuriat Afrique (Matricule : *${membership_id}*) est enregistrée.\n\nPour activer votre statut de membre permanent et recevoir votre carte officielle et QR code valables à vie, merci d'effectuer votre cotisation unique de *3 000 FCFA* par Wave ou Orange Money vers le numéro officiel de la trésorerie :\n👉 *+221 78 542 53 45*\n\nDès réception, le secrétariat général validera votre carte à vie et vous enverra votre badge officiel PDF.\n\n_Secrétariat Général EEA — UCAD Dakar_`;
 
     return NextResponse.json({
       success: true,

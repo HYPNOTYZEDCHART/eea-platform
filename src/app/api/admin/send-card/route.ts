@@ -105,7 +105,7 @@ Bibliothèque Centrale UCAD, Dakar, Sénégal`;
         </h3>
         <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Université :</strong> ${university}</p>
         <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Filière :</strong> ${field_of_study}</p>
-        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Validité :</strong> 1 an renouvelable</p>
+        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Validité :</strong> Permanente (À vie — Aucun renouvellement requis)</p>
       </div>
 
       <div style="text-align: center; margin: 24px 0 12px 0;">

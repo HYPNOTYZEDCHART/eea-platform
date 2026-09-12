@@ -189,10 +189,10 @@ export default function HeroSection() {
               </div>
               <div>
                 <div className="text-sm sm:text-base font-bold text-white">
-                  3 000 FCFA / an
+                  3 000 FCFA
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-2">
-                  Adhésion annuelle accessible à tous
+                  Adhésion unique & valable à vie
                 </p>
               </div>
             </div>

@@ -44,7 +44,6 @@ export default function MemberCardBadge({
   compact = false,
 }: MemberCardBadgeProps) {
   const [localMember, setLocalMember] = useState<Member | null>(null);
-  const [currentTime, setCurrentTime] = useState<number>(0);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [downloadingPng, setDownloadingPng] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
@@ -53,10 +52,9 @@ export default function MemberCardBadge({
 
   const member: Member = initialMember || localMember || defaultDemoMember;
 
-  // Set client-side timestamp and fallback to localStorage if no prop provided
+  // Fallback to localStorage if no prop provided
   useEffect(() => {
     const timer = setTimeout(() => {
-      setCurrentTime(Date.now());
       if (!initialMember && typeof window !== "undefined") {
         try {
           const stored = localStorage.getItem("eea_current_member");
@@ -255,15 +253,10 @@ export default function MemberCardBadge({
     ctx.strokeStyle = "rgba(212, 175, 55, 0.2)";
     ctx.strokeRect(24, 560, width - 48, 76);
 
-    const isExpired = new Date(member.expires_at).getTime() < Date.now();
     if (member.status === "revoked") {
       ctx.fillStyle = "#f43f5e";
       ctx.font = "bold 15px sans-serif";
       ctx.fillText("● STATUT : CARTE RÉVOQUÉE (EXCLU)", 50, 605);
-    } else if (isExpired) {
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : CARTE EXPIRÉE (À RENOUVELER)", 50, 605);
     } else if (member.status === "pending") {
       ctx.fillStyle = "#fbbf24";
       ctx.font = "bold 15px sans-serif";
@@ -271,13 +264,12 @@ export default function MemberCardBadge({
     } else {
       ctx.fillStyle = "#10b981";
       ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : MEMBRE ACTIF VALIDE", 50, 605);
+      ctx.fillText("● STATUT : MEMBRE ACTIF PERMANENT", 50, 605);
     }
 
     ctx.fillStyle = "#94a3b8";
     ctx.font = "13px sans-serif";
-    const expDate = new Date(member.expires_at).toLocaleDateString("fr-FR");
-    ctx.fillText(`VALIDE JUSQU'AU : ${expDate}`, 380, 605);
+    ctx.fillText("VALIDITÉ : PERMANENTE (À VIE)", 380, 605);
 
     ctx.fillStyle = "#D4AF37";
     ctx.font = "13px sans-serif";
@@ -478,11 +470,6 @@ export default function MemberCardBadge({
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500" />
               <span className="text-rose-400 font-bold text-[7px] sm:text-[9px]">RÉVOQUÉ / ÉJECTÉ</span>
             </>
-          ) : currentTime > 0 && new Date(member.expires_at).getTime() < currentTime ? (
-            <>
-              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
-              <span className="text-amber-400 font-bold text-[7px] sm:text-[9px]">EXPIRÉ (À RENOUVELER)</span>
-            </>
           ) : member.status === "pending" ? (
             <>
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400" />
@@ -491,13 +478,13 @@ export default function MemberCardBadge({
           ) : (
             <>
               <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-semibold text-[7px] sm:text-[9px]">Membre Actif Certifié</span>
+              <span className="text-emerald-400 font-semibold text-[7px] sm:text-[9px]">Membre Actif Permanent</span>
             </>
           )}
         </div>
 
         <div className="text-slate-400 text-[7px] sm:text-[9px]">
-          Expire le : {new Date(member.expires_at).toLocaleDateString("fr-FR")}
+          Validité : Permanente (À vie)
         </div>
 
         <div className="flex items-center gap-1 text-[#D4AF37]">

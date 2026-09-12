@@ -24,7 +24,7 @@ create table if not exists public.members (
     qr_code_token text unique not null,
     status text not null default 'pending' check (status in ('pending', 'active', 'expired', 'revoked')),
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-    expires_at timestamp with time zone default timezone('utc'::text, now() + interval '1 year') not null
+    expires_at timestamp with time zone default timezone('utc'::text, now() + interval '100 years') not null -- Adhésion permanente à vie
 );
 
 -- Index de recherche rapide

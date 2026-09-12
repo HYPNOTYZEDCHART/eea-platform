@@ -143,7 +143,7 @@ export default function RegistrationTunnel({
         payment_method: formData.paymentMethod,
         payment_reference: formData.paymentReference.trim() || null,
         created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
       // 2. Upload photo to Supabase Storage if present, or fallback gracefully
@@ -259,7 +259,7 @@ export default function RegistrationTunnel({
           </h2>
 
           <p className="mt-3 text-sm sm:text-base text-slate-300 font-normal">
-            Cotisation annuelle de <strong>3 000 FCFA</strong>. Remplissez vos informations et demandez votre carte officielle de membre au format PDF.
+            Cotisation unique de <strong>3 000 FCFA</strong> (valable à vie). Remplissez vos informations et demandez votre carte officielle de membre au format PDF.
           </p>
         </div>
 
@@ -532,10 +532,10 @@ export default function RegistrationTunnel({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-[#D4AF37]" />
-                      <span>Cotisation Annuelle • 3 000 FCFA</span>
+                      <span>Cotisation Unique • 3 000 FCFA (À vie)</span>
                     </h3>
                     <span className="text-xs px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
-                      Certification
+                      Adhésion Permanente
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 font-normal mt-1">

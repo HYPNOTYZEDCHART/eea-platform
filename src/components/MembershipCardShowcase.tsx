@@ -265,18 +265,18 @@ export default function MembershipCardShowcase() {
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div>
                   <span className="text-xs uppercase tracking-wider font-bold text-[#D4AF37]">
-                    Cotisation Annuelle
+                    Cotisation Unique
                   </span>
                   <div className="text-3xl sm:text-4xl font-black text-white mt-1">
                     3 000 FCFA
                     <span className="text-xs sm:text-sm font-normal text-slate-400 ml-2">
-                      (~4,60 € / an)
+                      (~4,60 € • À vie)
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-                    Sans renouvellement forcé
+                    Valable à vie (Définitif)
                   </span>
                 </div>
               </div>

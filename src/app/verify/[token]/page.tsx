@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import MemberCardBadge from "@/components/MemberCardBadge";
-import { supabase, Member, getEffectiveMemberStatus, getDaysUntilExpiry } from "@/lib/supabase";
+import { supabase, Member, getEffectiveMemberStatus } from "@/lib/supabase";
 
 export default function VerifyPage({
   params,
@@ -144,7 +144,6 @@ export default function VerifyPage({
               {/* Authenticity / Status Banner */}
               {(() => {
                 const effectiveStatus = getEffectiveMemberStatus(member);
-                const daysRemaining = getDaysUntilExpiry(member.expires_at);
 
                 if (effectiveStatus === "revoked") {
                   return (
@@ -207,10 +206,10 @@ export default function VerifyPage({
                     </div>
                     <div>
                       <div className="text-sm font-extrabold text-emerald-400">
-                        DOCUMENT AUTHENTIQUE & OFFICIEL ACTIF
+                        DOCUMENT AUTHENTIQUE & MEMBRE PERMANENT ACTIF
                       </div>
                       <p className="text-xs text-slate-300">
-                        Cette carte est certifiée valide par le secrétariat permanent de l&apos;EEA (valide encore {daysRemaining > 0 ? `${daysRemaining} jours` : "moins d'un jour"}).
+                        Cette carte est certifiée authentique par le secrétariat permanent de l&apos;EEA. Adhésion permanente valable à vie.
                       </p>
                     </div>
                   </div>
@@ -242,18 +241,11 @@ export default function VerifyPage({
 
                 <div className="flex items-center justify-between py-2">
                   <span className="text-slate-400 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    Période de Validité
+                    <Clock className="w-4 h-4 text-[#D4AF37]" />
+                    Durée de Validité
                   </span>
-                  <span
-                    className={`font-semibold text-right ${
-                      getEffectiveMemberStatus(member) === "expired"
-                        ? "text-amber-400 underline font-bold"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    Jusqu&apos;au {new Date(member.expires_at).toLocaleDateString("fr-FR")}
-                    {getEffectiveMemberStatus(member) === "expired" && " (Échue)"}
+                  <span className="font-semibold text-right text-emerald-400">
+                    Permanente (À vie — Aucun renouvellement requis)
                   </span>
                 </div>
               </div>
