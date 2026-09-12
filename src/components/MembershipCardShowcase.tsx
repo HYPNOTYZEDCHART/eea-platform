@@ -170,7 +170,7 @@ export default function MembershipCardShowcase() {
                   </div>
 
                   <div className="px-1.5 sm:px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[7px] sm:text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
-                    Actif 2026-2027
+                    Membre Actif
                   </div>
                 </div>
 

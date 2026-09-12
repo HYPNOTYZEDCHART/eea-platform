@@ -97,187 +97,476 @@ export default function MemberCardBadge({
     );
   }, [member]);
 
+// Fonctions utilitaires de dessin Canvas haute fidélité (équivalent 300 DPI)
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawShieldCheck(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = "rgba(212, 175, 55, 0.15)";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  // Forme de bouclier
+  ctx.beginPath();
+  ctx.moveTo(x + w / 2, y);
+  ctx.lineTo(x + w, y + h * 0.25);
+  ctx.quadraticCurveTo(x + w, y + h * 0.72, x + w / 2, y + h);
+  ctx.quadraticCurveTo(x, y + h * 0.72, x, y + h * 0.25);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Coche de validation à l'intérieur
+  ctx.beginPath();
+  ctx.moveTo(x + w * 0.28, y + h * 0.48);
+  ctx.lineTo(x + w * 0.46, y + h * 0.66);
+  ctx.lineTo(x + w * 0.74, y + h * 0.34);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+): string {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let truncated = text;
+  while (truncated.length > 0 && ctx.measureText(truncated + "...").width > maxWidth) {
+    truncated = truncated.slice(0, -1);
+  }
+  return truncated + "...";
+}
+
+function loadImageSafe(
+  src: string,
+  isCross = false
+): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve(null);
+      return;
+    }
+    const img = new window.Image();
+    if (isCross) img.crossOrigin = "anonymous";
+    const timer = setTimeout(() => resolve(null), 5000);
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      resolve(null);
+    };
+    img.src = src;
+  });
+}
+
   // Reusable Canvas Generator (High-Resolution 300 DPI equivalent)
+  // Reproduit fidèlement et au pixel près le design de la carte visuelle avec les données réelles du membre
   const generateCanvas = async (): Promise<HTMLCanvasElement | null> => {
     if (!member) return null;
 
     const canvas = document.createElement("canvas");
+    // Dimensions au format international CR80 (ratio 1.586 - 85.6mm x 54mm)
     const width = 1050;
-    const height = 660;
+    const height = 662;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    // 1. Background Gradient (Deep Institutional Navy)
-    const grad = ctx.createLinearGradient(0, 0, width, height);
-    grad.addColorStop(0, "#0F224A");
-    grad.addColorStop(0.5, "#091733");
-    grad.addColorStop(1, "#060e1d");
-    ctx.fillStyle = grad;
+    // Coins arrondis de la carte externe
+    const cardX = 4;
+    const cardY = 4;
+    const cardW = width - 8;
+    const cardH = height - 8;
+    const cardR = 26;
+
+    // Découpe le rendu selon les coins arrondis
+    ctx.save();
+    drawRoundedRect(ctx, cardX, cardY, cardW, cardH, cardR);
+    ctx.clip();
+
+    // 1. Fond en dégradé bleu marine institutionnel
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, "#0F224A");
+    bgGrad.addColorStop(0.5, "#091733");
+    bgGrad.addColorStop(1, "#060e1d");
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, width, height);
 
-    // 2. Gold Outer Border (Prestige Framing)
-    ctx.strokeStyle = "#D4AF37";
-    ctx.lineWidth = 8;
-    ctx.strokeRect(16, 16, width - 32, height - 32);
+    // 2. Chargement asynchrone sécurisé des images
+    const logoImg = await loadImageSafe("/logo-eea.jpg");
 
-    // 3. Inner Header Banner
-    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.fillRect(24, 24, width - 48, 110);
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.3)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(24, 24, width - 48, 110);
+    let qrData = qrCodeDataUrl;
+    if (!qrData && member.qr_code_token) {
+      const baseUrl =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : (process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app");
+      const verifyUrl = `${baseUrl}/verify/${member.qr_code_token}`;
+      try {
+        qrData = await QRCode.toDataURL(verifyUrl, {
+          width: 360,
+          margin: 1,
+          color: { dark: "#060d1d", light: "#ffffff" },
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    const qrImgObj = qrData ? await loadImageSafe(qrData) : null;
 
-    // Draw Official Logo
-    const logoImg = new window.Image();
-    logoImg.crossOrigin = "anonymous";
-    logoImg.src = "/logo-eea.jpg";
-    await new Promise((res) => {
-      logoImg.onload = res;
-      logoImg.onerror = res;
-    });
+    let userImg: HTMLImageElement | null = null;
+    if (member.photo_url) {
+      userImg = await loadImageSafe(member.photo_url, !member.photo_url.startsWith("data:"));
+    }
 
-    if (logoImg.complete && logoImg.naturalWidth > 0) {
+    // 3. Filigrane officiel (Watermark logo en bas à droite)
+    if (logoImg) {
+      ctx.save();
+      ctx.globalAlpha = 0.055;
+      const wmSize = 360;
+      const wmX = width - wmSize - 25;
+      const wmY = height - wmSize - 20;
+      ctx.drawImage(logoImg, wmX, wmY, wmSize, wmSize);
+      ctx.restore();
+    }
+
+    // 4. Ligne séparatrice d'en-tête
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(38, 108);
+    ctx.lineTo(width - 38, 108);
+    ctx.stroke();
+
+    // 5. En-tête : Logo circulaire avec anneau doré
+    const logoCenterX = 76;
+    const logoCenterY = 62;
+    const logoRadius = 32;
+
+    if (logoImg) {
       ctx.save();
       ctx.beginPath();
-      ctx.arc(80, 78, 42, 0, Math.PI * 2);
+      ctx.arc(logoCenterX, logoCenterY, logoRadius, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(logoImg, 38, 36, 84, 84);
+      ctx.drawImage(
+        logoImg,
+        logoCenterX - logoRadius,
+        logoCenterY - logoRadius,
+        logoRadius * 2,
+        logoRadius * 2
+      );
       ctx.restore();
-      ctx.strokeStyle = "#D4AF37";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(80, 78, 42, 0, Math.PI * 2);
-      ctx.stroke();
     }
-
-    // Header Institutional Titles
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 26px sans-serif";
-    ctx.fillText("ÉTUDIANT ENTREPRENEURIAT AFRIQUE", 140, 64);
-
-    ctx.fillStyle = "#D4AF37";
-    ctx.font = "bold 15px sans-serif";
-    ctx.fillText("CARTE OFFICIELLE DE MEMBRE • INITIÉ EN 2008 • PROMOTION OFFICIELLE 2026", 140, 92);
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "12px sans-serif";
-    ctx.fillText("BERCEAU HISTORIQUE : BIBLIOTHÈQUE CENTRALE UCAD (DAKAR, SÉNÉGAL)", 140, 114);
-
-    // 4. Member Photo
-    const photoBoxX = 50;
-    const photoBoxY = 165;
-    const photoWidth = 180;
-    const photoHeight = 220;
-
-    ctx.fillStyle = "#040914";
-    ctx.fillRect(photoBoxX, photoBoxY, photoWidth, photoHeight);
     ctx.strokeStyle = "#D4AF37";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(photoBoxX, photoBoxY, photoWidth, photoHeight);
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(logoCenterX, logoCenterY, logoRadius, 0, Math.PI * 2);
+    ctx.stroke();
 
-    if (member.photo_url) {
-      const userImg = new window.Image();
-      if (!member.photo_url.startsWith("data:")) {
-        userImg.crossOrigin = "anonymous";
-      }
-      userImg.src = member.photo_url;
-      await new Promise((res) => {
-        userImg.onload = res;
-        userImg.onerror = res;
-      });
-      if (userImg.complete && userImg.naturalWidth > 0) {
-        ctx.drawImage(userImg, photoBoxX, photoBoxY, photoWidth, photoHeight);
-      }
-    } else {
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 20px sans-serif";
-      ctx.fillText("PHOTO", photoBoxX + 55, photoBoxY + 115);
-    }
-
-    // 5. Member Details Fields
-    const textStartX = 260;
-
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("NOM & PRÉNOM", textStartX, 185);
+    // 6. En-tête : Titre institutionnel & Sous-titre
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 28px sans-serif";
-    ctx.fillText(`${member.last_name.toUpperCase()} ${member.first_name}`, textStartX, 220);
+    ctx.font = "800 23px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText("ÉTUDIANT ENTREPRENEURIAT AFRIQUE", 125, 50);
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("MATRICULE OFFICIEL", textStartX, 260);
     ctx.fillStyle = "#D4AF37";
-    ctx.font = "bold 26px monospace";
-    ctx.fillText(member.membership_id, textStartX, 292);
+    ctx.font = "700 12.5px system-ui, -apple-system, sans-serif";
+    ctx.fillText("CARTE OFFICIELLE DE MEMBRE • NÉ EN 2008 • DÉMARRAGE OFFICIEL 2026", 125, 76);
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("UNIVERSITÉ & PAYS", textStartX, 332);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 20px sans-serif";
-    ctx.fillText(`${member.university} • ${member.country}`, textStartX, 360);
+    // 7. En-tête : Badge pilule supérieur droit (MEMBRE ACTIF)
+    const pillW = 145;
+    const pillH = 32;
+    const pillX = width - 38 - pillW;
+    const pillY = 46;
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("FILIÈRE / DOMAINE D'EXCELLENCE", textStartX, 400);
-    ctx.fillStyle = "#38bdf8";
-    ctx.font = "bold 19px sans-serif";
-    ctx.fillText(member.field_of_study, textStartX, 428);
+    ctx.fillStyle = "rgba(212, 175, 55, 0.15)";
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 7);
+    ctx.fill();
 
-    // 6. QR Code
-    const qrBoxX = 810;
-    const qrBoxY = 175;
-    const qrSize = 180;
+    ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
+    ctx.lineWidth = 1.5;
+    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, 7);
+    ctx.stroke();
 
-    if (qrCodeDataUrl) {
-      const qrImg = new window.Image();
-      qrImg.src = qrCodeDataUrl;
-      await new Promise((res) => {
-        qrImg.onload = res;
-        qrImg.onerror = res;
-      });
+    ctx.fillStyle =
+      member.status === "revoked"
+        ? "#f43f5e"
+        : member.status === "pending"
+        ? "#fbbf24"
+        : "#D4AF37";
+    ctx.font = "800 12px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const pillLabel =
+      member.status === "revoked"
+        ? "RÉVOQUÉ"
+        : member.status === "pending"
+        ? "EN ATTENTE"
+        : "MEMBRE ACTIF";
+    ctx.fillText(pillLabel, pillX + pillW / 2, pillY + pillH / 2);
+
+    // 8. Corps : Cadre Photo (Gauche)
+    const photoX = 48;
+    const photoY = 152;
+    const photoW = 195;
+    const photoH = 260;
+    const photoR = 14;
+
+    ctx.save();
+    drawRoundedRect(ctx, photoX, photoY, photoW, photoH, photoR);
+    ctx.clip();
+
+    if (userImg && userImg.naturalWidth > 0) {
+      const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
+      const boxRatio = photoW / photoH;
+      let sx = 0,
+        sy = 0,
+        sw = userImg.naturalWidth,
+        sh = userImg.naturalHeight;
+      if (imgRatio > boxRatio) {
+        sw = userImg.naturalHeight * boxRatio;
+        sx = (userImg.naturalWidth - sw) / 2;
+      } else {
+        sh = userImg.naturalWidth / boxRatio;
+        sy = (userImg.naturalHeight - sh) / 2;
+      }
+      ctx.drawImage(userImg, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
+    } else {
+      ctx.fillStyle = "rgba(11, 60, 138, 0.55)";
+      ctx.fillRect(photoX, photoY, photoW, photoH);
+
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(qrBoxX - 8, qrBoxY - 8, qrSize + 16, qrSize + 16);
-      ctx.drawImage(qrImg, qrBoxX, qrBoxY, qrSize, qrSize);
-      ctx.fillStyle = "#D4AF37";
-      ctx.font = "bold 12px sans-serif";
-      ctx.fillText("SCAN D'AUTHENTICITÉ", qrBoxX + 10, qrBoxY + qrSize + 25);
+      ctx.font = "800 28px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("EEA", photoX + photoW / 2, photoY + photoH / 2 - 12);
+
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "600 15px system-ui, -apple-system, sans-serif";
+      ctx.fillText("Photo 4x4", photoX + photoW / 2, photoY + photoH / 2 + 18);
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = "#D4AF37";
+    ctx.lineWidth = 2.5;
+    drawRoundedRect(ctx, photoX, photoY, photoW, photoH, photoR);
+    ctx.stroke();
+
+    // 9. Corps : Détails & Informations du Membre (Centre)
+    const detailsX = 278;
+    const maxDetailWidth = 465;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+
+    // Nom & Prénom
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 12px system-ui, -apple-system, sans-serif";
+    ctx.fillText("NOM & PRÉNOM", detailsX, 178);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 26px system-ui, -apple-system, sans-serif";
+    const fullName = fitText(
+      ctx,
+      `${member.last_name.toUpperCase()} ${member.first_name}`,
+      maxDetailWidth
+    );
+    ctx.fillText(fullName, detailsX, 212);
+
+    // Matricule Officiel
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 12px system-ui, -apple-system, sans-serif";
+    ctx.fillText("MATRICULE OFFICIEL", detailsX, 256);
+
+    ctx.fillStyle = "#D4AF37";
+    ctx.font = "800 23px monospace, 'Courier New', system-ui";
+    ctx.fillText(member.membership_id, detailsX, 288);
+
+    // Université / École & Pays
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 12px system-ui, -apple-system, sans-serif";
+    ctx.fillText("UNIVERSITÉ / ÉCOLE & PAYS", detailsX, 332);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "600 17px system-ui, -apple-system, sans-serif";
+    const univText = fitText(
+      ctx,
+      `${member.university} • ${member.country}`,
+      maxDetailWidth
+    );
+    ctx.fillText(univText, detailsX, 360);
+
+    // Filière d'Études
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "700 12px system-ui, -apple-system, sans-serif";
+    ctx.fillText("FILIÈRE D'ÉTUDES", detailsX, 404);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "600 17px system-ui, -apple-system, sans-serif";
+    const fieldText = fitText(ctx, member.field_of_study, maxDetailWidth);
+    ctx.fillText(fieldText, detailsX, 432);
+
+    // 10. Ligne verticale de séparation
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(768, 145);
+    ctx.lineTo(768, 475);
+    ctx.stroke();
+
+    // 11. Corps : QR Code de Vérification (Droite)
+    const qrContainerX = 804;
+    const qrContainerY = 175;
+    const qrContainerW = 168;
+    const qrContainerH = 168;
+    const qrContainerR = 14;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = "#ffffff";
+    drawRoundedRect(ctx, qrContainerX, qrContainerY, qrContainerW, qrContainerH, qrContainerR);
+    ctx.fill();
+    ctx.restore();
+
+    if (qrImgObj) {
+      const qrPadding = 9;
+      ctx.drawImage(
+        qrImgObj,
+        qrContainerX + qrPadding,
+        qrContainerY + qrPadding,
+        qrContainerW - qrPadding * 2,
+        qrContainerH - qrPadding * 2
+      );
     }
 
-    // 7. Card Footer
-    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-    ctx.fillRect(24, 560, width - 48, 76);
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.2)";
-    ctx.strokeRect(24, 560, width - 48, 76);
+    ctx.fillStyle = "#D4AF37";
+    ctx.font = "800 12px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      "SCAN DE VÉRIFICATION",
+      qrContainerX + qrContainerW / 2,
+      qrContainerY + qrContainerH + 24
+    );
+
+    // 12. Ligne séparatrice de pied de page
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(38, 540);
+    ctx.lineTo(width - 38, 540);
+    ctx.stroke();
+
+    // 13. Pied de page : Statut, Validité et Certification
+    const footerY = 590;
+    const dotCenterX = 56;
+    const dotCenterY = footerY;
 
     if (member.status === "revoked") {
       ctx.fillStyle = "#f43f5e";
-      ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : CARTE RÉVOQUÉE (EXCLU)", 50, 605);
+      ctx.beginPath();
+      ctx.arc(dotCenterX, dotCenterY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f43f5e";
+      ctx.font = "800 15px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("RÉVOQUÉ / ÉJECTÉ", dotCenterX + 16, footerY);
     } else if (member.status === "pending") {
       ctx.fillStyle = "#fbbf24";
-      ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : ADHÉSION EN ATTENTE (3 000 F)", 50, 605);
+      ctx.beginPath();
+      ctx.arc(dotCenterX, dotCenterY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fbbf24";
+      ctx.font = "800 15px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("EN ATTENTE 3 000 F", dotCenterX + 16, footerY);
     } else {
-      ctx.fillStyle = "#10b981";
-      ctx.font = "bold 15px sans-serif";
-      ctx.fillText("● STATUT : MEMBRE ACTIF PERMANENT", 50, 605);
+      ctx.fillStyle = "rgba(16, 185, 129, 0.35)";
+      ctx.beginPath();
+      ctx.arc(dotCenterX, dotCenterY, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#34d399";
+      ctx.beginPath();
+      ctx.arc(dotCenterX, dotCenterY, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#34d399";
+      ctx.font = "700 15px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Membre Actif Permanent", dotCenterX + 16, footerY);
     }
 
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px sans-serif";
-    ctx.fillText("VALIDITÉ : PERMANENTE (À VIE)", 380, 605);
+    ctx.font = "600 15px system-ui, -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Validité : Permanente (À vie)", width / 2, footerY);
+
+    const rightMarginX = width - 38;
+    const shieldW = 18;
+    const shieldH = 20;
+    const textCert = "Certification Officielle";
+
+    ctx.font = "700 15px system-ui, -apple-system, sans-serif";
+    const certTextWidth = ctx.measureText(textCert).width;
+    const totalRightWidth = shieldW + 8 + certTextWidth;
+    const shieldX = rightMarginX - totalRightWidth;
+    const shieldY = footerY - shieldH / 2;
+
+    drawShieldCheck(ctx, shieldX, shieldY, shieldW, shieldH, "#D4AF37");
 
     ctx.fillStyle = "#D4AF37";
-    ctx.font = "13px sans-serif";
-    const verifyHost =
-      typeof window !== "undefined" && window.location.host
-        ? window.location.host.toUpperCase()
-        : "EEA-AFRIQUE.ORG";
-    ctx.fillText(`VÉRIFIABLE SUR ${verifyHost}/VERIFY`, 670, 605);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(textCert, shieldX + shieldW + 8, footerY);
+
+    // 14. Cadre doré prestigieux externe
+    ctx.restore(); // Restaure le découpage des coins arrondis
+    ctx.strokeStyle = "#D4AF37";
+    ctx.lineWidth = 3.5;
+    drawRoundedRect(ctx, cardX, cardY, cardW, cardH, cardR);
+    ctx.stroke();
 
     return canvas;
   };
