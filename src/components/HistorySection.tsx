@@ -25,7 +25,7 @@ export default function HistorySection() {
       year: "2008 - 2025",
       title: "Maturation & Structuration Institutionnelle",
       description:
-        "Structuration des 7 statuts officiels, consolidation des piliers Tech & Agro-business et obtention de la reconnaissance formelle des pouvoirs publics.",
+        "Structuration des 7 statuts officiels, consolidation des piliers Tech & Agro-business et reconnaissance formelle de l'État (Récépissé officiel N° 11450/M.INT/DAGAT/DEL/AS).",
       icon: Users,
     },
     {
@@ -242,7 +242,7 @@ export default function HistorySection() {
                 <span className="text-slate-500">•</span>
                 <span className="flex items-center gap-1.5 font-medium text-white">
                   <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
-                  Certification Officielle
+                  Récépissé N° 11450/M.INT
                 </span>
               </div>
             </div>

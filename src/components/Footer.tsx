@@ -51,16 +51,36 @@ export default function Footer() {
 
             <div className="flex flex-col gap-2 pt-2 text-xs text-slate-300">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                <span>Certification Officielle EEA</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#D4AF37] shrink-0" />
                 <span>Siège d&apos;origine : Bibliothèque Centrale, UCAD, Dakar (Sénégal)</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#25D366] shrink-0" />
                 <span>Ligne directe & WhatsApp : <strong>+221 78 542 53 45</strong></span>
+              </div>
+            </div>
+
+            {/* Sceau & Badge Officiel de Reconnaissance Étatique */}
+            <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-br from-[#0B2A4A]/80 via-[#091733] to-[#060d1d] border border-[#D4AF37]/50 shadow-lg shadow-black/40 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/15 border-2 border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] shrink-0 mt-0.5 shadow-md shadow-[#D4AF37]/20">
+                <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-white text-[11px] uppercase tracking-wider">
+                    Reconnaissance Officielle d&apos;État
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
+                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                    Enregistré
+                  </span>
+                </div>
+                <div className="font-mono text-[#F3DE8A] text-xs font-bold tracking-tight">
+                  Récépissé N° 11450/M.INT/DAGAT/DEL/AS
+                </div>
+                <p className="text-[10px] text-slate-300 leading-snug">
+                  Délivré par le Ministère de l&apos;Intérieur (DAGAT / DEL / AS) attestant de l&apos;existence légale et statutaire de l&apos;association.
+                </p>
               </div>
             </div>
           </div>
@@ -165,7 +185,7 @@ export default function Footer() {
         {/* Bottom Bar: Copyright & Attribution */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>
-            © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Projet né en 2008 • Démarrage officiel en 2026.
+            © 2008 — 2026 Étudiant Entrepreneuriat Afrique (EEA) • Récépissé Officiel N° 11450/M.INT/DAGAT/DEL/AS • UCAD Dakar.
           </p>
 
           <div className="flex items-center gap-1 text-slate-400">

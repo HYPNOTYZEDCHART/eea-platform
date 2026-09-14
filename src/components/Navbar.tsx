@@ -65,7 +65,7 @@ export default function Navbar() {
               />
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-sans">
                   EEA
                 </span>
@@ -73,10 +73,21 @@ export default function Navbar() {
                   <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
                   Certification
                 </span>
+                <span
+                  className="hidden lg:inline-flex items-center gap-1 font-mono text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/25"
+                  title="Reconnaissance officielle par le Ministère de l'Intérieur"
+                >
+                  Récépissé N° 11450/M.INT/DAGAT/DEL/AS
+                </span>
               </div>
-              <span className="text-[11px] text-slate-300 hidden sm:inline-block font-medium">
-                Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-slate-300 hidden sm:inline-block font-medium">
+                  Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026
+                </span>
+                <span className="hidden sm:inline-block lg:hidden font-mono text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded border border-[#D4AF37]/25">
+                  Récépissé N° 11450
+                </span>
+              </div>
             </div>
           </Link>
 
@@ -139,8 +150,12 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="md:hidden bg-[#08142c] border-b border-white/10 px-4 pt-3 pb-6 space-y-3"
           >
-            <div className="text-xs text-slate-400 font-medium px-2 pb-1 border-b border-white/5">
-              Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026
+            <div className="text-xs text-slate-300 font-medium px-2 pb-2 border-b border-white/5 space-y-1">
+              <div className="text-slate-400">Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026</div>
+              <div className="inline-flex items-center gap-1.5 text-[10px] text-[#D4AF37] font-mono bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/30">
+                <ShieldCheck className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                <span>Récépissé N° 11450/M.INT/DAGAT/DEL/AS</span>
+              </div>
             </div>
             {navLinks.map((link) => (
               <a
