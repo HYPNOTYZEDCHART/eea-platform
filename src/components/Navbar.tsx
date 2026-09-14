@@ -69,10 +69,7 @@ export default function Navbar() {
                 <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-sans">
                   EEA
                 </span>
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase font-semibold tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
-                  <ShieldCheck className="w-3 h-3 text-[#D4AF37]" />
-                  Certification
-                </span>
+                
                 <span
                   className="hidden lg:inline-flex items-center gap-1 font-mono text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/25"
                   title="Reconnaissance officielle par le Ministère de l'Intérieur"
