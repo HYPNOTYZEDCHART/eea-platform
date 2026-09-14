@@ -664,7 +664,7 @@ function loadImageSafe(
           </div>
         </div>
 
-        <span className="px-1.5 sm:px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[7px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
+        <span className="px-1.5 sm:px-2 py-0.5 rounded bg-white/[0.04] border border-[#D4AF37]/30 text-[7px] sm:text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
           Membre Actif
         </span>
       </div>
@@ -791,7 +791,7 @@ function loadImageSafe(
         type="button"
         onClick={handleDownloadPDF}
         disabled={downloadingPdf}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-110 shadow-lg shadow-[#D4AF37]/20 transition-all text-xs sm:text-sm disabled:opacity-50 cursor-pointer"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-110 shadow-lg shadow-black/40 transition-all text-xs sm:text-sm disabled:opacity-50 cursor-pointer"
       >
         <FileDown className="w-4 h-4 text-[#060d1d]" />
         <span>{downloadingPdf ? "Génération PDF..." : "Télécharger la Carte en PDF (.pdf)"}</span>

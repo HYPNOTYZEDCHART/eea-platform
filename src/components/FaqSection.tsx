@@ -78,7 +78,7 @@ export default function FaqSection() {
         <div className="mb-16 p-6 sm:p-8 rounded-2xl bg-[#091733] border border-white/10 shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-white/10">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
+              <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
                 <Coins className="w-4 h-4" />
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white">

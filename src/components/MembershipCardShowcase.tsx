@@ -79,7 +79,6 @@ export default function MembershipCardShowcase() {
     <section id="carte" className="relative py-24 sm:py-32 bg-[#08142c]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
       {/* Background Soft Lighting - Dignified, No Neon */}
       <div className="absolute top-1/4 left-1/4 w-[600px] h-[400px] bg-[#0B3C8A]/20 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[450px] h-[350px] bg-[#D4AF37]/5 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
@@ -169,7 +168,7 @@ export default function MembershipCardShowcase() {
                     </div>
                   </div>
 
-                  <div className="px-1.5 sm:px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[7px] sm:text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
+                  <div className="px-1.5 sm:px-2 py-0.5 rounded bg-white/[0.04] border border-[#D4AF37]/30 text-[7px] sm:text-[9px] font-bold text-[#D4AF37] uppercase tracking-wider shrink-0 text-center leading-tight">
                     Membre Actif
                   </div>
                 </div>
@@ -285,7 +284,7 @@ export default function MembershipCardShowcase() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 {perks.map((perk) => (
                   <div key={perk.title} className="flex items-start gap-2.5">
-                    <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.05] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0 mt-0.5">
                       <Check className="w-3 h-3" />
                     </div>
                     <div>
@@ -304,7 +303,7 @@ export default function MembershipCardShowcase() {
               <div className="mt-8 pt-6 border-t border-white/10">
                 <a
                   href="#adhesion"
-                  className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all duration-300 shadow-xl shadow-[#D4AF37]/20 text-base"
+                  className="w-full inline-flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all duration-300 shadow-lg shadow-black/40 text-base"
                 >
                   <span>Rejoindre et obtenir ma carte (3 000 FCFA)</span>
                   <ArrowRight className="w-5 h-5 text-[#060d1d]" />

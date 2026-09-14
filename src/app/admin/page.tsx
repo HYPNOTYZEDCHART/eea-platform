@@ -727,7 +727,7 @@ export default function AdminPage() {
         <div className="w-full max-w-md p-7 sm:p-8 rounded-2xl bg-[#091733] border border-[#D4AF37]/40 shadow-2xl space-y-6 relative z-10">
           {/* Header Brand */}
           <div className="text-center space-y-2">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#D4AF37] mx-auto mb-2 shadow-lg shadow-[#D4AF37]/20">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#D4AF37] mx-auto mb-2 shadow-lg shadow-black/40">
               <Image src="/logo-eea.jpg" alt="Logo EEA" fill className="object-cover" />
             </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0F224A] border border-[#D4AF37]/40 text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">
@@ -836,7 +836,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={authSubmitting}
-                className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs uppercase tracking-wider shadow-lg shadow-[#D4AF37]/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs uppercase tracking-wider shadow-lg shadow-black/40 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 <KeyRound className="w-4 h-4" />
                 <span>
@@ -903,7 +903,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={authSubmitting || otpCode.length < 6}
-                className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs uppercase tracking-wider shadow-lg shadow-[#D4AF37]/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs uppercase tracking-wider shadow-lg shadow-black/40 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>

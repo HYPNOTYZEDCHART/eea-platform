@@ -69,19 +69,18 @@ export default function Navbar() {
                 <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-sans">
                   EEA
                 </span>
-                
                 <span
-                  className="hidden lg:inline-flex items-center gap-1 font-mono text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/25"
+                  className="hidden xl:inline-flex items-center gap-1 font-mono text-[9px] text-[#D4AF37] bg-transparent px-2 py-0.5 rounded border border-[#D4AF37]/30"
                   title="Reconnaissance officielle par le Ministère de l'Intérieur"
                 >
-                  Récépissé N° 11450/M.INT/DAGAT/DEL/AS
+                  Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] text-slate-300 hidden sm:inline-block font-medium">
-                  Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026
+                  Association estudiantine • UCAD Dakar
                 </span>
-                <span className="hidden sm:inline-block lg:hidden font-mono text-[9px] text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded border border-[#D4AF37]/25">
+                <span className="hidden sm:inline-block xl:hidden font-mono text-[9px] text-[#D4AF37] bg-transparent px-1.5 py-0.5 rounded border border-[#D4AF37]/30">
                   Récépissé N° 11450
                 </span>
               </div>
@@ -102,26 +101,8 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Call to Action Desktop */}
-          <div className="hidden md:flex items-center gap-3">
-            <a
-              href="#adhesion"
-              className="relative inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-md shadow-[#D4AF37]/15 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <CreditCard className="w-4 h-4 text-[#060d1d]" />
-              <span>Adhérer • 3 000 FCFA</span>
-            </a>
-          </div>
-
           {/* Mobile Menu Toggle */}
-          <div className="flex md:hidden items-center gap-2">
-            <a
-              href="#adhesion"
-              className="text-xs font-semibold px-3 py-2 rounded-md bg-[#D4AF37] text-[#060d1d]"
-            >
-              Adhérer
-            </a>
-
+          <div className="flex md:hidden items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-200 hover:text-white hover:bg-white/5 transition-colors"
@@ -147,11 +128,14 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
             className="md:hidden bg-[#08142c] border-b border-white/10 px-4 pt-3 pb-6 space-y-3"
           >
-            <div className="text-xs text-slate-300 font-medium px-2 pb-2 border-b border-white/5 space-y-1">
-              <div className="text-slate-400">Initié en 2008 à l&apos;UCAD • Démarrage officiel 2026</div>
-              <div className="inline-flex items-center gap-1.5 text-[10px] text-[#D4AF37] font-mono bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/30">
+            <div className="text-xs text-slate-300 font-medium px-2 pb-2 border-b border-white/5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 font-semibold">Association estudiantine • UCAD</span>
+                <span className="text-[11px] text-slate-400">Pavillon E ENSEPT</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 text-[10px] text-[#D4AF37] font-mono bg-transparent px-2 py-0.5 rounded border border-[#D4AF37]/30">
                 <ShieldCheck className="w-3 h-3 text-[#D4AF37] shrink-0" />
-                <span>Récépissé N° 11450/M.INT/DAGAT/DEL/AS</span>
+                <span>Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS</span>
               </div>
             </div>
             {navLinks.map((link) => (
@@ -171,7 +155,7 @@ export default function Navbar() {
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]"
               >
                 <CreditCard className="w-4 h-4 text-[#060d1d]" />
-                Obtenir ma Carte Officielle (3 000 FCFA)
+                Adhésion & Carte de Membre
               </a>
             </div>
           </motion.div>

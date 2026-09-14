@@ -89,20 +89,22 @@ const jsonLd = {
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "Étudiant Entrepreneuriat Afrique",
-      alternateName: ["EEA", "EEA Afrique"],
+      name: "Étudiant Entreprenariat Afrique",
+      alternateName: ["EEA", "Association estudiantine Étudiant Entreprenariat Afrique"],
+      slogan: "Devenir en entreprenant",
       url: siteUrl,
       logo: `${siteUrl}/logo-eea.jpg`,
       foundingDate: "2008",
       foundingLocation: {
         "@type": "Place",
-        name: "Université Cheikh Anta Diop (UCAD), Dakar, Sénégal",
+        name: "UCAD, Campus universitaire, ENSEPT, Pavillon E, Dakar, Sénégal",
       },
       description:
-        "Organisation panafricaine certifiée. Fédérer l'élite estudiantine africaine autour des pôles d'excellence en Entrepreneuriat, Haute Technologie et Agrobusiness.",
+        "Association estudiantine reconnue par l'État (Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS). Notre credo : « Devenir en entreprenant ». Fédérer l'élite estudiantine africaine autour des ressources humaines, de l'entreprenariat et des technologies.",
       contactPoint: {
         "@type": "ContactPoint",
         telephone: "+221785425345",
+        email: "eeaucad@yahoo.fr",
         contactType: "customer service",
         availableLanguage: ["French", "English", "Wolof"],
       },

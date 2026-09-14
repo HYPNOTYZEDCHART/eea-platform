@@ -102,7 +102,7 @@ export default function VerifyPortalPage() {
         {/* Brand & Top Status */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3 group mb-4">
-            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/20">
+            <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-lg shadow-black/40">
               <Image src="/logo-eea.jpg" alt="Logo EEA" fill className="object-cover" />
             </div>
             <div className="text-left">
@@ -162,7 +162,7 @@ export default function VerifyPortalPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-[#D4AF37]/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-black/40 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
             >
               {loading ? (
                 <span>Recherche dans le registre...</span>

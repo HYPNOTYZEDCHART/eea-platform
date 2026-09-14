@@ -314,7 +314,7 @@ export default function PhotoCapture({
             <button
               type="button"
               onClick={captureWebcamFrame}
-              className="px-6 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-[#D4AF37]/20 transition-all flex items-center gap-2 text-sm"
+              className="px-6 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-black/40 transition-all flex items-center gap-2 text-sm"
             >
               <Camera className="w-4 h-4" />
               <span>Prendre la photo</span>
@@ -414,7 +414,7 @@ export default function PhotoCapture({
             <button
               type="button"
               onClick={handleValidateCrop}
-              className="px-6 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-[#D4AF37]/20 transition-all flex items-center gap-2 text-sm"
+              className="px-6 py-2.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-black/40 transition-all flex items-center gap-2 text-sm"
             >
               <Check className="w-4 h-4" />
               <span>Valider le Cadrage</span>

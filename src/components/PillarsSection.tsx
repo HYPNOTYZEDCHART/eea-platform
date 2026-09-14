@@ -49,7 +49,7 @@ export default function PillarsSection() {
       icon: GraduationCap,
       title: "Formation d'Excellence & Mentorat",
       tag: "Savoir & Leadership",
-      tagColor: "bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30",
+      tagColor: "bg-white/[0.04] text-[#D4AF37] border-[#D4AF37]/30",
       description:
         "Faire le lien entre la théorie dispensée dans les facultés et l'exigence du monde des affaires. Nos membres bénéficient d'un parrainage direct par des dirigeants d'entreprises et d'experts aguerris.",
       keyProjects: [
@@ -78,38 +78,38 @@ export default function PillarsSection() {
   const statutoryGoals = [
     {
       number: "01",
-      title: "Soutien aux Initiatives",
+      title: "Initiatives Entrepreneuriales",
       description: "Soutenir les initiatives entrepreneuriales de ses membres.",
     },
     {
       number: "02",
       title: "Programmes Multidimensionnels",
-      description: "Initier des programmes couvrant les divers volets et domaines de l'entrepreneuriat.",
+      description: "Initier des programmes couvrant les divers volets domaines de l'entreprenariat.",
     },
     {
       number: "03",
       title: "Canal Financier Dédié",
-      description: "Promouvoir la mise en place et le management d'un canal financier adapté au financement des projets.",
+      description: "Promouvoir la mise en place, le management d'un canal financier adapté au financement des projets.",
     },
     {
       number: "04",
       title: "Liens de Partenariat",
-      description: "Tisser des liens de partenariat avec les institutions étatiques, bailleurs et entreprises.",
+      description: "Tisser des liens de partenariat.",
     },
     {
       number: "05",
-      title: "Plateforme de Coopération",
-      description: "Asseoir une plate-forme d'échange, de coopération et de concertation entre étudiants.",
+      title: "Plate-forme de Coopération",
+      description: "Asseoir une plate-forme d'échange, de coopération et de concertation.",
     },
     {
       number: "06",
-      title: "Réseau de Personnes-Ressources",
-      description: "Constituer un réseau influent d'experts, de chefs d'entreprises et de mentors dévoués.",
+      title: "Réseau de Personnes Ressources",
+      description: "Constituer un réseau de personnes ressources.",
     },
     {
       number: "07",
-      title: "Unité Africaine & NEPAD",
-      description: "S'impliquer résolument dans les grands chantiers de l'Unité Africaine et du Nepad.",
+      title: "Chantiers du NEPAD",
+      description: "S'impliquer dans les chantiers du NEPAD.",
     },
   ];
 
@@ -166,7 +166,7 @@ export default function PillarsSection() {
                     <span className="text-4xl sm:text-5xl font-black text-white font-serif tracking-tight">
                       {pillar.number}
                     </span>
-                    <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37]/50 group-hover:bg-[#D4AF37]/10 transition-colors shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#D4AF37] group-hover:border-[#D4AF37]/50 group-hover:bg-white/[0.08] transition-colors shrink-0">
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -228,17 +228,22 @@ export default function PillarsSection() {
           <div className="relative z-10">
             {/* Header of Statutory Goals */}
             <div className="max-w-3xl mb-10">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-3">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.04] border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-3">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Statuts Officiels • Objet & Buts Généraux</span>
               </div>
 
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-                Les Buts Généraux de l&apos;Association
-              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-3">
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+                  Les Buts Généraux de l&apos;Association
+                </h3>
+                <span className="text-xs sm:text-sm font-semibold text-[#D4AF37] italic font-serif">
+                  « Devenir en entreprenant »
+                </span>
+              </div>
 
               <p className="text-sm sm:text-base text-slate-300 mt-2 font-normal">
-                Déposés et reconnus par l&apos;autorité étatique, ces sept buts directeurs constituent le contrat moral et l&apos;engagement d&apos;action de l&apos;EEA auprès de la communauté universitaire et de l&apos;Afrique.
+                Déposés et reconnus par l&apos;autorité étatique sous le <strong>Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS</strong>, ces sept buts directeurs constituent le contrat moral et l&apos;engagement d&apos;action de l&apos;EEA.
               </p>
             </div>
 
@@ -251,7 +256,7 @@ export default function PillarsSection() {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-black text-[#D4AF37] tracking-wider px-2 py-0.5 rounded bg-[#D4AF37]/15 border border-[#D4AF37]/30">
+                      <span className="text-xs font-black text-[#D4AF37] tracking-wider px-2 py-0.5 rounded bg-transparent border border-[#D4AF37]/30">
                         {goal.number}
                       </span>
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]/60 group-hover:bg-[#D4AF37] transition-colors" />

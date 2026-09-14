@@ -40,7 +40,6 @@ export default function HeroSection() {
 
       {/* Very Soft Deep Blue Lighting Accents (Non-Neon) */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#0B3C8A]/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[300px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-auto flex flex-col items-center text-center">
         {/* Main Content: Mission, Typography & Actions */}
@@ -55,47 +54,36 @@ export default function HeroSection() {
             <div className="inline-flex flex-wrap items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#0F224A]/90 border border-[#D4AF37]/40 shadow-sm text-[11px] sm:text-xs font-semibold text-white max-w-full">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-                <span>Certification Officielle</span>
+                <span>Reconnaissance Officielle d&apos;État</span>
               </div>
               <span className="text-[#D4AF37] hidden sm:inline">•</span>
-              <span className="text-[#F3DE8A] font-mono text-[10px] sm:text-xs font-bold">Récépissé N° 11450/M.INT/DAGAT/DEL/AS</span>
+              <span className="text-[#F3DE8A] font-mono text-[10px] sm:text-xs font-bold">Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS</span>
               <span className="text-[#D4AF37] hidden md:inline">•</span>
-              <span className="text-slate-300 font-normal text-[10px] sm:text-xs hidden md:inline">Initié en 2008 à l&apos;UCAD</span>
+              <span className="text-slate-300 font-normal text-[10px] sm:text-xs hidden md:inline">UCAD Dakar</span>
             </div>
           </motion.div>
 
-          {/* Main Headline */}
-          <motion.h1
-            variants={itemVariants}
-            className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.2] sm:leading-[1.15] max-w-4xl"
-          >
-            Bâtir l&apos;Avenir de l&apos;Afrique par{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]">
-              l&apos;Entrepreneuriat
-            </span>
-            , la Tech et la Terre.
-          </motion.h1>
-
-          {/* Mission Subtitle / Manifeste Officiel */}
-          <motion.div
-            variants={itemVariants}
-            className="max-w-3xl space-y-3 p-5 sm:p-6 rounded-2xl bg-[#091733]/80 border border-[#D4AF37]/30 shadow-lg text-center"
-          >
-            <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#D4AF37]">
-              Manifeste Statutaire & Engagement Continental
-            </p>
-            <p className="text-xs sm:text-base text-slate-300 leading-relaxed">
-              <strong className="text-white font-semibold">EEA</strong> veut
-              promouvoir et impliquer le talent entrepreneurial de ses membres et
-              les orienter vers le grand défi de redressement de l&apos;Afrique et
-              permettre auxdits talents et créativités de s&apos;affirmer, de
-              s&apos;épanouir, de se revaloriser dans un{" "}
-              <span className="text-[#D4AF37] font-semibold">
-                Partenariat fécond
+          {/* Main Headline & Credo */}
+          <motion.div variants={itemVariants} className="space-y-2 max-w-4xl">
+            <div className="inline-block px-3 py-1 rounded-full bg-transparent border border-[#D4AF37]/40 text-xs sm:text-sm font-bold tracking-wider text-[#D4AF37] font-serif">
+              Notre credo : « Devenir en entreprenant »
+            </div>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.2] sm:leading-[1.15]">
+              Bâtir l&apos;Avenir de l&apos;Afrique par{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37]">
+                l&apos;Entreprenariat
               </span>
-              .
-            </p>
+              , la Tech et les Ressources Humaines.
+            </h1>
           </motion.div>
+
+          {/* Mission Subtitle */}
+          <motion.p
+            variants={itemVariants}
+            className="text-base sm:text-lg text-slate-300 max-w-2xl text-center leading-relaxed font-normal"
+          >
+            Promouvoir le talent managérial et entrepreneurial de la jeunesse universitaire pour relever le défi du redressement et valoriser les compétences des étudiants au service de l&apos;Afrique.
+          </motion.p>
 
           {/* 4 Core Focus Pills */}
           <motion.div
@@ -127,7 +115,7 @@ export default function HeroSection() {
           >
             <a
               href="#adhesion"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-xl shadow-[#D4AF37]/20 transition-all duration-300 text-sm sm:text-base group cursor-pointer text-center"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-black/40 transition-all duration-300 text-sm sm:text-base group cursor-pointer text-center"
             >
               <span>Rejoindre le Mouvement • 3 000 FCFA</span>
               <ArrowRight className="w-4 h-4 text-[#060d1d]" />
@@ -161,7 +149,7 @@ export default function HeroSection() {
             {/* 1. Lancement 2026 */}
             <div className="p-3.5 sm:p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:border-[#D4AF37]/40 transition-colors flex flex-col justify-between">
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/[0.04] border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
                   <Rocket className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </div>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
@@ -185,7 +173,7 @@ export default function HeroSection() {
                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                   <Coins className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                 </div>
-                <span className="text-[10px] font-semibold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded-full border border-[#D4AF37]/20">
+                <span className="text-[10px] font-semibold text-[#D4AF37] bg-white/[0.04] px-2 py-0.5 rounded-full border border-[#D4AF37]/30">
                   Solidaire
                 </span>
               </div>

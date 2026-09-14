@@ -275,7 +275,7 @@ export default function RegistrationTunnel({
               key={s.step}
               className={`py-2 px-1 sm:p-2.5 rounded-xl border transition-all ${
                 currentStep === s.step
-                  ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white font-bold shadow-md shadow-[#D4AF37]/10"
+                  ? "bg-[#0B3C8A]/40 border-[#D4AF37] text-white font-bold shadow-md shadow-black/30"
                   : currentStep > s.step
                   ? "bg-emerald-950/30 border-emerald-500/40 text-emerald-400 font-medium"
                   : "bg-white/[0.02] border-white/5 text-slate-500 font-normal"
@@ -460,7 +460,7 @@ export default function RegistrationTunnel({
                 <div className="pt-4 flex justify-end">
                   <button
                     type="submit"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm cursor-pointer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-black/40 text-sm cursor-pointer"
                   >
                     <span>Continuer vers la Photo</span>
                     <ArrowRight className="w-4 h-4" />
@@ -510,7 +510,7 @@ export default function RegistrationTunnel({
                   <button
                     type="button"
                     onClick={handleProceedToPayment}
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm cursor-pointer"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-black/40 text-sm cursor-pointer"
                   >
                     <span>Continuer vers le Paiement</span>
                     <ArrowRight className="w-4 h-4" />
@@ -571,7 +571,7 @@ export default function RegistrationTunnel({
                             setCopiedNumber(true);
                             setTimeout(() => setCopiedNumber(false), 3000);
                           }}
-                          className="px-2.5 py-1 rounded bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37] font-semibold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
+                          className="px-2.5 py-1 rounded bg-white/10 hover:bg-white/15 text-[#D4AF37] font-semibold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
                         >
                           {copiedNumber ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                           <span>{copiedNumber ? "Copié !" : "Copier"}</span>
@@ -649,7 +649,7 @@ export default function RegistrationTunnel({
                     type="button"
                     disabled={loading}
                     onClick={handleProcessPayment}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-[#D4AF37]/20 text-sm disabled:opacity-50 cursor-pointer text-center"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 transition-all shadow-lg shadow-black/40 text-sm disabled:opacity-50 cursor-pointer text-center"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#060d1d]" />
                     <span>

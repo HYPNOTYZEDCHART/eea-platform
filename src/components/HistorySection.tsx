@@ -10,6 +10,7 @@ import {
   Compass,
   CheckCircle2,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 export default function HistorySection() {
@@ -75,6 +76,60 @@ export default function HistorySection() {
           </p>
         </div>
 
+        {/* Présentation Officielle & Fondements Statutaires */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-10 p-6 sm:p-8 rounded-2xl bg-[#091733]/90 border border-[#D4AF37]/35 shadow-xl text-left"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-[#D4AF37]">
+              <Sparkles className="w-4 h-4 text-[#D4AF37] shrink-0" />
+              <span>Présentation Officielle • Fondements Statutaires</span>
+            </div>
+            <span className="font-mono text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10 w-fit">
+              N° 11450/M.INT.CL/DAGAT/DEL/AS
+            </span>
+          </div>
+
+          <p className="mt-4 text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+            L’association <strong className="text-white">Étudiant Entreprenariat Afrique (EEA)</strong> est le fruit de réflexions pertinentes, suite à une pesante interrogation replacée en orbite dans l’esprit des étudiants africains :
+          </p>
+
+          <blockquote className="my-3 border-l-2 border-[#D4AF37] pl-3.5 py-1.5 text-xs sm:text-sm text-slate-300 italic bg-white/[0.02] rounded-r-lg">
+            « La valorisation et l’utilisation des ressources humaines est la solution retenue pour l’Afrique dans son défi de redressement, de reconstruction de son tissu délabré. »
+          </blockquote>
+
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+            Cette relation symbiotique conjuguée à l’urgente nécessité d’un développement durable incite à promouvoir plus efficacement le talent managérial de la jeunesse, en effectuant des investissements dans l’entreprenariat au bénéfice des étudiants, avenir du continent.
+          </p>
+
+          {/* Les 2 Engagements Majeurs du Document */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
+            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#D4AF37]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                <span>Un présent universitaire plus équilibré</span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-300 leading-snug">
+                Plus motivé face à la nouvelle donne : <strong>la prise en charge des grands chantiers africains par les Africains.</strong>
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-sky-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                <span>Un futur acceptable</span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-300 leading-snug">
+                Reconnaître, valoriser et mettre à contribution <strong>la récolte des connaissances des étudiants au bénéfice de l’Afrique.</strong>
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Continuous White Thread Timeline */}
         <div className="mt-20">
           {/* Desktop: Horizontal Continuous White Thread */}
@@ -99,7 +154,7 @@ export default function HistorySection() {
                       <div
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-300 z-10 shrink-0 ${
                           item.isCurrent
-                            ? "border-white bg-[#D4AF37] text-[#060d1d] shadow-lg shadow-[#D4AF37]/40 ring-4 ring-white/30"
+                            ? "border-white bg-[#D4AF37] text-[#060d1d] shadow-lg shadow-black/50 ring-4 ring-white/30"
                             : "border-white/50 bg-[#060d1d] text-white group-hover:border-white group-hover:scale-110 shadow-md shadow-black/60"
                         }`}
                       >
@@ -150,7 +205,7 @@ export default function HistorySection() {
                   <div
                     className={`absolute -left-[31px] sm:-left-[39px] top-0 w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 ${
                       item.isCurrent
-                        ? "border-white bg-[#D4AF37] text-[#060d1d] ring-4 ring-white/30 shadow-md shadow-[#D4AF37]/30"
+                        ? "border-white bg-[#D4AF37] text-[#060d1d] ring-4 ring-white/30 shadow-md shadow-black/50"
                         : "border-white/50 bg-[#060d1d] text-white"
                     }`}
                   >
@@ -261,7 +316,7 @@ export default function HistorySection() {
           </div>
           <a
             href="#piliers"
-            className="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-[#D4AF37]/20 hover:shadow-[#D4AF37]/30 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 text-center cursor-pointer"
+            className="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] via-[#F3DE8A] to-[#D4AF37] hover:brightness-105 shadow-lg shadow-black/40 hover:shadow-black/60 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 text-center cursor-pointer"
           >
             <span>Découvrir nos piliers d&apos;action</span>
             <ArrowRight className="w-4 h-4 text-[#060d1d]" />
