@@ -41,7 +41,7 @@ import MemberCardBadge from "@/components/MemberCardBadge";
 const INITIAL_MEMBERS_SEEDED: Member[] = [
   {
     id: "mem-1",
-    membership_id: "EEA-2026-SN-0842",
+    membership_id: "EEA-2026-SN-0001",
     first_name: "Jean-David",
     last_name: "KOUASSI",
     email: "kouassi.jeandavid@ucad.edu.sn",
@@ -50,60 +50,10 @@ const INITIAL_MEMBERS_SEEDED: Member[] = [
     university: "Université Cheikh Anta Diop (UCAD Dakar)",
     field_of_study: "Génie Logiciel & Agrobusiness",
     photo_url: null,
-    qr_code_token: "eea_token_demo_0842",
+    qr_code_token: "eea_token_demo_0001",
     status: "active",
     created_at: "2026-02-15T10:30:00Z",
     expires_at: "2027-02-15T10:30:00Z",
-  },
-  {
-    id: "mem-2",
-    membership_id: "EEA-2026-CI-0129",
-    first_name: "Amina",
-    last_name: "DIALLO",
-    email: "amina.diallo@inphb.ci",
-    phone: "+225 07 11 22 33 44",
-    country: "Côte d'Ivoire",
-    university: "INP-HB Yamoussoukro",
-    field_of_study: "Agronomie Tropicale & Filières Cacao",
-    photo_url: null,
-    qr_code_token: "eea_token_demo_0129",
-    status: "active",
-    created_at: "2025-01-10T14:20:00Z",
-    expires_at: "2026-01-10T14:20:00Z", // Expired card for testing renewal flow
-  },
-  {
-    id: "mem-3",
-    membership_id: "EEA-2026-CM-0318",
-    first_name: "Boris",
-    last_name: "TCHOUA",
-    email: "b.tchoua@univ-yaounde1.cm",
-    phone: "+237 69 00 11 22",
-    country: "Cameroun",
-    university: "Université de Yaoundé I",
-    field_of_study: "Intelligence Artificielle & Télécoms",
-    photo_url: null,
-    qr_code_token: "eea_token_demo_0318",
-    status: "pending",
-    payment_method: "Orange Money",
-    payment_reference: "OM-237-9921",
-    created_at: "2026-03-04T09:15:00Z",
-    expires_at: "2027-03-04T09:15:00Z",
-  },
-  {
-    id: "mem-4",
-    membership_id: "EEA-2026-FR-0487",
-    first_name: "Fatou",
-    last_name: "NDIAYE",
-    email: "fatou.ndiaye@polytechnique.edu",
-    phone: "+33 6 12 34 56 78",
-    country: "Diaspora - Europe (France)",
-    university: "École Polytechnique (Paris)",
-    field_of_study: "Finance & Investissement Agricole",
-    photo_url: null,
-    qr_code_token: "eea_token_demo_0487",
-    status: "active",
-    created_at: "2026-03-05T16:45:00Z",
-    expires_at: "2027-03-05T16:45:00Z",
   },
 ];
 
@@ -216,12 +166,13 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  // Fetch members from Supabase (server route with service role + client fallback + local storage)
+  // Fetch members from Supabase (serveur avec service role + client fallback)
+  // Source unique de vérité : la base de données Supabase partagée en temps réel
   const loadMembers = useCallback(async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     let loadedFromDb: Member[] | null = null;
 
-    // 1. Primary: Server-side API route /api/admin/members (bypasses RLS, always up-to-date)
+    // 1. Priorité absolue : Route serveur /api/admin/members (bypasse RLS, toujours à jour)
     try {
       const res = await fetch("/api/admin/members");
       if (res.ok) {
@@ -234,8 +185,8 @@ export default function AdminPage() {
       // fallback
     }
 
-    // 2. Secondary fallback: direct client Supabase query
-    if (!loadedFromDb) {
+    // 2. Fallback direct client Supabase si la route API serveur n'a pas répondu
+    if (loadedFromDb === null) {
       try {
         const { data, error } = await supabase
           .from("members")
@@ -249,32 +200,32 @@ export default function AdminPage() {
       }
     }
 
-    // 3. Merge database records with seeded demo members & local storage
-    const map = new Map<string, Member>();
-
-    // Add seeded demo members as base
-    INITIAL_MEMBERS_SEEDED.forEach((m) => map.set(m.membership_id, m));
-
-    // Override with localStorage edits if any
-    try {
-      const localStored = JSON.parse(localStorage.getItem("eea_members") || "[]");
-      if (Array.isArray(localStored)) {
-        localStored.forEach((lm: Member) => map.set(lm.membership_id, lm));
+    // 3. Application de la vérité de la base de données Supabase
+    // Cela garantit que Maham et vous voyez exactement la même liste
+    if (loadedFromDb !== null) {
+      const sorted = [...loadedFromDb].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setMembers(sorted);
+      try {
+        localStorage.setItem("eea_members", JSON.stringify(sorted));
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
+    } else {
+      // Uniquement si le réseau est totalement inaccessible (mode hors-ligne strict)
+      try {
+        const localStored = JSON.parse(localStorage.getItem("eea_members") || "null");
+        if (Array.isArray(localStored) && localStored.length > 0) {
+          setMembers(localStored);
+        } else {
+          setMembers(INITIAL_MEMBERS_SEEDED);
+        }
+      } catch {
+        setMembers(INITIAL_MEMBERS_SEEDED);
+      }
     }
 
-    // Override with real database records (highest priority)
-    if (loadedFromDb && loadedFromDb.length > 0) {
-      loadedFromDb.forEach((dbm) => map.set(dbm.membership_id, dbm));
-    }
-
-    const combinedList = Array.from(map.values()).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-
-    setMembers(combinedList);
     if (!isSilent) setLoading(false);
   }, []);
 
@@ -542,12 +493,14 @@ export default function AdminPage() {
           status: "active",
         }),
       });
+      await loadMembers(true);
     } catch {
       try {
         await supabase
           .from("members")
           .update({ status: "active" })
           .eq("membership_id", member.membership_id);
+        await loadMembers(true);
       } catch (err) {
         console.warn("Mise à jour locale réussie:", err);
       }
@@ -594,12 +547,14 @@ export default function AdminPage() {
           status: "revoked",
         }),
       });
+      await loadMembers(true);
     } catch {
       try {
         await supabase
           .from("members")
           .update({ status: "revoked" })
           .eq("membership_id", target.membership_id);
+        await loadMembers(true);
       } catch (err) {
         console.warn("Mise à jour locale réussie:", err);
       }
@@ -634,12 +589,14 @@ export default function AdminPage() {
           status: "active",
         }),
       });
+      await loadMembers(true);
     } catch {
       try {
         await supabase
           .from("members")
           .update({ status: "active" })
           .eq("membership_id", member.membership_id);
+        await loadMembers(true);
       } catch (err) {
         console.warn("Mise à jour locale réussie:", err);
       }
@@ -678,9 +635,11 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ membership_id: target.membership_id }),
       });
+      await loadMembers(true);
     } catch {
       try {
         await supabase.from("members").delete().eq("membership_id", target.membership_id);
+        await loadMembers(true);
       } catch (err) {
         console.warn("Suppression locale:", err);
       }
@@ -728,11 +687,11 @@ export default function AdminPage() {
   // SCREEN 1: LOGIN (Haute Sécurité 2FA / OTP)
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#060d1d] flex items-center justify-center p-4 relative overflow-hidden text-white">
+      <div className="min-h-screen bg-[#060d1d] flex items-center justify-center py-12 px-4 sm:px-6 relative overflow-y-auto text-white">
         {/* Background Ambient Glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[320px] bg-[#0B3C8A]/20 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="w-full max-w-md p-7 sm:p-8 rounded-2xl bg-[#091733] border border-[#D4AF37]/40 shadow-2xl space-y-6 relative z-10">
+        <div className="w-full max-w-md p-7 sm:p-8 rounded-2xl bg-[#091733] border border-[#D4AF37]/40 shadow-2xl space-y-6 relative z-10 my-auto">
           {/* Header Brand */}
           <div className="text-center space-y-2">
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-[#D4AF37] mx-auto mb-2 shadow-lg shadow-black/40">
@@ -972,7 +931,7 @@ export default function AdminPage() {
 
   // SCREEN 2: ADMIN DASHBOARD
   return (
-    <div className="min-h-screen bg-[#060d1d] text-slate-200 pt-28 pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#060d1d] text-slate-200 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
@@ -1017,12 +976,22 @@ export default function AdminPage() {
               <span>Exporter en Excel / CSV</span>
             </button>
 
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
+              title="Retourner au site public"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Site Public</span>
+            </Link>
+
             <button
               onClick={handleLogout}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-xs font-semibold text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
               title="Déconnexion"
             >
               <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Déconnexion</span>
             </button>
           </div>
         </div>

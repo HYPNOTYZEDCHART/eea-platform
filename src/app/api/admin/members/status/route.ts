@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         .update(updatePayload)
         .eq("membership_id", membership_id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Erreur mise à jour Supabase:", error);

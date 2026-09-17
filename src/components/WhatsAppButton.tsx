@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
   const [showTooltip, setShowTooltip] = useState(true);
+
+  // Masquer le bouton WhatsApp sur l'espace d'administration
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const phoneNumber = "221785425345";
   const defaultMessage = encodeURIComponent(

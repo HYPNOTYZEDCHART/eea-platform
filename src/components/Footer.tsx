@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -17,7 +17,13 @@ import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function Footer() {
   const router = useRouter();
+  const pathname = usePathname();
   const lastTapRef = useRef<number>(0);
+
+  // Masquer le Footer public sur l'espace d'administration
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   const handleSecretDoubleTap = () => {
     const now = Date.now();
