@@ -1,12 +1,13 @@
 "use client";
 
+import { useRef } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ShieldCheck,
   Phone,
   MapPin,
-  Lock,
   ArrowUpRight,
   Heart,
   Navigation,
@@ -15,6 +16,20 @@ import {
 import WhatsAppIcon from "./WhatsAppIcon";
 
 export default function Footer() {
+  const router = useRouter();
+  const lastTapRef = useRef<number>(0);
+
+  const handleSecretDoubleTap = () => {
+    const now = Date.now();
+    const timeDiff = now - lastTapRef.current;
+    if (timeDiff > 0 && timeDiff < 450) {
+      lastTapRef.current = 0;
+      router.push("/admin");
+    } else {
+      lastTapRef.current = now;
+    }
+  };
+
   const whatsappUrl = `https://wa.me/221785425345?text=${encodeURIComponent(
     "Bonjour Secrétariat EEA, je souhaite des informations sur l'adhésion ou payer directement ma carte de membre (3 000 FCFA) pour activation à distance."
   )}`;
@@ -183,16 +198,9 @@ export default function Footer() {
               <span>WhatsApp : 78 542 53 45</span>
             </a>
 
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500">Secrétariat Général</span>
-              <Link
-                href="/admin"
-                title="Accès Administrateur"
-                className="p-1.5 rounded-lg text-slate-500 hover:text-[#D4AF37] hover:bg-white/5 border border-white/5 hover:border-[#D4AF37]/30 transition-all"
-                aria-label="Accès Administrateur"
-              >
-                <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
-              </Link>
+            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-500">
+              <span>Secrétariat Général</span>
+              <span className="text-slate-500">Permanence UCAD</span>
             </div>
           </div>
         </div>
@@ -301,7 +309,14 @@ export default function Footer() {
           </p>
 
           <div className="flex items-center gap-1 text-slate-400">
-            <span className="italic font-serif text-[#D4AF37]">« Devenir en entreprenant »</span>
+            <span
+              onClick={handleSecretDoubleTap}
+              onDoubleClick={() => router.push("/admin")}
+              className="italic font-serif text-[#D4AF37] select-none cursor-default touch-manipulation"
+              role="presentation"
+            >
+              « Devenir en entreprenant »
+            </span>
             <span className="mx-1.5 text-slate-600">•</span>
             <span>Pour l&apos;Afrique</span>
             <Heart className="w-3 h-3 text-red-400 fill-red-400 inline" />
