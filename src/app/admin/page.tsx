@@ -22,7 +22,6 @@ import {
   X,
   AlertTriangle,
   Ban,
-  UserX,
   UserCheck,
   Trash2,
   Bell,
@@ -931,55 +930,53 @@ export default function AdminPage() {
 
   // SCREEN 2: ADMIN DASHBOARD
   return (
-    <div className="min-h-screen bg-[#060d1d] text-slate-200 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37]">
+    <div className="min-h-screen bg-[#060d1d] text-slate-200 py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Top Executive Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-[#061024]/75 border border-white/[0.08] backdrop-blur-md shadow-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-md shrink-0">
               <Image src="/logo-eea.jpg" alt="Logo EEA" fill className="object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-white tracking-tight">
-                  Dashboard Administrateur EEA
+                <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight font-serif">
+                  Registre Central & Direction
                 </h1>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
-                  En ligne
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>En direct</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Gestion des Membres & Certifications Permanentes (3 000 FCFA • Adhésion à vie)
+              <p className="text-xs text-slate-400 mt-0.5">
+                Organisation Étudiant Entrepreneuriat Afrique • Cotisations officielles (3 000 FCFA à vie)
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-400 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Synchro Cloud Directe (10s)</span>
-            </div>
-
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => void loadMembers(false)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              title="Recharger la base Supabase"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#D4AF37]" : ""}`} />
               <span>Actualiser</span>
             </button>
 
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B3C8A]/60 hover:bg-[#0B3C8A] border border-[#D4AF37]/40 text-xs font-bold text-[#D4AF37] cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/35 text-xs font-bold text-[#F3DE8A] transition-all cursor-pointer shadow-sm"
+              title="Télécharger le fichier CSV des membres"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Exporter en Excel / CSV</span>
+              <span>Exporter CSV</span>
             </button>
 
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
-              title="Retourner au site public"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              title="Retourner au site vitrine"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Site Public</span>
@@ -987,8 +984,8 @@ export default function AdminPage() {
 
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-xs font-semibold text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
-              title="Déconnexion"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-medium text-rose-300 transition-colors cursor-pointer"
+              title="Quitter la session administrateur"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Déconnexion</span>
@@ -998,150 +995,189 @@ export default function AdminPage() {
 
         {/* Global Alert for Pending Validations */}
         {pendingMembers > 0 && (
-          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shrink-0">
-                <Clock className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Clock className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">
-                  Nouvelles adhésions en attente de validation
+                <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wide">
+                  Adhésions en attente de validation
                 </h4>
                 <p className="text-xs text-slate-300">
-                  <strong className="text-amber-300">
-                    {pendingMembers} adhésion(s) soumise(s) attendent la confirmation du transfert de 3 000 FCFA.
-                  </strong>
+                  <strong className="text-amber-300">{pendingMembers}</strong> membre(s) attendent la confirmation du versement de 3 000 FCFA.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setStatusFilter("pending")}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#060d1d] font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-              >
-                <Clock className="w-3.5 h-3.5" />
-                <span>Afficher les dossiers en attente</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setStatusFilter("pending")}
+              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#060d1d] font-bold text-xs shadow transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Voir les dossiers en attente</span>
+            </button>
           </div>
         )}
 
-        {/* Top 4 KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card 1: Total Membres */}
-          <div className="p-5 rounded-2xl bg-[#091733] border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-bold tracking-wider">Membres Enregistrés</span>
-              <Users className="w-5 h-5 text-[#D4AF37]" />
+        {/* Executive KPI Analytics Ribbon (Fine, moderne, sans gros blocs lourds) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.08] rounded-2xl bg-[#061024]/75 border border-white/[0.08] backdrop-blur-md shadow-xl overflow-hidden">
+          {/* KPI 1 : Total Membres */}
+          <div className="p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[#D4AF37] shrink-0">
+              <Users className="w-4 h-4" />
             </div>
-            <div className="text-3xl font-extrabold text-white">{totalMembers}</div>
-            <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" />
-              <span>{activeMembers} Cartes actives valides</span>
-            </p>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Membres Inscrits
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                {totalMembers}
+              </div>
+              <div className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                <span>{activeMembers} certifié(s) à vie</span>
+              </div>
+            </div>
           </div>
 
-          {/* Card 2: Fonds Collectés */}
-          <div className="p-5 rounded-2xl bg-[#091733] border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-bold tracking-wider">Cotisations Collectées</span>
-              <Coins className="w-5 h-5 text-emerald-400" />
+          {/* KPI 2 : Cotisations Encaissées */}
+          <div className="p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+              <Coins className="w-4 h-4" />
             </div>
-            <div className="text-3xl font-extrabold text-white">
-              {totalFundsCollected.toLocaleString("fr-FR")} FCFA
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Cotisations Trésorerie
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-[#F3DE8A] tracking-tight font-mono">
+                {totalFundsCollected.toLocaleString("fr-FR")} <span className="text-xs font-sans text-slate-400 font-normal">FCFA</span>
+              </div>
+              <div className="text-[11px] text-slate-400 font-normal">
+                3 000 FCFA / adhésion
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Base : 3 000 FCFA / adhésion unique à vie
-            </p>
           </div>
 
-          {/* Card 3: En Attente de Validation */}
-          <div className="p-5 rounded-2xl bg-[#091733] border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-bold tracking-wider">En Attente Validation</span>
-              <Clock className="w-5 h-5 text-amber-400" />
+          {/* KPI 3 : En Attente de Paiement */}
+          <div className="p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <Clock className="w-4 h-4" />
             </div>
-            <div className="text-3xl font-extrabold text-amber-300">{pendingMembers}</div>
-            <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-              <UserX className="w-3 h-3 text-rose-400" />
-              <span>{revokedMembers} révoqué(s) • Adhésion à vie</span>
-            </p>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                En Attente Validation
+              </div>
+              <div className={`text-xl sm:text-2xl font-black tracking-tight ${pendingMembers > 0 ? "text-amber-300" : "text-slate-300"}`}>
+                {pendingMembers}
+              </div>
+              <div className="text-[11px] text-slate-400 font-normal">
+                {revokedMembers} révoqué(s)
+              </div>
+            </div>
           </div>
 
-          {/* Card 4: Réseau Continental */}
-          <div className="p-5 rounded-2xl bg-[#091733] border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs uppercase font-bold tracking-wider">Territoires Actifs</span>
-              <TrendingUp className="w-5 h-5 text-indigo-400" />
+          {/* KPI 4 : Rayonnement */}
+          <div className="p-4 sm:p-5 flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#0B3C8A]/20 border border-[#0B3C8A]/40 flex items-center justify-center text-[#38BDF8] shrink-0">
+              <TrendingUp className="w-4 h-4" />
             </div>
-            <div className="text-3xl font-extrabold text-white">18+ Pays</div>
-            <p className="text-xs text-[#D4AF37] mt-1">
-              Berceau UCAD Dakar (2008) • 2026
-            </p>
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Réseau Continental
+              </div>
+              <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                18+ Pays
+              </div>
+              <div className="text-[11px] text-[#D4AF37] font-serif italic">
+                Initié en 2008 • UCAD Dakar
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Member Table Section */}
-        <div className="rounded-2xl bg-[#091733] border border-white/10 p-6 shadow-xl space-y-6">
-          {/* Table Toolbar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="rounded-2xl bg-[#061024]/75 border border-white/[0.08] backdrop-blur-md shadow-2xl overflow-hidden">
+          {/* Table Header Controls (Recherche fine & Filtres en pilules) */}
+          <div className="p-4 sm:p-5 border-b border-white/[0.08] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+            {/* Search Input */}
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Rechercher par nom, matricule, université, pays..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/15 text-white placeholder-slate-400 focus:outline-none focus:border-[#D4AF37] text-xs"
+                placeholder="Rechercher un membre par nom, matricule, université, pays..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-[#D4AF37]/50 text-xs transition-colors"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                  title="Effacer la recherche"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Filtrer :</span>
-              <select
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(
-                    e.target.value as "all" | "active" | "pending" | "expired" | "revoked"
-                  )
-                }
-                className="px-3 py-2 rounded-xl bg-[#060d1d] border border-white/15 text-white text-xs focus:outline-none focus:border-[#D4AF37]"
-              >
-                <option value="all">Tous les statuts ({totalMembers})</option>
-                <option value="active">Actifs ({activeMembers})</option>
-                <option value="pending">En attente ({pendingMembers})</option>
-                <option value="expired">Expirés / À renouveler ({expiredMembers})</option>
-                <option value="revoked">Révoqués / Éjectés ({revokedMembers})</option>
-              </select>
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none text-xs">
+              {[
+                { id: "all", label: "Tous", count: totalMembers },
+                { id: "active", label: "Actifs", count: activeMembers },
+                { id: "pending", label: "En attente", count: pendingMembers },
+                { id: "expired", label: "Expirés", count: expiredMembers },
+                { id: "revoked", label: "Révoqués", count: revokedMembers },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() =>
+                    setStatusFilter(
+                      f.id as "all" | "active" | "pending" | "expired" | "revoked"
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                    statusFilter === f.id
+                      ? "bg-[#D4AF37] text-[#060d1d] shadow-sm font-bold"
+                      : "bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.06] border border-white/5"
+                  }`}
+                >
+                  <span>{f.label}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                      statusFilter === f.id
+                        ? "bg-black/20 text-[#060d1d]"
+                        : "bg-white/10 text-slate-300"
+                    }`}
+                  >
+                    {f.count}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Data Table with Mobile Horizontal Scroll Assurance */}
-          <div className="space-y-2">
-            <div className="flex sm:hidden items-center justify-between text-[11px] text-slate-400 px-1">
-              <span>Faites défiler le tableau vers la droite ➔</span>
-              <span className="font-mono text-[10px] text-[#D4AF37]">{filteredMembers.length} membres</span>
-            </div>
-            <div className="overflow-x-auto rounded-xl border border-white/5 pb-2">
-              <table className="w-full text-left text-xs min-w-[880px]">
-                <thead>
-                  <tr className="border-b border-white/10 text-slate-400 uppercase font-bold tracking-wider">
-                  <th className="pb-3 px-3">Étudiant</th>
-                  <th className="pb-3 px-3">Matricule Officiel</th>
-                  <th className="pb-3 px-3">Université & Pays</th>
-                  <th className="pb-3 px-3">Filière</th>
-                  <th className="pb-3 px-3">Statut</th>
-                  <th className="pb-3 px-3">Validité</th>
-                  <th className="pb-3 px-3 text-right">Actions</th>
+          {/* Data Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs min-w-[960px]">
+              <thead>
+                <tr className="bg-white/[0.02] border-b border-white/[0.08] text-slate-400 text-[10px] uppercase font-bold tracking-wider">
+                  <th className="py-3.5 px-4">Membre</th>
+                  <th className="py-3.5 px-4">Matricule Officiel</th>
+                  <th className="py-3.5 px-4">Université & Pays</th>
+                  <th className="py-3.5 px-4">Filière</th>
+                  <th className="py-3.5 px-4">Statut</th>
+                  <th className="py-3.5 px-4">Validité</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-white/[0.05]">
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-400">
-                      Aucun membre trouvé correspondant à la recherche ou au filtre.
+                    <td colSpan={7} className="py-12 text-center text-slate-400">
+                      Aucun membre ne correspond à cette sélection.
                     </td>
                   </tr>
                 ) : (
@@ -1151,92 +1187,95 @@ export default function AdminPage() {
                     return (
                       <tr key={m.id} className="hover:bg-white/[0.02] transition-colors">
                         {/* Member Photo & Name */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
                             <div className="relative w-9 h-9 rounded-full overflow-hidden border border-[#D4AF37]/50 bg-slate-800 shrink-0">
                               {m.photo_url ? (
                                 <Image src={m.photo_url} alt={m.first_name} fill unoptimized className="object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-white bg-[#0B3C8A]/40">
-                                  {m.first_name[0]}
-                                  {m.last_name[0]}
+                                <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-[#D4AF37] bg-[#D4AF37]/10">
+                                  {m.first_name[0]}{m.last_name[0]}
                                 </div>
                               )}
                             </div>
-                            <div>
-                              <span className="font-bold text-white block">
+                            <div className="min-w-0">
+                              <span className="font-bold text-white block truncate leading-tight">
                                 {m.last_name.toUpperCase()} {m.first_name}
                               </span>
-                              <span className="text-[11px] text-slate-400">{m.email}</span>
+                              <span className="text-[11px] text-slate-400 block truncate">{m.email}</span>
                             </div>
                           </div>
                         </td>
 
-                        {/* Matricule */}
-                        <td className="py-3.5 px-3 font-mono font-bold text-[#D4AF37]">
-                          {m.membership_id}
+                        {/* Matricule (nowrap avec badge doré) */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className="font-mono text-xs font-bold text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/25 px-2.5 py-1 rounded-md">
+                            {m.membership_id}
+                          </span>
                         </td>
 
-                        {/* University & Country + Payment Ref */}
-                        <td className="py-3.5 px-3">
-                          <span className="text-slate-200 font-medium block truncate max-w-xs">
+                        {/* University & Country */}
+                        <td className="py-3.5 px-4 max-w-xs">
+                          <span className="text-slate-200 font-medium block truncate">
                             {m.university}
                           </span>
-                          <span className="text-[10px] text-slate-400">{m.country}</span>
+                          <span className="text-[10px] text-slate-400 block">
+                            {m.country}
+                          </span>
                           {m.payment_reference && (
-                            <span className="block text-[10px] text-amber-300 font-mono mt-0.5 font-semibold">
+                            <span className="inline-block text-[10px] text-amber-300 font-mono mt-0.5 font-semibold">
                               Réf : {m.payment_reference}
                             </span>
                           )}
                         </td>
 
                         {/* Field */}
-                        <td className="py-3.5 px-3 text-[#38BDF8] truncate max-w-xs font-medium">
+                        <td className="py-3.5 px-4 text-slate-300 font-medium max-w-xs truncate">
                           {m.field_of_study}
                         </td>
 
-                        {/* Status & Validity Badge */}
-                        <td className="py-3.5 px-3">
+                        {/* Status */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           {effStatus === "revoked" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
                               <Ban className="w-3 h-3 text-rose-400" />
-                              <span>Révoqué / Éjecté</span>
+                              <span>Révoqué</span>
                             </span>
                           ) : effStatus === "expired" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
                               <AlertTriangle className="w-3 h-3 text-amber-400" />
-                              <span>Expiré (Échu)</span>
+                              <span>Expiré</span>
                             </span>
                           ) : m.status === "pending" ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
                               <Clock className="w-3 h-3 text-amber-400" />
                               <span>En attente 3 000 F</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
-                              <CheckCircle className="w-3 h-3 text-emerald-400" />
-                              <span>Actif Permanent</span>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              <span>Actif</span>
                             </span>
                           )}
                         </td>
 
                         {/* Validity */}
-                        <td className="py-3.5 px-3 text-slate-300">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
-                            className={
+                            className={`text-xs font-semibold ${
                               effStatus === "revoked"
-                                ? "text-rose-400 line-through font-bold"
-                                : "text-emerald-400 font-semibold"
-                            }
+                                ? "text-rose-400 line-through"
+                                : "text-emerald-400"
+                            }`}
                           >
-                            {effStatus === "revoked" ? "Révoqué" : "Permanente (À vie)"}
+                            {effStatus === "revoked" ? "Révoquée" : "À vie"}
                           </span>
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3.5 px-3 text-right">
-                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                            {/* Validate Payment Button (if Pending) */}
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Validate Button if pending */}
                             {m.status === "pending" && (
                               <button
                                 type="button"
@@ -1244,29 +1283,27 @@ export default function AdminPage() {
                                 className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#060d1d] font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                                 title="Valider le transfert de 3 000 FCFA"
                               >
-                                <CheckCircle className="w-3.5 h-3.5 text-[#060d1d]" />
+                                <CheckCircle className="w-3.5 h-3.5" />
                                 <span>Valider 3 000 F</span>
                               </button>
                             )}
 
-
-
-                            {/* PDF Badge Modal Preview */}
+                            {/* Badge PDF Button */}
                             <button
                               type="button"
                               onClick={() => setSelectedMemberForBadge(m)}
-                              className="p-1.5 rounded-lg bg-[#0B3C8A]/40 hover:bg-[#0B3C8A] text-[#D4AF37] border border-[#D4AF37]/30 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 text-[#F3DE8A] border border-[#D4AF37]/30 text-xs font-semibold transition-colors cursor-pointer"
                               title="Générer & Prévisualiser le Badge PDF"
                             >
                               <FileText className="w-3.5 h-3.5" />
-                              <span className="hidden xl:inline">Badge PDF</span>
+                              <span>Badge PDF</span>
                             </button>
 
                             {/* Email Card Button */}
                             <button
                               type="button"
                               onClick={() => handleSendEmail(m)}
-                              className="p-1.5 rounded-lg bg-sky-950/50 hover:bg-sky-900/60 text-sky-300 border border-sky-500/30 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                              className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
                               title="Envoyer la Carte PDF par Email"
                             >
                               <Mail className="w-3.5 h-3.5" />
@@ -1283,7 +1320,7 @@ export default function AdminPage() {
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/30 text-[#25D366] transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-[#25D366]/20 border border-white/10 text-slate-300 hover:text-[#25D366] transition-colors cursor-pointer"
                               title="Envoyer message officiel sur WhatsApp"
                             >
                               <WhatsAppIcon className="w-3.5 h-3.5" />
@@ -1293,7 +1330,7 @@ export default function AdminPage() {
                             <Link
                               href={`/verify/${m.qr_code_token}`}
                               target="_blank"
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                              className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white transition-colors"
                               title="Vérifier le QR code en ligne"
                             >
                               <Eye className="w-3.5 h-3.5" />
@@ -1304,7 +1341,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => handleReintegrateMember(m)}
-                                className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/30 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 transition-colors cursor-pointer"
                                 title="Réintégrer ce membre révoqué"
                               >
                                 <UserCheck className="w-3.5 h-3.5" />
@@ -1314,7 +1351,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => setMemberToEject(m)}
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-rose-500/20 border border-white/10 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                                 title="Éjecter / Révoquer le membre (Invalide la carte et le QR code)"
                               >
                                 <Ban className="w-3.5 h-3.5" />
@@ -1325,7 +1362,7 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => setMemberToDelete(m)}
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-600/30 text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-rose-600/30 border border-white/10 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                               title="Supprimer définitivement la fiche membre"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1341,7 +1378,6 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-    </div>
 
       {/* TOAST NOTIFICATION */}
       {toastMessage && (
