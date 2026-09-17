@@ -4,9 +4,7 @@ import { verifyAdminSession, applySecurityHeaders } from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
   try {
-    const isDev = process.env.NODE_ENV === "development";
-
-    if (!isDev && !verifyAdminSession(request)) {
+    if (!verifyAdminSession(request)) {
       return applySecurityHeaders(
         NextResponse.json(
           { success: false, error: "Non autorisé. Session administrateur requise." },

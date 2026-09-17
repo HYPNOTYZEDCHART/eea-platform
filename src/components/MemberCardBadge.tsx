@@ -193,7 +193,7 @@ function loadImageSafe(
 
   // Reusable Canvas Generator (High-Resolution 300 DPI equivalent)
   // Reproduit fidèlement et au pixel près le design de la carte visuelle avec les données réelles du membre
-  const generateCanvas = async (): Promise<HTMLCanvasElement | null> => {
+  const generateCanvas = async (skipExternalPhoto = false): Promise<HTMLCanvasElement | null> => {
     if (!member) return null;
 
     const canvas = document.createElement("canvas");
@@ -248,7 +248,7 @@ function loadImageSafe(
     const qrImgObj = qrData ? await loadImageSafe(qrData) : null;
 
     let userImg: HTMLImageElement | null = null;
-    if (member.photo_url) {
+    if (member.photo_url && !skipExternalPhoto) {
       userImg = await loadImageSafe(member.photo_url, !member.photo_url.startsWith("data:"));
     }
 
@@ -577,10 +577,17 @@ function loadImageSafe(
     setDownloadingPdf(true);
 
     try {
-      const canvas = await generateCanvas();
-      if (!canvas) throw new Error("Échec de création du canvas.");
-
-      const imgData = canvas.toDataURL("image/png");
+      let imgData: string;
+      try {
+        const canvas = await generateCanvas(false);
+        if (!canvas) throw new Error("Échec de création du canvas.");
+        imgData = canvas.toDataURL("image/png");
+      } catch (taintErr) {
+        console.warn("Notice: Repli canvas sécurisé sans image externe:", taintErr);
+        const fallbackCanvas = await generateCanvas(true);
+        if (!fallbackCanvas) throw new Error("Échec du canvas de secours.");
+        imgData = fallbackCanvas.toDataURL("image/png");
+      }
 
       // Dimensions standard carte plastique ISO/IEC 7810 ID-1 : 85.6mm x 54mm
       const pdf = new jsPDF({
@@ -608,10 +615,18 @@ function loadImageSafe(
     setDownloadingPng(true);
 
     try {
-      const canvas = await generateCanvas();
-      if (!canvas) throw new Error("Échec de création du canvas.");
+      let dataUrl: string;
+      try {
+        const canvas = await generateCanvas(false);
+        if (!canvas) throw new Error("Échec de création du canvas.");
+        dataUrl = canvas.toDataURL("image/png");
+      } catch (taintErr) {
+        console.warn("Notice: Repli canvas PNG sans image externe:", taintErr);
+        const fallbackCanvas = await generateCanvas(true);
+        if (!fallbackCanvas) throw new Error("Échec du canvas PNG de secours.");
+        dataUrl = fallbackCanvas.toDataURL("image/png");
+      }
 
-      const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = `Carte_Officielle_EEA_${member.last_name}_${member.first_name}.png`;

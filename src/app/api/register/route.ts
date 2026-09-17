@@ -15,8 +15,10 @@ export async function POST(req: NextRequest) {
       field_of_study,
       photo_url,
       qr_code_token,
-      status = "pending",
     } = body;
+
+    // Sécurité stricte : Tout nouveau membre est obligatoirement "pending" jusqu'à validation de la trésorerie
+    const safeStatus = "pending";
 
     if (!membership_id || !first_name || !last_name || !email || !qr_code_token) {
       return NextResponse.json(
@@ -30,17 +32,17 @@ export async function POST(req: NextRequest) {
       const { data, error } = await supabaseAdmin
         .from("members")
         .insert({
-          membership_id,
-          first_name,
-          last_name,
-          email,
-          phone,
-          country,
-          university,
-          field_of_study,
+          membership_id: String(membership_id).trim(),
+          first_name: String(first_name).trim(),
+          last_name: String(last_name).trim(),
+          email: String(email).trim().toLowerCase(),
+          phone: String(phone || "").trim(),
+          country: String(country || "").trim(),
+          university: String(university || "").trim(),
+          field_of_study: String(field_of_study || "").trim(),
           photo_url: photo_url || null,
-          qr_code_token,
-          status,
+          qr_code_token: String(qr_code_token).trim(),
+          status: safeStatus,
         })
         .select()
         .single();

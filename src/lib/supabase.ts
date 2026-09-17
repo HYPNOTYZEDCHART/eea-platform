@@ -24,7 +24,7 @@ export const getSupabaseAdmin = () => {
 export type MemberStatus = "pending" | "active" | "expired" | "revoked";
 
 /**
- * Calcule le statut effectif d'un membre (adhésion permanente à vie)
+ * Calcule le statut effectif d'un membre (prise en compte de l'état, de l'expiration et de la révocation)
  */
 export function getEffectiveMemberStatus(member: {
   status: MemberStatus;
@@ -32,6 +32,16 @@ export function getEffectiveMemberStatus(member: {
 }): MemberStatus {
   if (member.status === "revoked") return "revoked";
   if (member.status === "pending") return "pending";
+  if (member.status === "expired") return "expired";
+
+  // Vérification de l'échéance temporelle
+  if (member.expires_at) {
+    const expiryTime = new Date(member.expires_at).getTime();
+    if (!isNaN(expiryTime) && expiryTime < Date.now()) {
+      return "expired";
+    }
+  }
+
   return "active";
 }
 

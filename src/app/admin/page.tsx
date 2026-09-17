@@ -512,7 +512,7 @@ export default function AdminPage() {
     setTimeout(() => setToastMessage(null), 6000);
   };
 
-  // 1. Validate pending payment (5,000 FCFA) and activate member
+  // 1. Valider le paiement de la cotisation (3 000 FCFA) et activer le membre
   const handleValidatePayment = async (member: Member) => {
     const updatedList = members.map((m) =>
       m.membership_id === member.membership_id ? { ...m, status: "active" as const } : m
@@ -673,9 +673,17 @@ export default function AdminPage() {
     }
 
     try {
-      await supabase.from("members").delete().eq("membership_id", target.membership_id);
-    } catch (err) {
-      console.warn("Suppression locale réussie:", err);
+      await fetch("/api/admin/members", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ membership_id: target.membership_id }),
+      });
+    } catch {
+      try {
+        await supabase.from("members").delete().eq("membership_id", target.membership_id);
+      } catch (err) {
+        console.warn("Suppression locale:", err);
+      }
     }
 
     setMemberToDelete(null);

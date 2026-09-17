@@ -40,17 +40,20 @@ export default function VerifyPortalPage() {
         return;
       }
 
-      // 2. Query Supabase by membership_id or qr_code_token
-      const { data } = await supabase
-        .from("members")
-        .select("qr_code_token")
-        .or(`membership_id.ilike.%${cleanQuery}%,qr_code_token.eq.${cleanQuery}`)
-        .limit(1)
-        .maybeSingle();
+      // 2. Query Supabase by membership_id or qr_code_token (assaini pour éviter toute erreur de syntaxe PostgREST)
+      const safeTerm = cleanQuery.replace(/[^a-zA-Z0-9_.-]/g, "").trim();
+      if (safeTerm) {
+        const { data } = await supabase
+          .from("members")
+          .select("qr_code_token")
+          .or(`membership_id.ilike.%${safeTerm}%,qr_code_token.eq.${safeTerm}`)
+          .limit(1)
+          .maybeSingle();
 
-      if (data?.qr_code_token) {
-        router.push(`/verify/${encodeURIComponent(data.qr_code_token)}`);
-        return;
+        if (data?.qr_code_token) {
+          router.push(`/verify/${encodeURIComponent(data.qr_code_token)}`);
+          return;
+        }
       }
 
       // 3. Fallback search in localStorage

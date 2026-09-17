@@ -3,11 +3,15 @@ import crypto from "crypto";
 import { sendEmail } from "@/lib/resend";
 import {
   ADMIN_COOKIE_NAME,
+  ADMIN_OTP_COOKIE_NAME,
   ADMIN_MAX_AGE_SECONDS,
+  ADMIN_OTP_MAX_AGE_SECONDS,
   applySecurityHeaders,
   getClientIdentifier,
   getClientFingerprint,
   safeCompare,
+  createOtpChallenge,
+  verifyOtpChallenge,
   createSignedToken,
   verifySignedToken,
 } from "@/lib/adminAuth";
@@ -302,15 +306,28 @@ export async function POST(request: NextRequest) {
       const maskedDomain = (domainParts[0]?.slice(0, 1) || "") + "••••." + (domainParts[1] || "com");
       const ultraMaskedEmail = `${maskedName}@${maskedDomain}`;
 
-      return applySecurityHeaders(
-        NextResponse.json({
-          success: true,
-          step: "otp_required",
-          message: "Code d'accès envoyé avec succès par voie sécurisée.",
-          emailMasked: ultraMaskedEmail,
-          devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
-        })
-      );
+      // Création du challenge OTP signé pour cookie HttpOnly (stateless, résilient serverless & multi-admins)
+      const challengeToken = createOtpChallenge(email, otpCode, request);
+
+      const response = NextResponse.json({
+        success: true,
+        step: "otp_required",
+        message: "Code d'accès envoyé avec succès par voie sécurisée.",
+        emailMasked: ultraMaskedEmail,
+        devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
+      });
+
+      response.cookies.set({
+        name: ADMIN_OTP_COOKIE_NAME,
+        value: challengeToken,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
+      });
+
+      return applySecurityHeaders(response);
     }
 
     // =========================================================================
@@ -318,8 +335,62 @@ export async function POST(request: NextRequest) {
     // =========================================================================
     if (action === "verify_otp") {
       const otp = typeof body.otp === "string" ? body.otp.trim() : "";
+      const challengeCookie = request.cookies.get(ADMIN_OTP_COOKIE_NAME)?.value;
 
-      if (!activeOTP) {
+      // 1. Validation primaire via challenge cookie signé (stateless)
+      let authEmail: string | null = null;
+      let challengeError: string | null = null;
+      let updatedChallenge: string | undefined = undefined;
+
+      if (challengeCookie) {
+        const check = verifyOtpChallenge(challengeCookie, otp, request);
+        if (check.valid && check.email) {
+          authEmail = check.email;
+        } else {
+          challengeError = check.error || "Code de sécurité invalide.";
+          updatedChallenge = check.updatedToken;
+        }
+      } else if (activeOTP) {
+        // Repli mémoire de secours (si cookie non encore propagé)
+        if (activeOTP.clientIp !== ip || activeOTP.clientFingerprint !== fingerprint) {
+          activeOTP = null;
+          recordFailedAttempt(ip);
+          return applySecurityHeaders(
+            NextResponse.json(
+              { success: false, error: "Alerte de sécurité : divergence d'empreinte réseau détectée." },
+              { status: 403 }
+            )
+          );
+        }
+
+        if (Date.now() > activeOTP.expiresAt) {
+          activeOTP = null;
+          return applySecurityHeaders(
+            NextResponse.json(
+              { success: false, error: "Le code de sécurité a expiré. Veuillez recommencer." },
+              { status: 400 }
+            )
+          );
+        }
+
+        if (safeCompare(otp, activeOTP.code)) {
+          authEmail = activeOTP.email;
+          activeOTP = null;
+        } else {
+          activeOTP.attemptsLeft -= 1;
+          recordFailedAttempt(ip);
+          if (activeOTP.attemptsLeft <= 0) {
+            activeOTP = null;
+            return applySecurityHeaders(
+              NextResponse.json(
+                { success: false, error: "Sécurité déclenchée : 3 codes incorrects consécutifs. Veuillez recommencer." },
+                { status: 401 }
+              )
+            );
+          }
+          challengeError = `Code de sécurité invalide. Il vous reste ${activeOTP.attemptsLeft} tentative(s).`;
+        }
+      } else {
         return applySecurityHeaders(
           NextResponse.json(
             {
@@ -331,70 +402,32 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Vérification que la validation provient de la même IP et du même navigateur
-      if (activeOTP.clientIp !== ip || activeOTP.clientFingerprint !== fingerprint) {
-        console.warn(`[DEFENSE ANTI-DÉTOURNEMENT] Tentative de validation OTP depuis une IP/Machine différente !`);
-        activeOTP = null; // Destruction immédiate
+      if (!authEmail) {
         recordFailedAttempt(ip);
-        return applySecurityHeaders(
-          NextResponse.json(
-            {
-              success: false,
-              error: "Alerte de sécurité : divergence d'empreinte réseau détectée. Session révoquée.",
-            },
-            { status: 403 }
-          )
+        const errResponse = NextResponse.json(
+          { success: false, error: challengeError || "Code de sécurité invalide." },
+          { status: 401 }
         );
-      }
 
-      // Vérification de l'expiration temporelle (5 minutes)
-      if (Date.now() > activeOTP.expiresAt) {
-        activeOTP = null;
-        return applySecurityHeaders(
-          NextResponse.json(
-            {
-              success: false,
-              error: "Le code de sécurité a expiré (délai de 5 minutes dépassé). Veuillez recommencer.",
-            },
-            { status: 400 }
-          )
-        );
-      }
-
-      // Vérification cryptographique du code
-      const isOtpMatch = safeCompare(otp, activeOTP.code);
-
-      if (!isOtpMatch) {
-        activeOTP.attemptsLeft -= 1;
-        recordFailedAttempt(ip);
-
-        if (activeOTP.attemptsLeft <= 0) {
-          activeOTP = null; // Destruction immédiate du code en mémoire
-          console.warn(`[DÉFENSE ANTI-BRUTE FORCE] Code détruit après 3 tentatives infructueuses depuis ${ip}.`);
-          return applySecurityHeaders(
-            NextResponse.json(
-              {
-                success: false,
-                error: "Sécurité déclenchée : 3 codes incorrects consécutifs. Le code est détruit. Veuillez recommencer depuis l'étape 1.",
-              },
-              { status: 401 }
-            )
-          );
+        if (updatedChallenge) {
+          errResponse.cookies.set({
+            name: ADMIN_OTP_COOKIE_NAME,
+            value: updatedChallenge,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/",
+            maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
+          });
+        } else {
+          errResponse.cookies.delete(ADMIN_OTP_COOKIE_NAME);
         }
 
-        return applySecurityHeaders(
-          NextResponse.json(
-            {
-              success: false,
-              error: `Code de sécurité invalide. Il vous reste ${activeOTP.attemptsLeft} tentative(s).`,
-            },
-            { status: 401 }
-          )
-        );
+        return applySecurityHeaders(errResponse);
       }
 
       // Authentification validée !
-      const authenticatedEmail = activeOTP.email;
+      const authenticatedEmail = authEmail;
       const recipientName =
         authenticatedEmail === "doumbiabecaye7@gmail.com"
           ? "M. Bécaye DOUMBOUYA"
@@ -405,15 +438,46 @@ export async function POST(request: NextRequest) {
 
       const token = createSignedToken(request);
 
-      // Notification de sécurité par email
-      sendEmail({
-        to: authenticatedEmail,
-        subject: `🛡️ [EEA Sécurité] Connexion réussie à l'Espace Administrateur`,
-        html: `<p>Bonjour <strong>${recipientName}</strong>,<br><br>Une session administrateur a été ouverte avec succès le ${new Date().toLocaleString(
-          "fr-FR"
-        )} depuis l'IP ${ip}.<br><br>Secrétariat Général EEA — UCAD Dakar</p>`,
-        text: `Connexion administrateur réussie pour ${recipientName} le ${new Date().toLocaleString("fr-FR")}.`,
-      }).catch((e) => console.warn("Notice email connexion:", e));
+      // Notification de sécurité par email à la Direction (M. Maham SOW & M. Bécaye DOUMBOUYA)
+      const notifyRecipients = Array.from(
+        new Set([authenticatedEmail, "maham.sow06@gmail.com", "doumbiabecaye7@gmail.com"])
+      );
+
+      const loginTimestamp = new Date().toLocaleString("fr-FR", {
+        timeZone: "Africa/Dakar",
+        dateStyle: "full",
+        timeStyle: "medium",
+      });
+
+      for (const recipient of notifyRecipients) {
+        sendEmail({
+          to: recipient,
+          subject: `🛡️ [EEA Sécurité] Connexion Direction Administrateur : ${recipientName}`,
+          html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d1d; color: #fff; padding: 24px; border-radius: 12px; border: 1px solid #D4AF37; max-width: 520px; margin: 0 auto;">
+            <div style="text-align: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 16px; margin-bottom: 20px;">
+              <h2 style="color: #D4AF37; margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">Administration EEA</h2>
+              <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Secrétariat Général • UCAD Dakar</p>
+            </div>
+            <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px;">Bonjour,</p>
+            <p style="font-size: 13px; color: #e2e8f0; line-height: 1.6;">
+              Une session administrateur sécurisée vient d'être ouverte avec succès sur la plateforme :
+            </p>
+            <div style="background: #091733; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13px;">
+              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Administrateur :</strong> <span style="color: #F3DE8A;">${recipientName}</span></p>
+              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Email de session :</strong> ${authenticatedEmail}</p>
+              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Date & Heure (Dakar) :</strong> ${loginTimestamp}</p>
+              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Adresse IP :</strong> <span style="font-family: monospace; color: #94a3b8;">${ip}</span></p>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; margin-top: 20px; line-height: 1.5;">
+              Ce message automatique est transmis aux membres de la Direction pour assurer la traçabilité et l'audit de sécurité des accès.
+            </p>
+            <p style="font-size: 11px; color: #64748b; margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); pt: 10px;">
+              Étudiant Entrepreneuriat Afrique (EEA) • Pavillon E ENSEPT, UCAD Dakar
+            </p>
+          </div>`,
+          text: `[EEA Sécurité] Connexion administrateur réussie par ${recipientName} (${authenticatedEmail}) le ${loginTimestamp} depuis l'IP ${ip}.`,
+        }).catch((e) => console.warn("Notice email connexion:", e));
+      }
 
       const response = NextResponse.json({
         success: true,
@@ -421,6 +485,10 @@ export async function POST(request: NextRequest) {
         message: `Authentification réussie. Bienvenue ${recipientName}.`,
       });
 
+      // Suppression du cookie OTP challenge désormais consommé
+      response.cookies.delete(ADMIN_OTP_COOKIE_NAME);
+
+      // Attribution du cookie de session officiel
       response.cookies.set({
         name: ADMIN_COOKIE_NAME,
         value: token,
@@ -438,7 +506,20 @@ export async function POST(request: NextRequest) {
     // ACTION 3 : RENVOI DU CODE OTP (AVEC DÉLAI D'ATTENTE ANTI-SPAM)
     // =========================================================================
     if (action === "resend_otp") {
-      if (!activeOTP || activeOTP.clientIp !== ip) {
+      let targetEmail = activeOTP?.email;
+      const challengeCookie = request.cookies.get(ADMIN_OTP_COOKIE_NAME)?.value;
+
+      if (!targetEmail && challengeCookie && challengeCookie.includes(".")) {
+        try {
+          const payloadStr = challengeCookie.split(".")[0];
+          const parsed = JSON.parse(Buffer.from(payloadStr, "base64url").toString("utf8"));
+          if (parsed?.email) targetEmail = parsed.email;
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!targetEmail) {
         return applySecurityHeaders(
           NextResponse.json(
             { success: false, error: "Aucune session active. Veuillez vous reconnecter." },
@@ -447,23 +528,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const elapsed = Date.now() - activeOTP.lastResendAt;
-      if (elapsed < 45000) {
-        const waitSec = Math.ceil((45000 - elapsed) / 1000);
-        return applySecurityHeaders(
-          NextResponse.json(
-            { success: false, error: `Veuillez patienter encore ${waitSec}s avant de demander un nouveau code.` },
-            { status: 429 }
-          )
-        );
-      }
-
-      const targetEmail = activeOTP.email;
       const otpCode = crypto.randomInt(100000, 999999).toString();
       activeOTP = {
         code: otpCode,
         email: targetEmail,
-        expiresAt: Date.now() + 5 * 60 * 1000,
+        expiresAt: Date.now() + ADMIN_OTP_MAX_AGE_SECONDS * 1000,
         attemptsLeft: 3,
         clientIp: ip,
         clientFingerprint: fingerprint,
@@ -479,13 +548,25 @@ export async function POST(request: NextRequest) {
         text: `Votre nouveau code administrateur EEA est : ${otpCode}`,
       });
 
-      return applySecurityHeaders(
-        NextResponse.json({
-          success: true,
-          message: "Nouveau code transmis avec succès par email.",
-          devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
-        })
-      );
+      const newChallenge = createOtpChallenge(targetEmail, otpCode, request);
+
+      const response = NextResponse.json({
+        success: true,
+        message: "Nouveau code transmis avec succès par email.",
+        devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
+      });
+
+      response.cookies.set({
+        name: ADMIN_OTP_COOKIE_NAME,
+        value: newChallenge,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
+        maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
+      });
+
+      return applySecurityHeaders(response);
     }
 
     return applySecurityHeaders(NextResponse.json({ success: false, error: "Action non reconnue." }, { status: 400 }));
@@ -501,7 +582,7 @@ export async function POST(request: NextRequest) {
 }
 
 // =============================================================================
-// 4. DELETE : DÉCONNEXION SÉCURISÉE AVEC INVALDATION IMMÉDIATE
+// 4. DELETE : DÉCONNEXION SÉCURISÉE AVEC INVALIDATION IMMÉDIATE
 // =============================================================================
 export async function DELETE() {
   const response = NextResponse.json({
@@ -510,5 +591,6 @@ export async function DELETE() {
   });
 
   response.cookies.delete(ADMIN_COOKIE_NAME);
+  response.cookies.delete(ADMIN_OTP_COOKIE_NAME);
   return applySecurityHeaders(response);
 }

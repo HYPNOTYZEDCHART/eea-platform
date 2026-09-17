@@ -67,6 +67,11 @@ export async function sendEmail({
 
     if (error) {
       console.error("[Resend Error]:", error);
+      if (error.name === "validation_error" && error.message?.includes("testing emails")) {
+        console.warn(
+          "⚠️ [Resend Guide]: Avec le domaine gratuit 'onboarding@resend.dev', Resend n'autorise l'envoi qu'à l'adresse du propriétaire du compte. Pour envoyer à Maham ou d'autres destinataires, utilisez la clé API du compte de Maham ou vérifiez un domaine sur resend.com/domains."
+        );
+      }
       return {
         success: false,
         error: error.message || "Erreur lors de l'envoi via Resend.",

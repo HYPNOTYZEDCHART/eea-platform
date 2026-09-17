@@ -4,7 +4,7 @@ import { verifyAdminSession, applySecurityHeaders } from "@/lib/adminAuth";
 
 export async function POST(req: NextRequest) {
   // Protection Zero-Trust : Seul un administrateur authentifié peut modifier les statuts des membres
-  const isAuthorized = verifyAdminSession(req) || process.env.NODE_ENV === "development";
+  const isAuthorized = verifyAdminSession(req);
 
   if (!isAuthorized) {
     return applySecurityHeaders(

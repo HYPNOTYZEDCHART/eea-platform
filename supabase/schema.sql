@@ -73,7 +73,7 @@ create policy "Lecture publique de vérification de carte"
         or status in ('active', 'expired', 'revoked')
     );
 
--- B. Table members: Création de membre lors du formulaire d'adhésion
+-- B. Table members: Création de membre lors du formulaire d'adhésion (uniquement statut 'pending')
 drop policy if exists "Insertion d'un nouveau membre lors du tunnel" on public.members;
 create policy "Insertion d'un nouveau membre lors du tunnel"
     on public.members
@@ -81,7 +81,8 @@ create policy "Insertion d'un nouveau membre lors du tunnel"
     with check (
         length(first_name) > 0 and 
         length(last_name) > 0 and 
-        email like '%_@__%.__%'
+        email like '%_@__%.__%' and
+        status = 'pending'
     );
 
 -- C. Table members: Mise à jour par les administrateurs ou via service role

@@ -172,10 +172,10 @@ export default function PhotoCapture({
     };
   }, [mode, rawImage, zoom, rotation, pan]);
 
-  // Export cropped final photo
+  // Export cropped final photo (optimisé 400x400 JPEG qualité 0.82 pour ~40 Ko)
   const handleValidateCrop = () => {
     if (!canvasRef.current) return;
-    const finalDataUrl = canvasRef.current.toDataURL("image/jpeg", 0.92);
+    const finalDataUrl = canvasRef.current.toDataURL("image/jpeg", 0.82);
     setPhotoPreview(finalDataUrl);
     if (typeof onPhotoCaptured === "function") {
       onPhotoCaptured(finalDataUrl);
