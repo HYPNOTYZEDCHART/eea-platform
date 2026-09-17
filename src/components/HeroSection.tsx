@@ -35,11 +35,8 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[92vh] flex flex-col justify-center pt-28 pb-16 overflow-hidden bg-transparent">
-      {/* Background Subtle Geometric Pattern - No Neon */}
+      {/* Background Subtle Geometric Pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]" />
-
-      {/* Very Soft Deep Blue Lighting Accents (Non-Neon) */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#0B3C8A]/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-auto flex flex-col items-center text-center">
         {/* Main Content: Mission, Typography & Actions */}

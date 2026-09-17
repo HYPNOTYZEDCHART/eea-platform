@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -633,6 +634,21 @@ export default function RegistrationTunnel({
                       Cette information permet à l&apos;administrateur de valider instantanément votre versement de 3 000 FCFA dans le back-office.
                     </p>
                   </div>
+                </div>
+
+                {/* Consentement Légal Statutaire */}
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-slate-400 leading-relaxed text-left">
+                  <p>
+                    En confirmant votre demande d&apos;adhésion, vous attestez de l&apos;exactitude des données transmises et acceptez sans réserve les{" "}
+                    <Link href="/conditions-generales" target="_blank" className="text-[#D4AF37] underline hover:text-[#F3DE8A]">
+                      Conditions Générales d&apos;Adhésion
+                    </Link>{" "}
+                    et la{" "}
+                    <Link href="/confidentialite" target="_blank" className="text-[#38BDF8] underline hover:text-sky-300">
+                      Politique de Confidentialité
+                    </Link>{" "}
+                    de l&apos;association EEA.
+                  </p>
                 </div>
 
                 <div className="pt-6 border-t border-white/10 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">

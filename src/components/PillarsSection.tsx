@@ -114,10 +114,7 @@ export default function PillarsSection() {
   ];
 
   return (
-    <section id="piliers" className="relative py-24 sm:py-32 bg-[#08142c]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
-      {/* Background Ambience (No Neon) */}
-      <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-[#0B3C8A]/15 rounded-full blur-[140px] pointer-events-none" />
-
+    <section id="piliers" className="relative py-24 sm:py-32 bg-[#08142c]/70 overflow-hidden border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-14 border-b border-white/10">

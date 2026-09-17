@@ -42,11 +42,11 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { name: "Le Mouvement", href: "#mouvement" },
-    { name: "Piliers & Vision", href: "#piliers" },
-    { name: "Carte Membre", href: "#carte" },
-    { name: "Adhésion", href: "#adhesion" },
-    { name: "FAQ", href: "#faq" },
+    { name: "Le Mouvement", href: "/#mouvement" },
+    { name: "Piliers & Vision", href: "/#piliers" },
+    { name: "Carte Membre", href: "/#carte" },
+    { name: "Adhésion", href: "/#adhesion" },
+    { name: "FAQ", href: "/#faq" },
   ];
 
   return (
@@ -156,7 +156,7 @@ export default function Navbar() {
             ))}
             <div className="pt-2 space-y-2">
               <a
-                href="#adhesion"
+                href="/#adhesion"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]"
               >

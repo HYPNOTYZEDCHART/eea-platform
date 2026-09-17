@@ -26,8 +26,6 @@ export default function MembershipCardShowcase() {
 
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["12deg", "-12deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-12deg", "12deg"]);
-  const glareX = useTransform(mouseXSpring, [-0.5, 0.5], ["0%", "100%"]);
-  const glareY = useTransform(mouseYSpring, [-0.5, 0.5], ["0%", "100%"]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -75,10 +73,7 @@ export default function MembershipCardShowcase() {
   ];
 
   return (
-    <section id="carte" className="relative py-24 sm:py-32 bg-[#08142c]/25 backdrop-blur-[1px] overflow-hidden border-t border-white/5">
-      {/* Background Soft Lighting - Dignified, No Neon */}
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[400px] bg-[#0B3C8A]/20 rounded-full blur-[160px] pointer-events-none" />
-
+    <section id="carte" className="relative py-24 sm:py-32 bg-[#08142c]/70 overflow-hidden border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Section Header */}
         <div className="max-w-3xl mb-16">
@@ -123,18 +118,8 @@ export default function MembershipCardShowcase() {
                   rotateY,
                   transformStyle: "preserve-3d",
                 }}
-                className="relative aspect-[1.586/1] w-full rounded-xl sm:rounded-2xl p-3 sm:p-6 bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border-2 border-[#D4AF37]/60 shadow-2xl shadow-black/80 flex flex-col justify-between overflow-hidden select-none"
+                className="relative aspect-[1.586/1] w-full rounded-xl sm:rounded-2xl p-3 sm:p-6 bg-gradient-to-br from-[#0F224A] via-[#091733] to-[#060e1d] border border-[#D4AF37]/40 shadow-2xl shadow-black/80 flex flex-col justify-between overflow-hidden select-none"
               >
-                {/* Subtle Dynamic Glare */}
-                <motion.div
-                  style={{
-                    background:
-                      "radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 60%)",
-                    left: glareX,
-                    top: glareY,
-                  }}
-                  className="absolute -inset-24 pointer-events-none -translate-x-1/2 -translate-y-1/2"
-                />
 
                 {/* Card Watermark */}
                 <div className="absolute right-4 bottom-4 opacity-5 pointer-events-none w-36 h-36 sm:w-48 sm:h-48">

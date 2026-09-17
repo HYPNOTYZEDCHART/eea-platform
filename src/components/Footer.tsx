@@ -47,8 +47,8 @@ export default function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-white/10">
-          {/* Col 1: Identity & Official Status (5 cols) */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* Col 1: Identity & Official Status (4 cols) */}
+          <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-md">
                 <Image
@@ -68,7 +68,7 @@ export default function Footer() {
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md font-normal">
+            <p className="text-xs text-slate-400 leading-relaxed max-w-md font-normal">
               Organisation estudiantine panafricaine. Projet conçu en 2008 à l&apos;UCAD de Dakar et officiellement entré en activité opérationnelle en 2026. Notre mission : former, financer et fédérer la nouvelle génération d&apos;entrepreneurs africains en agro-business et en technologies.
             </p>
 
@@ -97,82 +97,82 @@ export default function Footer() {
             </div>
 
             {/* Sceau & Badge Officiel de Reconnaissance Étatique */}
-            <div className="mt-3 p-3.5 rounded-xl bg-gradient-to-br from-[#0B2A4A]/80 via-[#091733] to-[#060d1d] border border-[#D4AF37]/50 shadow-lg shadow-black/40 flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/[0.04] border-2 border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] shrink-0 mt-0.5 shadow-md shadow-black/40">
-                <ShieldCheck className="w-5 h-5 text-[#D4AF37]" />
+            <div className="mt-3 p-3 rounded-xl bg-[#091733] border border-[#D4AF37]/40 shadow-lg shadow-black/40 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-white/[0.04] border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] shrink-0 mt-0.5">
+                <ShieldCheck className="w-4.5 h-4.5 text-[#D4AF37]" />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-white text-[11px] uppercase tracking-wider">
+                  <span className="font-extrabold text-white text-[10.5px] uppercase tracking-wider">
                     Reconnaissance Officielle d&apos;État
                   </span>
                   <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
-                    <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="w-1 h-1 rounded-full bg-emerald-400" />
                     Enregistré
                   </span>
                 </div>
-                <div className="font-mono text-[#F3DE8A] text-xs font-bold tracking-tight">
+                <div className="font-mono text-[#F3DE8A] text-[11px] font-bold tracking-tight">
                   Récépissé N° 11450/M.INT.CL/DAGAT/DEL/AS
                 </div>
-                <p className="text-[10px] text-slate-300 leading-snug">
-                  Délivré par le Ministère de l&apos;Intérieur (DAGAT / DEL / AS) attestant de l&apos;existence légale et statutaire de l&apos;association.
+                <p className="text-[9.5px] text-slate-300 leading-snug">
+                  Délivré par le Ministère de l&apos;Intérieur (DAGAT / DEL / AS) attestant de l&apos;existence statutaire.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Col 2: Navigation Rapide (2 cols) */}
+          {/* Col 2: Le Mouvement (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs uppercase tracking-wider font-bold text-[#D4AF37]">
               Le Mouvement
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <a href="#mouvement" className="hover:text-white transition-colors">
+                <a href="/#mouvement" className="hover:text-white transition-colors">
                   Histoire (2008 — 2026)
                 </a>
               </li>
               <li>
-                <a href="#piliers" className="hover:text-white transition-colors">
+                <a href="/#piliers" className="hover:text-white transition-colors">
                   Les 4 Piliers Fondateurs
                 </a>
               </li>
               <li>
-                <a href="#piliers" className="hover:text-white transition-colors">
+                <a href="/#piliers" className="hover:text-white transition-colors">
                   7 Buts Statutaires
                 </a>
               </li>
               <li>
-                <a href="#carte" className="hover:text-white transition-colors">
+                <a href="/#carte" className="hover:text-white transition-colors">
                   Carte Numérique Sécurisée
                 </a>
               </li>
               <li>
-                <a href="#adhesion" className="hover:text-white transition-colors">
+                <a href="/#adhesion" className="hover:text-white transition-colors">
                   Campagne d&apos;Adhésion 2026
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Adhésion & Badge (2 cols) */}
+          {/* Col 3: Adhésion & Carte (2 cols) */}
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs uppercase tracking-wider font-bold text-[#D4AF37]">
               Adhésion & Carte
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <a href="#carte" className="hover:text-white transition-colors">
+                <a href="/#carte" className="hover:text-white transition-colors">
                   Carte Numérique (3 000 F)
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors">
+                <a href="/#faq" className="hover:text-white transition-colors">
                   Équivalences Monétaires
                 </a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-white transition-colors">
+                <a href="/#faq" className="hover:text-white transition-colors">
                   Foire Aux Questions
                 </a>
               </li>
@@ -185,28 +185,57 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Contact & Administration (3 cols) */}
-          <div className="lg:col-span-3 space-y-3">
+          {/* Col 4: Cadre Légal & Statuts (2 cols) */}
+          <div className="lg:col-span-2 space-y-3">
+            <h4 className="text-xs uppercase tracking-wider font-bold text-[#D4AF37]">
+              Cadre Légal & Statuts
+            </h4>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <Link href="/conditions-generales" className="hover:text-white transition-colors block">
+                  Conditions Générales (CGU)
+                </Link>
+              </li>
+              <li>
+                <Link href="/confidentialite" className="hover:text-white transition-colors block">
+                  Politique de Confidentialité
+                </Link>
+              </li>
+              <li>
+                <Link href="/mentions-legales" className="hover:text-white transition-colors block">
+                  Mentions Légales
+                </Link>
+              </li>
+              <li>
+                <Link href="/verify" className="hover:text-white transition-colors block text-slate-400">
+                  Authentification QR Code
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 5: Contact & Administration (2 cols) */}
+          <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs uppercase tracking-wider font-bold text-[#D4AF37]">
               Contact & Gestion
             </h4>
             <p className="text-xs text-slate-400">
-              Besoin d&apos;assistance pour adhérer ou activer votre carte ?
+              Assistance pour adhérer ou activer votre carte officielle :
             </p>
 
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] text-xs font-semibold transition-colors"
             >
               <WhatsAppIcon className="w-3.5 h-3.5" />
               <span>WhatsApp : 78 542 53 45</span>
             </a>
 
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Secrétariat Général</span>
-              <span className="text-slate-500">Permanence UCAD</span>
+            <div className="pt-2 border-t border-white/5 flex flex-col text-[10.5px] text-slate-500 gap-0.5">
+              <span>Secrétariat Général EEA</span>
+              <span className="text-slate-400">Permanence UCAD Dakar</span>
             </div>
           </div>
         </div>
@@ -299,7 +328,7 @@ export default function Footer() {
 
                 {/* Badge d'identification flottant sur la carte */}
                 <div className="absolute top-3 left-3 bg-[#061024]/95 backdrop-blur-md border border-[#D4AF37]/50 px-3 py-1.5 rounded-lg shadow-lg text-[11px] font-semibold text-white flex items-center gap-1.5 pointer-events-none">
-                  <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-[#D4AF37]" />
                   <span className="font-bold text-[#F3DE8A]">ENSEPT • Pavillon E</span>
                   <span className="text-slate-400 hidden sm:inline">• Campus UCAD</span>
                 </div>
@@ -309,10 +338,20 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Attribution */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 border-t border-white/5">
-          <p>
-            © 2008 — 2026 Association estudiantine Étudiant Entreprenariat Afrique (EEA) • Récépissé Officiel N° 11450/M.INT.CL/DAGAT/DEL/AS • UCAD Dakar.
-          </p>
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 border-t border-white/5">
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+            <p>
+              © 2008 — 2026 EEA • Récépissé Officiel N° 11450/M.INT.CL/DAGAT/DEL/AS • UCAD Dakar.
+            </p>
+            <span className="hidden sm:inline text-slate-700">•</span>
+            <div className="flex items-center gap-2">
+              <Link href="/conditions-generales" className="hover:text-slate-300 transition-colors">CGU</Link>
+              <span>•</span>
+              <Link href="/confidentialite" className="hover:text-slate-300 transition-colors">Confidentialité</Link>
+              <span>•</span>
+              <Link href="/mentions-legales" className="hover:text-slate-300 transition-colors">Mentions Légales</Link>
+            </div>
+          </div>
 
           <div className="flex items-center gap-1 text-slate-400">
             <span
