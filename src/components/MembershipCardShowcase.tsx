@@ -6,7 +6,6 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import {
   CreditCard,
   ShieldCheck,
-  QrCode,
   Sparkles,
   Check,
   Download,
@@ -220,11 +219,18 @@ export default function MembershipCardShowcase() {
 
                   {/* QR Code & Security Stamp */}
                   <div className="col-span-3 flex flex-col items-center justify-center border-l border-white/10 pl-1 sm:pl-2">
-                    <div className="p-1 sm:p-1.5 bg-white rounded-md sm:rounded-lg shadow-md mb-0.5 sm:mb-1 shrink-0">
-                      <QrCode className="w-8 h-8 sm:w-12 sm:h-12 text-[#060d1d]" />
+                    <div className="p-0.5 sm:p-1 bg-white rounded-md sm:rounded-lg shadow-md mb-0.5 sm:mb-1 shrink-0">
+                      <Image
+                        src="/qr-eea-site.png"
+                        alt="QR Code Officiel du Site EEA"
+                        width={64}
+                        height={64}
+                        className="w-8 h-8 sm:w-12 sm:h-12 object-contain"
+                        priority
+                      />
                     </div>
-                    <span className="text-[6.5px] sm:text-[8px] text-slate-400 tracking-tighter text-center leading-tight">
-                      Scan de Vérification
+                    <span className="text-[6.5px] sm:text-[8px] text-slate-300 font-medium tracking-tighter text-center leading-tight">
+                      Scan Officiel EEA
                     </span>
                   </div>
                 </div>
