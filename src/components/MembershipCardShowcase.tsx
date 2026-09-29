@@ -12,6 +12,8 @@ import {
   Share2,
   Lock,
   ArrowRight,
+  User,
+  Camera,
 } from "lucide-react";
 
 export default function MembershipCardShowcase() {
@@ -147,7 +149,7 @@ export default function MembershipCardShowcase() {
                         ÉTUDIANT ENTREPRENEURIAT AFRIQUE
                       </div>
                       <div className="text-[7px] sm:text-[10px] text-[#D4AF37] font-semibold tracking-wider uppercase truncate">
-                        Carte Officielle de Membre • Né en 2008 • Démarrage officiel 2026
+                        Carte Officielle de Membre • Né en 2008 • Démarrage officiel en 2026
                       </div>
                     </div>
                   </div>
@@ -159,15 +161,20 @@ export default function MembershipCardShowcase() {
 
                 {/* Card Body: Member Details & QR */}
                 <div className="relative z-10 grid grid-cols-12 gap-1.5 sm:gap-3 items-center my-auto py-1 sm:py-2">
-                  {/* Member Photo */}
+                  {/* Member Photo Placeholder Silhouette */}
                   <div className="col-span-3 flex justify-center">
-                    <div className="relative w-14 h-18 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 border-[#D4AF37] bg-slate-800 shadow-md shrink-0">
-                      {/* Placeholder Model Avatar */}
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-t from-[#0B3C8A] to-[#1E3A8A] text-white p-1">
-                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 mb-0.5 sm:mb-1 flex items-center justify-center font-bold text-[9px] sm:text-xs">
-                          JD
+                    <div className="relative w-14 h-18 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 border-[#D4AF37] bg-gradient-to-b from-[#0F224A] via-[#091733] to-[#040914] shadow-md shrink-0 flex flex-col items-center justify-between p-1 select-none">
+                      {/* Stylized Silhouette Avatar */}
+                      <div className="flex flex-col items-center justify-center my-auto">
+                        <div className="w-7 h-7 sm:w-11 sm:h-11 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-[#F3DE8A] shadow-inner mb-0.5 sm:mb-1">
+                          <User className="w-4 h-4 sm:w-7 sm:h-7 text-[#D4AF37]" />
                         </div>
-                        <span className="text-[7px] sm:text-[9px] text-slate-200 leading-none">Photo 4x4</span>
+                      </div>
+
+                      {/* Bottom Photo 4x4 label */}
+                      <div className="w-full py-0.5 rounded bg-white/[0.06] border border-[#D4AF37]/30 flex items-center justify-center gap-0.5 sm:gap-1 text-[5.5px] sm:text-[7.5px] font-bold text-[#F3DE8A] tracking-wider uppercase">
+                        <Camera className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-[#D4AF37]" />
+                        <span>Photo 4×4</span>
                       </div>
                     </div>
                   </div>
@@ -179,7 +186,7 @@ export default function MembershipCardShowcase() {
                         Nom & Prénom
                       </span>
                       <div className="text-[10px] sm:text-sm font-bold text-white truncate leading-tight">
-                        KOUASSI Jean-David
+                        Becaye Doumbouya
                       </div>
                     </div>
 
@@ -188,7 +195,7 @@ export default function MembershipCardShowcase() {
                         Université & Pays
                       </span>
                       <div className="text-[8px] sm:text-xs text-slate-200 font-medium truncate leading-tight">
-                        Univ. Félix Houphouët-Boigny • CI
+                        UCAO st.michel • SN
                       </div>
                     </div>
 
@@ -197,7 +204,7 @@ export default function MembershipCardShowcase() {
                         Filière & Spécialité
                       </span>
                       <div className="text-[8px] sm:text-xs text-slate-200 font-medium truncate leading-tight">
-                        Génie Logiciel & Agrobusiness
+                        Informatique
                       </div>
                     </div>
                   </div>
@@ -224,7 +231,7 @@ export default function MembershipCardShowcase() {
                 <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-1 sm:pt-2 text-[7.5px] sm:text-[10px] text-slate-300">
                   <div className="flex items-center gap-1 font-mono text-[#D4AF37]">
                     <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#D4AF37]" />
-                    <span>ID : EEA-2026-CI-0492</span>
+                    <span>ID : EEA-2026-SN-0492</span>
                   </div>
 
                   <div className="flex items-center gap-1 text-slate-400 text-[7px] sm:text-[9px]">
@@ -266,7 +273,7 @@ export default function MembershipCardShowcase() {
                 </div>
                 <div className="text-right">
                   <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-                    Valable à vie (Définitif)
+                    Définitif
                   </span>
                 </div>
               </div>
@@ -300,7 +307,7 @@ export default function MembershipCardShowcase() {
                   <ArrowRight className="w-5 h-5 text-[#060d1d]" />
                 </a>
                 <p className="text-center text-[11px] text-slate-400 mt-2">
-                  Paiement sécurisé instantané par Wave, Orange Money ou Carte Bancaire.
+                  Paiement sécurisé instantané par Wave, Orange Money.
                 </p>
               </div>
             </div>

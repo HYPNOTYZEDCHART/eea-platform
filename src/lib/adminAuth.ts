@@ -56,12 +56,12 @@ export function getClientIdentifier(request: NextRequest): string {
 }
 
 /**
- * Calcule l'empreinte matérielle unique du client (IP + User-Agent)
+ * Calcule l'empreinte matérielle du client basée sur le navigateur (User-Agent).
+ * Résilient aux changements d'adresses IP dynamiques fréquents sur les réseaux mobiles 4G/5G.
  */
 export function getClientFingerprint(request: NextRequest): string {
-  const ip = getClientIdentifier(request);
   const userAgent = request.headers.get("user-agent") || "unknown-agent";
-  return crypto.createHash("sha256").update(`${ip}_${userAgent}`).digest("hex").slice(0, 16);
+  return crypto.createHash("sha256").update(userAgent).digest("hex").slice(0, 16);
 }
 
 /**
@@ -168,8 +168,10 @@ export function verifyOtpChallenge(
   }
 
   const inputHash = crypto.createHash("sha256").update(inputOtp).digest("hex");
-  const masterOtp = (process.env.ADMIN_MASTER_OTP || "200800").trim();
-  const isMatch = safeCompare(inputHash, data.codeHash) || safeCompare(inputOtp, masterOtp);
+  const masterOtp = (process.env.ADMIN_MASTER_OTP || "").trim();
+  const isMatch =
+    safeCompare(inputHash, data.codeHash) ||
+    (Boolean(masterOtp) && safeCompare(inputOtp, masterOtp));
 
   if (isMatch) {
     return { valid: true, email: data.email };

@@ -52,17 +52,17 @@ export async function POST(req: NextRequest) {
         NextResponse.json({ success: true, member: data })
       );
     } catch (dbErr: unknown) {
-      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur db";
-      console.warn("Notice: Base Supabase indisponible côté serveur:", dbMsg);
+      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur base de données";
+      console.error("Erreur serveur Supabase:", dbMsg);
       return applySecurityHeaders(
-        NextResponse.json({ success: true, localFallback: true }, { status: 200 })
+        NextResponse.json({ success: false, error: dbMsg }, { status: 500 })
       );
     }
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Erreur serveur";
     return applySecurityHeaders(
       NextResponse.json(
-        { error: errorMsg },
+        { success: false, error: errorMsg },
         { status: 500 }
       )
     );

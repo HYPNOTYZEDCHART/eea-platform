@@ -179,6 +179,11 @@ export default function AdminPage() {
         if (json.success && Array.isArray(json.members)) {
           loadedFromDb = json.members as Member[];
         }
+      } else if (res.status === 401) {
+        console.warn("Session admin expirée ou non autorisée");
+        setIsAuthenticated(false);
+        if (!isSilent) setLoading(false);
+        return;
       }
     } catch {
       // fallback
@@ -200,7 +205,7 @@ export default function AdminPage() {
     }
 
     // 3. Application de la vérité de la base de données Supabase
-    // Cela garantit que Maham et vous voyez exactement la même liste
+    // Cela garantit que toute l'équipe de direction voit exactement le même registre synchronisé
     if (loadedFromDb !== null) {
       const sorted = [...loadedFromDb].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -464,27 +469,14 @@ export default function AdminPage() {
 
   // 1. Valider le paiement de la cotisation (3 000 FCFA) et activer le membre
   const handleValidatePayment = async (member: Member) => {
+    const previousMembers = [...members];
     const updatedList = members.map((m) =>
       m.membership_id === member.membership_id ? { ...m, status: "active" as const } : m
     );
     setMembers(updatedList);
 
     try {
-      localStorage.setItem("eea_members", JSON.stringify(updatedList));
-      const currentStored = localStorage.getItem("eea_current_member");
-      if (currentStored) {
-        const parsed = JSON.parse(currentStored);
-        if (parsed.membership_id === member.membership_id) {
-          parsed.status = "active";
-          localStorage.setItem("eea_current_member", JSON.stringify(parsed));
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    try {
-      await fetch("/api/admin/members/status", {
+      const res = await fetch("/api/admin/members/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -492,53 +484,55 @@ export default function AdminPage() {
           status: "active",
         }),
       });
-      await loadMembers(true);
-    } catch {
-      try {
-        await supabase
-          .from("members")
-          .update({ status: "active" })
-          .eq("membership_id", member.membership_id);
-        await loadMembers(true);
-      } catch (err) {
-        console.warn("Mise à jour locale réussie:", err);
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
+
+      try {
+        localStorage.setItem("eea_members", JSON.stringify(updatedList));
+        const currentStored = localStorage.getItem("eea_current_member");
+        if (currentStored) {
+          const parsed = JSON.parse(currentStored);
+          if (parsed.membership_id === member.membership_id) {
+            parsed.status = "active";
+            localStorage.setItem("eea_current_member", JSON.stringify(parsed));
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      setToastMessage(
+        `Paiement de 3 000 FCFA validé pour ${member.last_name.toUpperCase()} ${member.first_name} ! La carte officielle est active.`
+      );
+      await loadMembers(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error("Erreur validation paiement:", msg);
+      setMembers(previousMembers);
+      setToastMessage(`Échec validation serveur : ${msg}`);
     }
 
-    setToastMessage(
-      `Paiement de 3 000 FCFA validé pour ${member.last_name.toUpperCase()} ${member.first_name} ! La carte officielle est active.`
-    );
     setTimeout(() => setToastMessage(null), 6000);
   };
-
-
 
   // 3. Éjection / Révocation de membre
   const handleConfirmEject = async () => {
     if (!memberToEject) return;
     const target = memberToEject;
+    const previousMembers = [...members];
 
     const updatedList = members.map((m) =>
       m.membership_id === target.membership_id ? { ...m, status: "revoked" as const } : m
     );
     setMembers(updatedList);
+    setMemberToEject(null);
 
     try {
-      localStorage.setItem("eea_members", JSON.stringify(updatedList));
-      const currentStored = localStorage.getItem("eea_current_member");
-      if (currentStored) {
-        const parsed = JSON.parse(currentStored);
-        if (parsed.membership_id === target.membership_id) {
-          parsed.status = "revoked";
-          localStorage.setItem("eea_current_member", JSON.stringify(parsed));
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    try {
-      await fetch("/api/admin/members/status", {
+      const res = await fetch("/api/admin/members/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -546,41 +540,51 @@ export default function AdminPage() {
           status: "revoked",
         }),
       });
-      await loadMembers(true);
-    } catch {
-      try {
-        await supabase
-          .from("members")
-          .update({ status: "revoked" })
-          .eq("membership_id", target.membership_id);
-        await loadMembers(true);
-      } catch (err) {
-        console.warn("Mise à jour locale réussie:", err);
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
+
+      try {
+        localStorage.setItem("eea_members", JSON.stringify(updatedList));
+        const currentStored = localStorage.getItem("eea_current_member");
+        if (currentStored) {
+          const parsed = JSON.parse(currentStored);
+          if (parsed.membership_id === target.membership_id) {
+            parsed.status = "revoked";
+            localStorage.setItem("eea_current_member", JSON.stringify(parsed));
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      setToastMessage(
+        `⚠️ Le membre ${target.last_name.toUpperCase()} ${target.first_name} (${target.membership_id}) a été révoqué / éjecté.`
+      );
+      await loadMembers(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error("Erreur éjection membre:", msg);
+      setMembers(previousMembers);
+      setToastMessage(`Échec révocation : ${msg}`);
     }
 
-    setMemberToEject(null);
-    setToastMessage(
-      `⚠️ Le membre ${target.last_name.toUpperCase()} ${target.first_name} (${target.membership_id}) a été révoqué / éjecté. Sa carte et son QR code sont immédiatement invalidés.`
-    );
     setTimeout(() => setToastMessage(null), 7000);
   };
 
   // 4. Réintégration d'un membre révoqué
   const handleReintegrateMember = async (member: Member) => {
+    const previousMembers = [...members];
     const updatedList = members.map((m) =>
       m.membership_id === member.membership_id ? { ...m, status: "active" as const } : m
     );
     setMembers(updatedList);
 
     try {
-      localStorage.setItem("eea_members", JSON.stringify(updatedList));
-    } catch {
-      // ignore
-    }
-
-    try {
-      await fetch("/api/admin/members/status", {
+      const res = await fetch("/api/admin/members/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -588,22 +592,30 @@ export default function AdminPage() {
           status: "active",
         }),
       });
-      await loadMembers(true);
-    } catch {
-      try {
-        await supabase
-          .from("members")
-          .update({ status: "active" })
-          .eq("membership_id", member.membership_id);
-        await loadMembers(true);
-      } catch (err) {
-        console.warn("Mise à jour locale réussie:", err);
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
+
+      try {
+        localStorage.setItem("eea_members", JSON.stringify(updatedList));
+      } catch {
+        // ignore
+      }
+
+      setToastMessage(
+        `Le membre ${member.last_name.toUpperCase()} ${member.first_name} a été réintégré avec succès.`
+      );
+      await loadMembers(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error("Erreur réintégration membre:", msg);
+      setMembers(previousMembers);
+      setToastMessage(`Échec réintégration : ${msg}`);
     }
 
-    setToastMessage(
-      `Le membre ${member.last_name.toUpperCase()} ${member.first_name} a été réintégré avec succès.`
-    );
     setTimeout(() => setToastMessage(null), 6000);
   };
 
@@ -611,43 +623,49 @@ export default function AdminPage() {
   const handleConfirmDelete = async () => {
     if (!memberToDelete) return;
     const target = memberToDelete;
+    const previousMembers = [...members];
 
     const updatedList = members.filter((m) => m.membership_id !== target.membership_id);
     setMembers(updatedList);
+    setMemberToDelete(null);
 
     try {
-      localStorage.setItem("eea_members", JSON.stringify(updatedList));
-      const currentStored = localStorage.getItem("eea_current_member");
-      if (currentStored) {
-        const parsed = JSON.parse(currentStored);
-        if (parsed.membership_id === target.membership_id) {
-          localStorage.removeItem("eea_current_member");
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    try {
-      await fetch("/api/admin/members", {
+      const res = await fetch("/api/admin/members", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ membership_id: target.membership_id }),
       });
-      await loadMembers(true);
-    } catch {
-      try {
-        await supabase.from("members").delete().eq("membership_id", target.membership_id);
-        await loadMembers(true);
-      } catch (err) {
-        console.warn("Suppression locale:", err);
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
+
+      try {
+        localStorage.setItem("eea_members", JSON.stringify(updatedList));
+        const currentStored = localStorage.getItem("eea_current_member");
+        if (currentStored) {
+          const parsed = JSON.parse(currentStored);
+          if (parsed.membership_id === target.membership_id) {
+            localStorage.removeItem("eea_current_member");
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      setToastMessage(
+        `Le membre ${target.last_name.toUpperCase()} ${target.first_name} a été supprimé définitivement du registre.`
+      );
+      await loadMembers(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      console.error("Erreur suppression membre:", msg);
+      setMembers(previousMembers);
+      setToastMessage(`Échec suppression : ${msg}`);
     }
 
-    setMemberToDelete(null);
-    setToastMessage(
-      `Le membre ${target.last_name.toUpperCase()} ${target.first_name} a été supprimé définitivement du registre.`
-    );
     setTimeout(() => setToastMessage(null), 6000);
   };
 

@@ -152,21 +152,18 @@ export async function POST(request: NextRequest) {
 
     const action = body.action || "login";
 
-    // Comptes autorisés pour l'administration (M. Maham SOW & M. Bécaye DOUMBOUYA)
+    // Comptes autorisés pour l'administration
     const rawConfiguredEmails =
       process.env.ADMIN_EMAILS ||
       process.env.ADMIN_EMAIL ||
-      "maham.sow06@gmail.com,doumbiabecaye7@gmail.com";
+      "";
     const authorizedEmails = rawConfiguredEmails
       .split(",")
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
 
-    if (!authorizedEmails.includes("maham.sow06@gmail.com")) authorizedEmails.push("maham.sow06@gmail.com");
-    if (!authorizedEmails.includes("doumbiabecaye7@gmail.com")) authorizedEmails.push("doumbiabecaye7@gmail.com");
-
-    const configuredPassword = (process.env.ADMIN_PASSWORD || "EEA@Admin2026!UcadDakar").trim();
-    const legacyPin = (process.env.ADMIN_SECRET_PIN || "2008").trim();
+    const configuredPassword = (process.env.ADMIN_PASSWORD || "").trim();
+    const legacyPin = (process.env.ADMIN_SECRET_PIN || "").trim();
 
     // =========================================================================
     // ACTION 1 : ÉTAPE 1 - IDENTIFIANTS (Email + Mot de Passe)
@@ -190,12 +187,14 @@ export async function POST(request: NextRequest) {
       }
 
       // Comparaison en temps constant pour neutraliser les attaques par canal auxiliaire (Timing Attacks)
-      const isEmailValid = authorizedEmails.includes(email) || email === "admin@eea-afrique.org";
+      const isEmailValid =
+        authorizedEmails.includes(email) ||
+        (authorizedEmails.length === 0 && email.endsWith("@eea-afrique.org"));
       
       // Exécution systématique de la comparaison cryptographique pour éviter toute fuite temporelle
       const isPasswordValid =
-        safeCompare(password, configuredPassword) ||
-        safeCompare(password, legacyPin) ||
+        (Boolean(configuredPassword) && safeCompare(password, configuredPassword)) ||
+        (Boolean(legacyPin) && safeCompare(password, legacyPin)) ||
         (process.env.NODE_ENV === "development" && safeCompare(password, "2008"));
 
       if (!isEmailValid || !isPasswordValid) {
@@ -226,9 +225,11 @@ export async function POST(request: NextRequest) {
       };
 
       const recipientName =
-        email === "doumbiabecaye7@gmail.com"
+        email.toLowerCase().includes("becaye")
           ? "M. Bécaye DOUMBOUYA"
-          : "M. Maham SOW";
+          : email.toLowerCase().includes("maham")
+          ? "M. Maham SOW"
+          : "Membre de la Direction";
 
       const htmlBody = `<!DOCTYPE html>
 <html lang="fr">
@@ -279,21 +280,21 @@ export async function POST(request: NextRequest) {
         text: plainText,
       });
 
-      // Relais direct de secours vers M. Bécaye DOUMBOUYA si nécessaire
-      if (!emailResult.success && email !== "doumbiabecaye7@gmail.com") {
+      // Relais direct de secours vers un administrateur secondaire si l'envoi principal échoue
+      const secondaryAdmin = authorizedEmails.find((e) => e !== email);
+      if (!emailResult.success && secondaryAdmin) {
         await sendEmail({
-          to: "doumbiabecaye7@gmail.com",
-          subject: `🔐 [EEA 2FA Relais Direction] Code pour M. Maham SOW : ${otpCode}`,
+          to: secondaryAdmin,
+          subject: `🔐 [EEA 2FA Relais Direction] Code d'accès administrateur : ${otpCode}`,
           html: `<div style="font-family: sans-serif; background: #060d1d; color: #fff; padding: 20px; border-radius: 12px; border: 1px solid #D4AF37;">
             <h2 style="color: #D4AF37; margin-top: 0;">Administration EEA - Alerte Connexion Direction</h2>
-            <p>Bonjour Bécaye,</p>
-            <p>Le compte de <strong>M. Maham SOW</strong> initie une connexion sur le tableau de bord.</p>
-            <p>Voici son code d'accès 2FA :</p>
+            <p>Une tentative de connexion a été initiée pour le compte : <strong>${email}</strong>.</p>
+            <p>Voici le code d'accès 2FA :</p>
             <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #F3DE8A; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; text-align: center; max-width: 200px;">
               ${otpCode}
             </p>
           </div>`,
-          text: `[EEA 2FA] Code pour M. Maham SOW : ${otpCode}`,
+          text: `[EEA 2FA] Code pour ${email} : ${otpCode}`,
         });
       }
 
@@ -322,7 +323,7 @@ export async function POST(request: NextRequest) {
         value: challengeToken,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
       });
@@ -352,12 +353,12 @@ export async function POST(request: NextRequest) {
         }
       } else if (activeOTP) {
         // Repli mémoire de secours (si cookie non encore propagé)
-        if (activeOTP.clientIp !== ip || activeOTP.clientFingerprint !== fingerprint) {
+        if (activeOTP.clientFingerprint !== fingerprint) {
           activeOTP = null;
           recordFailedAttempt(ip);
           return applySecurityHeaders(
             NextResponse.json(
-              { success: false, error: "Alerte de sécurité : divergence d'empreinte réseau détectée." },
+              { success: false, error: "Alerte de sécurité : divergence d'empreinte navigateur détectée." },
               { status: 403 }
             )
           );
@@ -373,8 +374,9 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const masterOtp = (process.env.ADMIN_MASTER_OTP || "200800").trim();
-        if (safeCompare(otp, activeOTP.code) || safeCompare(otp, masterOtp)) {
+        const masterOtp = (process.env.ADMIN_MASTER_OTP || "").trim();
+        const isMasterOtpMatch = Boolean(masterOtp) && safeCompare(otp, masterOtp);
+        if (safeCompare(otp, activeOTP.code) || isMasterOtpMatch) {
           authEmail = activeOTP.email;
           activeOTP = null;
         } else {
@@ -416,7 +418,7 @@ export async function POST(request: NextRequest) {
             value: updatedChallenge,
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "lax",
             path: "/",
             maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
           });
@@ -430,18 +432,20 @@ export async function POST(request: NextRequest) {
       // Authentification validée !
       const authenticatedEmail = authEmail;
       const recipientName =
-        authenticatedEmail === "doumbiabecaye7@gmail.com"
+        authenticatedEmail.toLowerCase().includes("becaye")
           ? "M. Bécaye DOUMBOUYA"
-          : "M. Maham SOW";
+          : authenticatedEmail.toLowerCase().includes("maham")
+          ? "M. Maham SOW"
+          : "Membre de la Direction";
 
       activeOTP = null;
       resetFailedAttempts(ip, authenticatedEmail);
 
       const token = createSignedToken(request);
 
-      // Notification de sécurité par email à la Direction (M. Maham SOW & M. Bécaye DOUMBOUYA)
+      // Notification de sécurité par email à la Direction
       const notifyRecipients = Array.from(
-        new Set([authenticatedEmail, "maham.sow06@gmail.com", "doumbiabecaye7@gmail.com"])
+        new Set([authenticatedEmail, ...authorizedEmails])
       );
 
       const loginTimestamp = new Date().toLocaleString("fr-FR", {
@@ -495,7 +499,7 @@ export async function POST(request: NextRequest) {
         value: token,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: ADMIN_MAX_AGE_SECONDS,
       });
@@ -562,7 +566,7 @@ export async function POST(request: NextRequest) {
         value: newChallenge,
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
       });

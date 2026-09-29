@@ -93,14 +93,13 @@ export async function DELETE(req: NextRequest) {
         })
       );
     } catch (dbErr: unknown) {
-      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur db";
-      console.warn("Notice Supabase DELETE:", dbMsg);
+      const dbMsg = dbErr instanceof Error ? dbErr.message : "Erreur base de données";
+      console.error("Erreur serveur Supabase DELETE:", dbMsg);
       return applySecurityHeaders(
         NextResponse.json({
-          success: true,
-          localFallback: true,
-          message: `Membre supprimé localement.`,
-        })
+          success: false,
+          error: dbMsg,
+        }, { status: 500 })
       );
     }
   } catch (err: unknown) {

@@ -41,8 +41,23 @@ export default function VerifyPage({
         return;
       }
 
+      // 1. Interrogation prioritaire de la route API serveur (sécurisée avec Service Role pour tous les statuts)
       try {
-        // 1. Try querying Supabase
+        const apiRes = await fetch(`/api/verify/${encodeURIComponent(cleanToken)}`);
+        if (apiRes.ok) {
+          const apiJson = await apiRes.json();
+          if (apiJson.success && apiJson.member) {
+            setMember(apiJson.member as Member);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (apiErr) {
+        console.warn("Notice: Route API vérification en repli:", apiErr);
+      }
+
+      // 2. Repli direct Supabase client
+      try {
         const { data, error } = await supabase
           .from("members")
           .select("*")
