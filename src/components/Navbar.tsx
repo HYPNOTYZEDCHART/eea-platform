@@ -96,14 +96,14 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 className="text-sm font-medium text-slate-200 hover:text-[#D4AF37] transition-colors duration-200 relative group py-1"
               >
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D4AF37] transition-all duration-300 group-hover:w-full" />
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -145,24 +145,24 @@ export default function Navbar() {
               </div>
             </div>
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:text-white hover:bg-white/5 transition-colors"
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
             <div className="pt-2 space-y-2">
-              <a
+              <Link
                 href="/#adhesion"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-[#060d1d] bg-gradient-to-r from-[#D4AF37] to-[#F3DE8A]"
               >
                 <CreditCard className="w-4 h-4 text-[#060d1d]" />
                 Adhésion & Carte de Membre
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}
