@@ -3,7 +3,7 @@ import Link from "next/link";
 import {
   ShieldCheck,
   Lock,
-  Eye,
+
   Database,
   UserCheck,
   FileCheck,

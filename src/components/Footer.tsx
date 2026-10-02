@@ -128,29 +128,29 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <a href="/#mouvement" className="hover:text-white transition-colors">
+                <Link href="/#mouvement" className="hover:text-white transition-colors">
                   Histoire (2008 — 2026)
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#piliers" className="hover:text-white transition-colors">
+                <Link href="/#piliers" className="hover:text-white transition-colors">
                   Les 4 Piliers Fondateurs
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#piliers" className="hover:text-white transition-colors">
+                <Link href="/#piliers" className="hover:text-white transition-colors">
                   7 Buts Statutaires
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#carte" className="hover:text-white transition-colors">
+                <Link href="/#carte" className="hover:text-white transition-colors">
                   Carte Numérique Sécurisée
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#adhesion" className="hover:text-white transition-colors">
+                <Link href="/#adhesion" className="hover:text-white transition-colors">
                   Campagne d&apos;Adhésion 2026
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -162,19 +162,19 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <a href="/#carte" className="hover:text-white transition-colors">
+                <Link href="/#carte" className="hover:text-white transition-colors">
                   Carte Numérique (3 000 F)
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/#faq" className="hover:text-white transition-colors">
                   Équivalences Monétaires
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/#faq" className="hover:text-white transition-colors">
                   Foire Aux Questions
-                </a>
+                </Link>
               </li>
               <li>
                 <Link href="/verify" className="hover:text-white transition-colors flex items-center gap-1">
