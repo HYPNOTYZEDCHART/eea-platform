@@ -38,11 +38,11 @@ Ce projet a été conçu selon les standards de sécurité les plus stricts pour
 
 | Pilier de Sécurité | Implémentation |
 | :--- | :--- |
-| **Authentification Zero-Trust** | L'accès admin est protégé par une route serveur `/api/admin/auth` avec validation en temps constant du code `ADMIN_SECRET_PIN` et cookie sécurisé signé `httpOnly` / `sameSite=strict`. Aucun secret n'est exposé côté client. |
+| **Authentification Zero-Trust 2FA** | L'accès admin est protégé par une route serveur `/api/admin/auth` avec validation en temps constant du mot de passe `ADMIN_PASSWORD`, défi OTP 2FA transmis par email (`resend`), signature HMAC robuste et cookie sécurisé `httpOnly` / `sameSite=lax`. Aucun secret n'est exposé côté client. |
 | **En-têtes HTTP de Protection** | Configuration dans `next.config.ts` incluant `X-Frame-Options: DENY` (anti-clickjacking), `X-Content-Type-Options: nosniff` (anti-MIME sniffing), `Strict-Transport-Security` et `Permissions-Policy` stricte. |
 | **Protection Anti-Injection CSV** | L'export Excel/CSV neutralise automatiquement les tentatives de *Formula Injection* (OWASP CSV Injection) en échappant les caractères déclencheurs (`=`, `+`, `-`, `@`). |
 | **Sanitisation des Paramètres** | La route `/verify/[token]` valide rigoureusement le format du jeton par expression régulière stricte avant toute requête en base de données. |
-| **Row Level Security (RLS) Supabase** | Politiques SQL et fonction RPC `get_verified_badge(token)` interdisant le scraping public de la table des membres. |
+| **Row Level Security (RLS) Supabase** | Politiques SQL Zero-Leakage interdisant tout scraping ou dump public de la table des membres. Vérification publique sécurisée par serveur et fonction RPC. |
 | **Isolation des Secrets Git** | Le fichier `.gitignore` bloque rigoureusement tout fichier `.env`, `.env.local` et clés privées. Seul le modèle `.env.local.example` est public. |
 
 ---
@@ -72,17 +72,23 @@ cp .env.local.example .env.local
 
 Renseignez vos variables dans `.env.local` :
 ```env
-# Supabase (optionnel en mode local hybride)
+# Supabase (Base de données PostgreSQL et Stockage)
 NEXT_PUBLIC_SUPABASE_URL=https://votre-projet.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=votre-cle-anonyme
 SUPABASE_SERVICE_ROLE_KEY=votre-cle-service-role
 
-# Code PIN de l'espace administrateur
-ADMIN_SECRET_PIN=2008
+# Authentification Administration (Email + Mot de passe fort + 2FA OTP)
+ADMIN_EMAILS=direction@eea-afrique.org,secretariat@eea-afrique.org
+ADMIN_PASSWORD=votre-mot-de-passe-admin-robuste
+ADMIN_OTP_SECRET_KEY=votre-cle-secrete-hmac-32-caracteres
 
 # URL et Contact
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_WHATSAPP_NUMBER=221785425345
+
+# Emails transactionnels Resend (2FA et transmission de cartes)
+RESEND_API_KEY=re_votre_cle_resend
+RESEND_FROM_EMAIL=EEA Secrétariat <onboarding@resend.dev>
 ```
 
 ### 4. Lancer le Serveur de Développement

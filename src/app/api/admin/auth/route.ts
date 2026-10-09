@@ -14,6 +14,8 @@ import {
   verifyOtpChallenge,
   createSignedToken,
   verifySignedToken,
+  getAuthorizedAdminEmails,
+  getValidChallengePayload,
 } from "@/lib/adminAuth";
 
 // =============================================================================
@@ -152,18 +154,32 @@ export async function POST(request: NextRequest) {
 
     const action = body.action || "login";
 
-    // Comptes autorisés pour l'administration
-    const rawConfiguredEmails =
-      process.env.ADMIN_EMAILS ||
-      process.env.ADMIN_EMAIL ||
-      "";
-    const authorizedEmails = rawConfiguredEmails
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean);
+    // Comptes autorisés pour l'administration (stricts, aucun fallback laxiste)
+    const authorizedEmails = getAuthorizedAdminEmails();
+    if (authorizedEmails.length === 0) {
+      console.error(
+        "[ALERTE SÉCURITÉ] Aucun compte administrateur n'est configuré (variables ADMIN_EMAILS ou ADMIN_EMAIL vides)."
+      );
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Accès administration non configuré sur ce serveur." },
+          { status: 503 }
+        )
+      );
+    }
 
     const configuredPassword = (process.env.ADMIN_PASSWORD || "").trim();
-    const legacyPin = (process.env.ADMIN_SECRET_PIN || "").trim();
+    if (!configuredPassword) {
+      console.error(
+        "[ALERTE SÉCURITÉ] Aucun mot de passe administrateur n'est configuré (variable ADMIN_PASSWORD vide)."
+      );
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Configuration administrateur incomplète sur ce serveur." },
+          { status: 503 }
+        )
+      );
+    }
 
     // =========================================================================
     // ACTION 1 : ÉTAPE 1 - IDENTIFIANTS (Email + Mot de Passe)
@@ -186,16 +202,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Comparaison en temps constant pour neutraliser les attaques par canal auxiliaire (Timing Attacks)
-      const isEmailValid =
-        authorizedEmails.includes(email) ||
-        (authorizedEmails.length === 0 && email.endsWith("@eea-afrique.org"));
+      // Vérification stricte sans repli de domaine laxiste
+      const isEmailValid = authorizedEmails.includes(email);
       
-      // Exécution systématique de la comparaison cryptographique pour éviter toute fuite temporelle
-      const isPasswordValid =
-        (Boolean(configuredPassword) && safeCompare(password, configuredPassword)) ||
-        (Boolean(legacyPin) && safeCompare(password, legacyPin)) ||
-        (process.env.NODE_ENV === "development" && safeCompare(password, "2008"));
+      // Exécution systématique de la comparaison cryptographique en temps constant
+      // Accepte UNIQUEMENT ADMIN_PASSWORD configuré (aucun bypass PIN ou master)
+      const isPasswordValid = safeCompare(password, configuredPassword);
 
       if (!isEmailValid || !isPasswordValid) {
         recordFailedAttempt(ip, email);
@@ -374,9 +386,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const masterOtp = (process.env.ADMIN_MASTER_OTP || "").trim();
-        const isMasterOtpMatch = Boolean(masterOtp) && safeCompare(otp, masterOtp);
-        if (safeCompare(otp, activeOTP.code) || isMasterOtpMatch) {
+        if (safeCompare(otp, activeOTP.code)) {
           authEmail = activeOTP.email;
           activeOTP = null;
         } else {
@@ -405,10 +415,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (!authEmail) {
+      if (!authEmail || !authorizedEmails.includes(authEmail.toLowerCase().trim())) {
         recordFailedAttempt(ip);
         const errResponse = NextResponse.json(
-          { success: false, error: challengeError || "Code de sécurité invalide." },
+          { success: false, error: challengeError || "Code de sécurité invalide ou compte non autorisé." },
           { status: 401 }
         );
 
@@ -508,27 +518,54 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // ACTION 3 : RENVOI DU CODE OTP (AVEC DÉLAI D'ATTENTE ANTI-SPAM)
+    // ACTION 3 : RENVOI DU CODE OTP (AVEC CONTRÔLE HMAC & DÉLAI ANTI-SPAM)
     // =========================================================================
     if (action === "resend_otp") {
-      let targetEmail = activeOTP?.email;
       const challengeCookie = request.cookies.get(ADMIN_OTP_COOKIE_NAME)?.value;
 
-      if (!targetEmail && challengeCookie && challengeCookie.includes(".")) {
-        try {
-          const payloadStr = challengeCookie.split(".")[0];
-          const parsed = JSON.parse(Buffer.from(payloadStr, "base64url").toString("utf8"));
-          if (parsed?.email) targetEmail = parsed.email;
-        } catch {
-          // ignore
-        }
-      }
-
-      if (!targetEmail) {
+      if (!challengeCookie) {
         return applySecurityHeaders(
           NextResponse.json(
-            { success: false, error: "Aucune session active. Veuillez vous reconnecter." },
+            { success: false, error: "Aucun challenge de sécurité actif. Veuillez vous réidentifier." },
             { status: 400 }
+          )
+        );
+      }
+
+      // Validation cryptographique complète : signature HMAC, empreinte et expiration
+      const verifiedChallenge = getValidChallengePayload(challengeCookie, request);
+      if (!verifiedChallenge.valid || !verifiedChallenge.payload?.email) {
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error: verifiedChallenge.error || "Session de vérification invalide ou expirée. Veuillez vous réidentifier.",
+            },
+            { status: 401 }
+          )
+        );
+      }
+
+      const targetEmail = verifiedChallenge.payload.email.toLowerCase().trim();
+
+      // Vérification stricte que l'email appartient aux administrateurs autorisés
+      if (!authorizedEmails.includes(targetEmail)) {
+        recordFailedAttempt(ip, targetEmail);
+        return applySecurityHeaders(
+          NextResponse.json(
+            { success: false, error: "Ce compte n'est pas autorisé à recevoir des codes administrateur." },
+            { status: 403 }
+          )
+        );
+      }
+
+      // Protection anti-spam : au moins 25 secondes d'attente entre deux renvois
+      if (verifiedChallenge.payload.issuedAt && Date.now() - verifiedChallenge.payload.issuedAt < 25 * 1000) {
+        const waitSec = Math.ceil((25 * 1000 - (Date.now() - verifiedChallenge.payload.issuedAt)) / 1000);
+        return applySecurityHeaders(
+          NextResponse.json(
+            { success: false, error: `Veuillez patienter encore ${waitSec} seconde(s) avant de demander un nouveau code.` },
+            { status: 429 }
           )
         );
       }
@@ -544,7 +581,7 @@ export async function POST(request: NextRequest) {
         lastResendAt: Date.now(),
       };
 
-      console.info(`🔐 [EEA 2FA RENVOI] Nouveau code pour ${targetEmail}`);
+      console.info(`🔐 [EEA 2FA RENVOI SÉCURISÉ] Nouveau code émis pour ${targetEmail}`);
 
       await sendEmail({
         to: targetEmail,

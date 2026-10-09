@@ -14,7 +14,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
-import { supabase } from "@/lib/supabase";
 
 export default function VerifyPortalPage() {
   const router = useRouter();
@@ -34,48 +33,34 @@ export default function VerifyPortalPage() {
     setErrorMessage(null);
 
     try {
-      // 1. If it looks like a token directly, route to /verify/[token]
+      // 1. Si le format ressemble directement à un jeton QR
       if (cleanQuery.startsWith("eea_token_") || cleanQuery.length > 20) {
         router.push(`/verify/${encodeURIComponent(cleanQuery)}`);
         return;
       }
 
-      // 2. Query Supabase by membership_id or qr_code_token (assaini pour éviter toute erreur de syntaxe PostgREST)
+      // 2. Requête sécurisée auprès de la route API serveur /api/verify/[token]
       const safeTerm = cleanQuery.replace(/[^a-zA-Z0-9_.-]/g, "").trim();
       if (safeTerm) {
-        const { data } = await supabase
-          .from("members")
-          .select("qr_code_token")
-          .or(`membership_id.ilike.%${safeTerm}%,qr_code_token.eq.${safeTerm}`)
-          .limit(1)
-          .maybeSingle();
-
-        if (data?.qr_code_token) {
-          router.push(`/verify/${encodeURIComponent(data.qr_code_token)}`);
-          return;
-        }
-      }
-
-      // 3. Fallback search in localStorage
-      if (typeof window !== "undefined") {
         try {
-          const localList = JSON.parse(localStorage.getItem("eea_members") || "[]");
-          const found = localList.find(
-            (m: { membership_id?: string; qr_code_token?: string }) =>
-              m.membership_id?.toLowerCase() === cleanQuery.toLowerCase() ||
-              m.qr_code_token === cleanQuery
-          );
-          if (found?.qr_code_token) {
-            router.push(`/verify/${encodeURIComponent(found.qr_code_token)}`);
-            return;
+          const apiRes = await fetch(`/api/verify/${encodeURIComponent(safeTerm)}`);
+          if (apiRes.ok) {
+            const apiJson = await apiRes.json();
+            if (apiJson.success && apiJson.member?.qr_code_token) {
+              router.push(`/verify/${encodeURIComponent(apiJson.member.qr_code_token)}`);
+              return;
+            }
           }
         } catch {
           // ignore
         }
       }
 
-      // 4. If demo matricule
-      if (cleanQuery.toUpperCase().includes("0842") || cleanQuery.toLowerCase().includes("demo")) {
+      // 3. Fallback uniquement en mode développement local pour démonstrations UI
+      if (
+        process.env.NODE_ENV === "development" &&
+        (cleanQuery.toUpperCase().includes("0842") || cleanQuery.toLowerCase().includes("demo"))
+      ) {
         router.push(`/verify/eea_token_demo_0842`);
         return;
       }

@@ -8,23 +8,41 @@ export const ADMIN_OTP_MAX_AGE_SECONDS = 5 * 60; // 5 minutes
 
 /**
  * Clé secrète cryptographique du serveur pour la signature HMAC
+ * Requiert ADMIN_OTP_SECRET_KEY ou SUPABASE_SERVICE_ROLE_KEY (entropie élevée)
  */
 export function getSigningSecret(): string {
   const secret =
     process.env.ADMIN_OTP_SECRET_KEY ||
-    process.env.ADMIN_SECRET_PIN ||
     process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
-      console.error(
-        "[ALERTE CRITIQUE SÉCURITÉ] Aucune variable d'environnement secrète (ADMIN_OTP_SECRET_KEY) n'est configurée en production !"
+      throw new Error(
+        "[ALERTE CRITIQUE SÉCURITÉ] Variable ADMIN_OTP_SECRET_KEY ou SUPABASE_SERVICE_ROLE_KEY manquante en production."
       );
     }
-    return "eea-secret-institutional-salt-2008";
+    console.warn(
+      "[AVERTISSEMENT SÉCURITÉ DEV] Aucune clé secrète HMAC configurée. Utilisation d'un sel sécurisé local."
+    );
+    return "eea-dev-institutional-secret-salt-2026-strict";
   }
 
   return secret;
+}
+
+/**
+ * Récupère la liste stricte des adresses email autorisées à administrer la plateforme.
+ * Refuse catégoriquement tout accès si aucun administrateur n'est explicitement listé.
+ */
+export function getAuthorizedAdminEmails(): string[] {
+  const rawConfiguredEmails =
+    process.env.ADMIN_EMAILS ||
+    process.env.ADMIN_EMAIL ||
+    "";
+  return rawConfiguredEmails
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
 }
 
 /**
@@ -83,6 +101,7 @@ export interface OtpChallengePayload {
   attemptsLeft: number;
   fingerprint: string;
   clientIp: string;
+  issuedAt?: number;
 }
 
 /**
@@ -105,6 +124,7 @@ export function createOtpChallenge(
     attemptsLeft: 3,
     fingerprint,
     clientIp,
+    issuedAt: Date.now(),
   };
 
   const payloadStr = Buffer.from(JSON.stringify(payloadData)).toString("base64url");
@@ -113,6 +133,59 @@ export function createOtpChallenge(
     .update(payloadStr)
     .digest("hex");
   return `${payloadStr}.${hmac}`;
+}
+
+/**
+ * Valide cryptographiquement le jeton de challenge OTP sans altérer son compteur d'essais
+ * Utilisé pour vérifier l'authenticité lors d'un renvoi d'OTP ou d'une inspection
+ */
+export function getValidChallengePayload(
+  token: string,
+  request: NextRequest
+): {
+  valid: boolean;
+  payload?: OtpChallengePayload;
+  error?: string;
+} {
+  if (!token || !token.includes(".")) {
+    return { valid: false, error: "Jeton de challenge manquant ou corrompu." };
+  }
+  const parts = token.split(".");
+  if (parts.length !== 2) {
+    return { valid: false, error: "Format du challenge invalide." };
+  }
+  const [payloadStr, hmac] = parts;
+  const expectedHmac = crypto
+    .createHmac("sha256", getSigningSecret())
+    .update(payloadStr)
+    .digest("hex");
+
+  const hmacBuffer = Buffer.from(hmac);
+  const expectedBuffer = Buffer.from(expectedHmac);
+  if (
+    hmacBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(hmacBuffer, expectedBuffer)
+  ) {
+    return { valid: false, error: "Signature du challenge de sécurité invalide ou altérée." };
+  }
+
+  let data: OtpChallengePayload;
+  try {
+    data = JSON.parse(Buffer.from(payloadStr, "base64url").toString("utf8"));
+  } catch {
+    return { valid: false, error: "Données du challenge illisibles." };
+  }
+
+  if (Date.now() > data.expiresAt) {
+    return { valid: false, error: "Le challenge de sécurité a expiré." };
+  }
+
+  const currentFingerprint = getClientFingerprint(request);
+  if (data.fingerprint !== currentFingerprint) {
+    return { valid: false, error: "Divergence d'empreinte réseau détectée. Session révoquée." };
+  }
+
+  return { valid: true, payload: data };
 }
 
 /**
@@ -129,49 +202,14 @@ export function verifyOtpChallenge(
   updatedToken?: string;
   error?: string;
 } {
-  if (!token || !token.includes(".")) {
-    return { valid: false, error: "Jeton de challenge de sécurité manquant ou corrompu." };
-  }
-  const parts = token.split(".");
-  if (parts.length !== 2) {
-    return { valid: false, error: "Format du challenge de sécurité invalide." };
-  }
-  const [payloadStr, hmac] = parts;
-  const expectedHmac = crypto
-    .createHmac("sha256", getSigningSecret())
-    .update(payloadStr)
-    .digest("hex");
-
-  const hmacBuffer = Buffer.from(hmac);
-  const expectedBuffer = Buffer.from(expectedHmac);
-  if (
-    hmacBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(hmacBuffer, expectedBuffer)
-  ) {
-    return { valid: false, error: "Signature du challenge de sécurité altérée." };
+  const verified = getValidChallengePayload(token, request);
+  if (!verified.valid || !verified.payload) {
+    return { valid: false, error: verified.error || "Challenge invalide." };
   }
 
-  let data: OtpChallengePayload;
-  try {
-    data = JSON.parse(Buffer.from(payloadStr, "base64url").toString("utf8"));
-  } catch {
-    return { valid: false, error: "Données de challenge illisibles." };
-  }
-
-  if (Date.now() > data.expiresAt) {
-    return { valid: false, error: "Le code de sécurité a expiré (délai de 5 minutes dépassé)." };
-  }
-
-  const currentFingerprint = getClientFingerprint(request);
-  if (data.fingerprint !== currentFingerprint) {
-    return { valid: false, error: "Divergence d'empreinte réseau détectée. Session révoquée." };
-  }
-
+  const data = verified.payload;
   const inputHash = crypto.createHash("sha256").update(inputOtp).digest("hex");
-  const masterOtp = (process.env.ADMIN_MASTER_OTP || "").trim();
-  const isMatch =
-    safeCompare(inputHash, data.codeHash) ||
-    (Boolean(masterOtp) && safeCompare(inputOtp, masterOtp));
+  const isMatch = safeCompare(inputHash, data.codeHash);
 
   if (isMatch) {
     return { valid: true, email: data.email };

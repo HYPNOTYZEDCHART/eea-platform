@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import {
-  supabase,
   Member,
   getEffectiveMemberStatus,
 } from "@/lib/supabase";
@@ -189,22 +188,7 @@ export default function AdminPage() {
       // fallback
     }
 
-    // 2. Fallback direct client Supabase si la route API serveur n'a pas répondu
-    if (loadedFromDb === null) {
-      try {
-        const { data, error } = await supabase
-          .from("members")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (data && !error) {
-          loadedFromDb = data as Member[];
-        }
-      } catch (err) {
-        console.warn("Notice: Fallback local actif:", err);
-      }
-    }
-
-    // 3. Application de la vérité de la base de données Supabase
+    // 2. Application de la vérité de la base de données Supabase transmise par l'API serveur
     // Cela garantit que toute l'équipe de direction voit exactement le même registre synchronisé
     if (loadedFromDb !== null) {
       const sorted = [...loadedFromDb].sort(

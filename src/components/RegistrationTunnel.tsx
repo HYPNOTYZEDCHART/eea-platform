@@ -21,7 +21,7 @@ import {
 import PhotoCapture from "./PhotoCapture";
 import WhatsAppIcon from "./WhatsAppIcon";
 import MemberCardBadge from "./MemberCardBadge";
-import { supabase, Member } from "@/lib/supabase";
+import { Member } from "@/lib/supabase";
 
 interface RegistrationFormData {
   firstName: string;
@@ -147,93 +147,48 @@ export default function RegistrationTunnel({
         expires_at: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
-      // 2. Upload photo to Supabase Storage if present, or fallback gracefully
-      let publicPhotoUrl = newMember.photo_url;
-      if (newMember.photo_url && newMember.photo_url.startsWith("data:")) {
-        try {
-          const base64Data = newMember.photo_url.split(",")[1];
-          if (base64Data) {
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-              byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], { type: "image/jpeg" });
-            const fileName = `${newMember.membership_id}-${Date.now()}.jpg`;
+      // 2. Enregistrement sécurisé côté serveur via /api/register
+      // La route serveur traite le téléversement de photo (Service Role) et enregistre le membre
+      const apiRes = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          membership_id: newMember.membership_id,
+          first_name: newMember.first_name,
+          last_name: newMember.last_name,
+          email: newMember.email,
+          phone: newMember.phone,
+          country: newMember.country,
+          university: newMember.university,
+          field_of_study: newMember.field_of_study,
+          photo_url: newMember.photo_url,
+          qr_code_token: newMember.qr_code_token,
+          payment_method: newMember.payment_method,
+          payment_reference: newMember.payment_reference,
+        }),
+      });
 
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from("member-photos")
-              .upload(fileName, blob, { contentType: "image/jpeg", upsert: true });
-
-            if (!uploadError && uploadData) {
-              const { data: publicUrlData } = supabase.storage
-                .from("member-photos")
-                .getPublicUrl(fileName);
-              if (publicUrlData?.publicUrl) {
-                publicPhotoUrl = publicUrlData.publicUrl;
-                newMember.photo_url = publicPhotoUrl;
-              }
-            }
-          }
-        } catch (uploadErr) {
-          console.warn("Notice: Stockage local de la photo utilisé:", uploadErr);
-        }
+      if (!apiRes.ok) {
+        const errJson = await apiRes.json().catch(() => ({}));
+        throw new Error(errJson.error || "Échec de l'enregistrement de votre adhésion.");
       }
 
-      // 3. Insert to Supabase via server API route (bypasses RLS) with client fallback
-      try {
-        const apiRes = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            membership_id: newMember.membership_id,
-            first_name: newMember.first_name,
-            last_name: newMember.last_name,
-            email: newMember.email,
-            phone: newMember.phone,
-            country: newMember.country,
-            university: newMember.university,
-            field_of_study: newMember.field_of_study,
-            photo_url: publicPhotoUrl,
-            qr_code_token: newMember.qr_code_token,
-            status: "pending",
-          }),
-        });
-        if (!apiRes.ok) {
-          await supabase.from("members").insert({
-            membership_id: newMember.membership_id,
-            first_name: newMember.first_name,
-            last_name: newMember.last_name,
-            email: newMember.email,
-            phone: newMember.phone,
-            country: newMember.country,
-            university: newMember.university,
-            field_of_study: newMember.field_of_study,
-            photo_url: publicPhotoUrl,
-            qr_code_token: newMember.qr_code_token,
-            status: "pending",
-          });
-        }
-      } catch (err) {
-        console.warn("Mode local actif :", err);
-      }
+      const resData = await apiRes.json();
+      const registeredMember: Member = resData.member || newMember;
 
-      // Save to localStorage so state persists across reloads
+      // Sauvegarde du membre pour affichage et prévisualisation immédiate de la carte
       try {
-        const existing = JSON.parse(localStorage.getItem("eea_members") || "[]");
-        existing.unshift(newMember);
-        localStorage.setItem("eea_members", JSON.stringify(existing));
-        localStorage.setItem("eea_current_member", JSON.stringify(newMember));
+        localStorage.setItem("eea_current_member", JSON.stringify(registeredMember));
       } catch {
         // ignore storage errors
       }
 
-      setCreatedMember(newMember);
+      setCreatedMember(registeredMember);
       if (onMemberRegistered) {
-        onMemberRegistered(newMember);
+        onMemberRegistered(registeredMember);
       }
       setCurrentStep(4);
+      return;
     } catch (err) {
       console.error(err);
       alert("Une erreur est survenue lors de l'enregistrement. Veuillez réessayer.");

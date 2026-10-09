@@ -20,15 +20,15 @@ export async function GET(
     const { data, error } = await supabaseAdmin
       .from("members")
       .select(
-        "id, membership_id, first_name, last_name, country, university, field_of_study, photo_url, qr_code_token, status, created_at, expires_at"
+        "membership_id, first_name, last_name, country, university, field_of_study, photo_url, qr_code_token, status, created_at, expires_at"
       )
-      .eq("qr_code_token", cleanToken)
+      .or(`qr_code_token.eq.${cleanToken},membership_id.eq.${cleanToken}`)
       .maybeSingle();
 
     if (error) {
       console.error("Erreur recherche vérification token:", error);
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: "Erreur lors de la vérification." },
         { status: 500 }
       );
     }

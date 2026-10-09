@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import MemberCardBadge from "@/components/MemberCardBadge";
-import { supabase, Member, getEffectiveMemberStatus } from "@/lib/supabase";
+import { Member, getEffectiveMemberStatus } from "@/lib/supabase";
 
 export default function VerifyPage({
   params,
@@ -56,56 +56,29 @@ export default function VerifyPage({
         console.warn("Notice: Route API vérification en repli:", apiErr);
       }
 
-      // 2. Repli direct Supabase client
-      try {
-        const { data, error } = await supabase
-          .from("members")
-          .select("*")
-          .eq("qr_code_token", cleanToken)
-          .single();
-
-        if (data && !error) {
-          setMember(data as Member);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Supabase check error, trying local fallback:", err);
-      }
-
-      // 2. Local fallback check (from localStorage)
-      try {
-        const localList = JSON.parse(localStorage.getItem("eea_members") || "[]");
-        const found = localList.find((m: Member) => m.qr_code_token === token);
-        if (found) {
-          setMember(found);
-          setLoading(false);
-          return;
-        }
-
-        // Demo token fallback for showcase testing
-        if (token === "eea_token_demo_0842" || token.startsWith("demo")) {
-          setMember({
-            id: "demo-id",
-            membership_id: "EEA-2026-SN-0842",
-            first_name: "Jean-David",
-            last_name: "KOUASSI",
-            email: "kouassi.jeandavid@ucad.edu.sn",
-            phone: "+221 78 542 53 45",
-            country: "Sénégal",
-            university: "Université Cheikh Anta Diop (UCAD Dakar)",
-            field_of_study: "Génie Logiciel & Agrobusiness",
-            photo_url: null,
-            qr_code_token: token,
-            status: "active",
-            created_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-          });
-          setLoading(false);
-          return;
-        }
-      } catch {
-        // ignore
+      // 2. Repli démo réservé exclusivement à l'environnement de développement local
+      if (
+        process.env.NODE_ENV === "development" &&
+        (cleanToken === "eea_token_demo_0842" || cleanToken.startsWith("demo"))
+      ) {
+        setMember({
+          id: "demo-id",
+          membership_id: "EEA-2026-SN-0842",
+          first_name: "Jean-David",
+          last_name: "KOUASSI",
+          email: "kouassi.jeandavid@ucad.edu.sn",
+          phone: "+221 78 542 53 45",
+          country: "Sénégal",
+          university: "Université Cheikh Anta Diop (UCAD Dakar)",
+          field_of_study: "Génie Logiciel & Agrobusiness",
+          photo_url: null,
+          qr_code_token: cleanToken,
+          status: "active",
+          created_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        });
+        setLoading(false);
+        return;
       }
 
       setMember(null);

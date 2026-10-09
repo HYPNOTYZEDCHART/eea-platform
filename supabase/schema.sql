@@ -23,9 +23,15 @@ create table if not exists public.members (
     card_image_url text,
     qr_code_token text unique not null,
     status text not null default 'pending' check (status in ('pending', 'active', 'expired', 'revoked')),
+    payment_method text,
+    payment_reference text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null,
     expires_at timestamp with time zone default timezone('utc'::text, now() + interval '100 years') not null -- Adhésion permanente à vie
 );
+
+-- Colonnes additionnelles rétrocompatibles
+alter table public.members add column if not exists payment_method text;
+alter table public.members add column if not exists payment_reference text;
 
 -- Index de recherche rapide
 create index if not exists idx_members_membership_id on public.members(membership_id);
@@ -62,27 +68,29 @@ on conflict (id) do nothing;
 alter table public.members enable row level security;
 alter table public.payments enable row level security;
 
--- A. Table members: Lecture autorisée pour les vérifications de badge ou administrateurs
+-- A. Table members: Lecture strictement restreinte aux administrateurs (Zero-Leakage)
+-- Empêche tout dump de la base ou scraping anonyme des emails, téléphones et données privées.
+-- La vérification publique s'effectue exclusivement via la fonction RPC get_verified_badge(token)
+-- ou la route API serveur /api/verify/[token].
 drop policy if exists "Lecture publique de vérification de carte" on public.members;
-create policy "Lecture publique de vérification de carte"
+drop policy if exists "Lecture des membres restreinte aux administrateurs" on public.members;
+create policy "Lecture des membres restreinte aux administrateurs"
     on public.members
     for select
     using (
         auth.role() = 'service_role' 
         or auth.role() = 'authenticated'
-        or status in ('active', 'expired', 'revoked')
     );
 
--- B. Table members: Création de membre lors du formulaire d'adhésion (uniquement statut 'pending')
+-- B. Table members: Insertion sécurisée réservée au backend applicatif (Service Role)
 drop policy if exists "Insertion d'un nouveau membre lors du tunnel" on public.members;
-create policy "Insertion d'un nouveau membre lors du tunnel"
+drop policy if exists "Insertion membre par service role" on public.members;
+create policy "Insertion membre par service role"
     on public.members
     for insert
     with check (
-        length(first_name) > 0 and 
-        length(last_name) > 0 and 
-        email like '%_@__%.__%' and
-        status = 'pending'
+        auth.role() = 'service_role' 
+        or auth.role() = 'authenticated'
     );
 
 -- C. Table members: Mise à jour par les administrateurs ou via service role
@@ -92,12 +100,19 @@ create policy "Mise à jour membre par service role"
     for update
     using (auth.role() = 'service_role' or auth.role() = 'authenticated');
 
--- D. Table payments: Insertion lors de l'initiation d'un paiement
+-- Table members: Suppression réservée aux administrateurs via service role
+drop policy if exists "Suppression membre par service role" on public.members;
+create policy "Suppression membre par service role"
+    on public.members
+    for delete
+    using (auth.role() = 'service_role' or auth.role() = 'authenticated');
+
+-- D. Table payments: Insertion réservée au backend applicatif
 drop policy if exists "Insertion d'un paiement en attente" on public.payments;
-create policy "Insertion d'un paiement en attente"
+create policy "Insertion d'un paiement par service role"
     on public.payments
     for insert
-    with check (amount >= 3000);
+    with check (auth.role() = 'service_role' or auth.role() = 'authenticated');
 
 -- E. Table payments: Lecture strictement réservée aux administrateurs
 drop policy if exists "Lecture des paiements par service role ou authentifié" on public.payments;
@@ -107,28 +122,40 @@ create policy "Lecture des paiements par service role ou authentifié"
     using (auth.role() = 'service_role' or auth.role() = 'authenticated');
 
 -- F. Politiques de stockage
+-- Lecture publique des photos de badges certifiées
 drop policy if exists "Accès public en lecture des photos de membres" on storage.objects;
 create policy "Accès public en lecture des photos de membres"
     on storage.objects for select
     using (bucket_id = 'member-photos');
 
+-- Upload des photos réservé au service role (via /api/register côté serveur)
+-- Neutralise les injections de fichiers anonymes non contrôlées
 drop policy if exists "Upload public des photos de membres" on storage.objects;
-create policy "Upload public des photos de membres"
+drop policy if exists "Upload des photos de membres par service role" on storage.objects;
+create policy "Upload des photos de membres par service role"
     on storage.objects for insert
-    with check (bucket_id = 'member-photos');
+    with check (
+        bucket_id = 'member-photos' 
+        and (auth.role() = 'service_role' or auth.role() = 'authenticated')
+    );
 
+-- Lecture publique des cartes de membres générées
 drop policy if exists "Accès public en lecture des cartes de membres" on storage.objects;
 create policy "Accès public en lecture des cartes de membres"
     on storage.objects for select
     using (bucket_id = 'member-cards');
 
+-- Upload des cartes réservé strictement aux administrateurs / service role
 drop policy if exists "Upload des cartes générées par admin" on storage.objects;
 create policy "Upload des cartes générées par admin"
     on storage.objects for insert
-    with check (bucket_id = 'member-cards');
+    with check (
+        bucket_id = 'member-cards' 
+        and (auth.role() = 'service_role' or auth.role() = 'authenticated')
+    );
 
--- 6. FONCTION RPC DE VÉRIFICATION PUBLIQUE SÉCURISÉE (Anti-Scraping)
--- Permet de vérifier un badge par son QR code sans exposer les données privées de la table
+-- 6. FONCTION RPC DE VÉRIFICATION PUBLIQUE SÉCURISÉE (Anti-Scraping & Zero-Trust)
+-- Expose uniquement les données d'authenticité publiques sans divulguer l'email ni le téléphone.
 create or replace function public.get_verified_badge(token_input text)
 returns table (
     membership_id text,
@@ -157,7 +184,7 @@ as $$
         m.created_at,
         m.expires_at
     from public.members m
-    where m.qr_code_token = token_input
+    where (m.qr_code_token = token_input or m.membership_id = token_input)
     limit 1;
 $$;
 
