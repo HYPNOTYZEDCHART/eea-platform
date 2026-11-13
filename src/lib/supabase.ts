@@ -1,18 +1,49 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-project.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+const PLACEHOLDER_URL = "https://placeholder-project.supabase.co";
 
-// Client public pour le frontend (anonyme / RLS)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Client administrateur avec Service Role (exécuté UNIQUEMENT côté serveur pour opérations privilégiées)
-export const getSupabaseAdmin = () => {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!serviceRoleKey) {
-    throw new Error("La variable d'environnement SUPABASE_SERVICE_ROLE_KEY est manquante.");
+function resolveSupabaseUrl(): string | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!url || url.includes("placeholder-project") || url.includes("your-project")) {
+    return null;
   }
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return url;
+}
+
+function resolvePublicKey(): string | null {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+    null
+  );
+}
+
+function resolveSecretKey(): string | null {
+  return (
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+    null
+  );
+}
+
+// Client public pour le frontend (Publishable Key / Anon Key soumise à RLS)
+const publicUrl = resolveSupabaseUrl() || PLACEHOLDER_URL;
+const publicKey = resolvePublicKey() || "placeholder-publishable-key";
+export const supabase: SupabaseClient = createClient(publicUrl, publicKey);
+
+// Client administrateur serveur (Secret Key sb_secret_... ou legacy service_role, UNIQUEMENT côté serveur)
+export const getSupabaseAdmin = (): SupabaseClient => {
+  const url = resolveSupabaseUrl();
+  if (!url) {
+    throw new Error("La variable d'environnement NEXT_PUBLIC_SUPABASE_URL est manquante ou invalide.");
+  }
+  const secretKey = resolveSecretKey();
+  if (!secretKey) {
+    throw new Error(
+      "La variable d'environnement SUPABASE_SECRET_KEY (ou SUPABASE_SERVICE_ROLE_KEY) est manquante."
+    );
+  }
+  return createClient(url, secretKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

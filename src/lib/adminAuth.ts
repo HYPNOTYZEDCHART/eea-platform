@@ -8,17 +8,18 @@ export const ADMIN_OTP_MAX_AGE_SECONDS = 5 * 60; // 5 minutes
 
 /**
  * Clé secrète cryptographique du serveur pour la signature HMAC
- * Requiert ADMIN_OTP_SECRET_KEY ou SUPABASE_SERVICE_ROLE_KEY (entropie élevée)
+ * Requiert ADMIN_OTP_SECRET_KEY ou SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY (entropie élevée)
  */
 export function getSigningSecret(): string {
   const secret =
     process.env.ADMIN_OTP_SECRET_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
       throw new Error(
-        "[ALERTE CRITIQUE SÉCURITÉ] Variable ADMIN_OTP_SECRET_KEY ou SUPABASE_SERVICE_ROLE_KEY manquante en production."
+        "[ALERTE CRITIQUE SÉCURITÉ] Variable ADMIN_OTP_SECRET_KEY ou SUPABASE_SECRET_KEY manquante en production."
       );
     }
     console.warn(

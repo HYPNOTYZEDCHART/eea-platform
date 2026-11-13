@@ -1,0 +1,51 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Exécution tous les 3 jours à 10h00 UTC (largement sous le seuil de pause de 7 jours)
+    - cron: "0 10 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping PostgreSQL via API Healthcheck ou RPC Supabase
+        env:
+          APP_HEALTH_URL: ${{ secrets.APP_HEALTH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -n "$APP_HEALTH_URL" ]; then
+            echo "Ping de $APP_HEALTH_URL..."
+            if [ -n "$CRON_SECRET" ]; then
+              HTTP_STATUS=$(curl -sS -o /tmp/health.json -w "%{http_code}" \
+                -H "Authorization: Bearer $CRON_SECRET" \
+                "$APP_HEALTH_URL")
+            else
+              HTTP_STATUS=$(curl -sS -o /tmp/health.json -w "%{http_code}" "$APP_HEALTH_URL")
+            fi
+            cat /tmp/health.json
+            echo ""
+            if [ "$HTTP_STATUS" -ne 200 ]; then
+              echo "Échec healthcheck HTTP $HTTP_STATUS"
+              exit 1
+            fi
+          elif [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "Ping direct RPC PostgreSQL Supabase..."
+            HTTP_STATUS=$(curl -sS -o /tmp/rpc.json -w "%{http_code}" \
+              -X POST "${SUPABASE_URL%/}/rest/v1/rpc/get_verified_badge" \
+              -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{"token_input":"__keepalive_ping__"}')
+            echo "HTTP $HTTP_STATUS"
+            if [ "$HTTP_STATUS" -ne 200 ]; then
+              cat /tmp/rpc.json
+              exit 1
+            fi
+          else
+            echo "::warning::Configurez APP_HEALTH_URL ou (SUPABASE_URL + SUPABASE_PUBLISHABLE_KEY) dans GitHub Actions Secrets."
+            exit 0
+          fi
+

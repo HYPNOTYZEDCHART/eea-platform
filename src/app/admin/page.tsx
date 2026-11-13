@@ -170,19 +170,32 @@ export default function AdminPage() {
     if (!isSilent) setLoading(true);
     let loadedFromDb: Member[] | null = null;
 
-    // 1. Priorité absolue : Route serveur /api/admin/members (bypasse RLS, toujours à jour)
+    // 1. Priorité absolue : Route serveur paginée /api/admin/members (bypasse RLS, toujours à jour)
     try {
-      const res = await fetch("/api/admin/members");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && Array.isArray(json.members)) {
-          loadedFromDb = json.members as Member[];
+      const aggregated: Member[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+
+      while (currentPage <= totalPages) {
+        const res = await fetch(`/api/admin/members?page=${currentPage}&limit=100`);
+        if (res.status === 401) {
+          console.warn("Session admin expirée ou non autorisée");
+          setIsAuthenticated(false);
+          if (!isSilent) setLoading(false);
+          return;
         }
-      } else if (res.status === 401) {
-        console.warn("Session admin expirée ou non autorisée");
-        setIsAuthenticated(false);
-        if (!isSilent) setLoading(false);
-        return;
+        if (!res.ok) break;
+
+        const json = await res.json();
+        if (!json.success || !Array.isArray(json.members)) break;
+
+        aggregated.push(...(json.members as Member[]));
+        totalPages = typeof json.meta?.totalPages === "number" ? json.meta.totalPages : 1;
+        currentPage += 1;
+      }
+
+      if (currentPage > 1) {
+        loadedFromDb = aggregated;
       }
     } catch {
       // fallback
