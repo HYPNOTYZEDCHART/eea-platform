@@ -98,12 +98,24 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    const cleanId = membership_id.trim();
+    if (!/^[a-zA-Z0-9_-]{3,64}$/.test(cleanId)) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Format de matricule invalide." },
+          { status: 400 }
+        )
+      );
+    }
+
     try {
       const supabaseAdmin = getSupabaseAdmin();
-      const { error } = await supabaseAdmin
+      const { data: deleted, error } = await supabaseAdmin
         .from("members")
         .delete()
-        .eq("membership_id", membership_id.trim());
+        .eq("membership_id", cleanId)
+        .select("id")
+        .maybeSingle();
 
       if (error) {
         console.error("Erreur suppression membre Supabase:", error);
@@ -112,10 +124,16 @@ export async function DELETE(req: NextRequest) {
         );
       }
 
+      if (!deleted) {
+        return applySecurityHeaders(
+          NextResponse.json({ success: false, error: "Membre introuvable." }, { status: 404 })
+        );
+      }
+
       return applySecurityHeaders(
         NextResponse.json({
           success: true,
-          message: `Membre ${membership_id} supprimé définitivement du registre officiel.`,
+          message: `Membre ${cleanId} supprimé définitivement du registre officiel.`,
         })
       );
     } catch (dbErr: unknown) {

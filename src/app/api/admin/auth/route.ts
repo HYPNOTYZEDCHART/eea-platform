@@ -39,6 +39,16 @@ interface RateLimitRecord {
   firstAttemptAt: number;
 }
 const rateLimitMap = new Map<string, RateLimitRecord>();
+const MAX_AUTH_RATE_ENTRIES = 5_000;
+
+function pruneExpiredAuthRateLimits(now: number) {
+  if (rateLimitMap.size < MAX_AUTH_RATE_ENTRIES) return;
+  for (const [k, rec] of rateLimitMap.entries()) {
+    if ((rec.lockUntil > 0 && rec.lockUntil <= now) || (rec.lockUntil === 0 && now - rec.firstAttemptAt > 24 * 60 * 60 * 1000)) {
+      rateLimitMap.delete(k);
+    }
+  }
+}
 
 function checkRateLimit(key: string): { allowed: boolean; remainingLockMinutes?: number; delayMs: number } {
   const record = rateLimitMap.get(key);
@@ -67,6 +77,7 @@ function checkRateLimit(key: string): { allowed: boolean; remainingLockMinutes?:
 
 function recordFailedAttempt(ip: string, email?: string) {
   const now = Date.now();
+  pruneExpiredAuthRateLimits(now);
   const update = (key: string) => {
     const rec = rateLimitMap.get(key) || { count: 0, lockUntil: 0, firstAttemptAt: now };
     rec.count += 1;
