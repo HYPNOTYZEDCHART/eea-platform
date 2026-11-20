@@ -34,20 +34,20 @@ export default function VerifyPortalPage() {
 
     try {
       // 1. Si le format ressemble directement à un jeton QR
-      if (cleanQuery.startsWith("eea_token_") || cleanQuery.length > 20) {
+      if (cleanQuery.startsWith("eea_tok_") || cleanQuery.startsWith("eea_token_") || cleanQuery.length > 20) {
         router.push(`/verify/${encodeURIComponent(cleanQuery)}`);
         return;
       }
 
       // 2. Requête sécurisée auprès de la route API serveur /api/verify/[token]
-      const safeTerm = cleanQuery.replace(/[^a-zA-Z0-9_.-]/g, "").trim();
+      const safeTerm = cleanQuery.replace(/[^a-zA-Z0-9_-]/g, "").trim();
       if (safeTerm) {
         try {
           const apiRes = await fetch(`/api/verify/${encodeURIComponent(safeTerm)}`);
           if (apiRes.ok) {
             const apiJson = await apiRes.json();
-            if (apiJson.success && apiJson.member?.qr_code_token) {
-              router.push(`/verify/${encodeURIComponent(apiJson.member.qr_code_token)}`);
+            if (apiJson.success && apiJson.member?.membership_id) {
+              router.push(`/verify/${encodeURIComponent(apiJson.member.membership_id)}`);
               return;
             }
           }

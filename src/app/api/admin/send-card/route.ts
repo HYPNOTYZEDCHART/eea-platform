@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/resend";
-import { verifyAdminSession, applySecurityHeaders } from "@/lib/adminAuth";
+import { getSupabaseAdmin } from "@/lib/supabase";
+import {
+  getAdminSession,
+  applySecurityHeaders,
+  verifyAdminMutationOrigin,
+  escapeHtml,
+  getAppBaseUrl,
+} from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
   try {
-    if (!verifyAdminSession(request)) {
+    const csrf = verifyAdminMutationOrigin(request, { requireJson: true });
+    if (!csrf.ok) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: csrf.error || "Requête refusée." },
+          { status: 403 }
+        )
+      );
+    }
+
+    const session = await getAdminSession(request);
+    if (!session.valid) {
       return applySecurityHeaders(
         NextResponse.json(
           { success: false, error: "Non autorisé. Session administrateur requise." },
@@ -13,44 +31,83 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const {
-      membership_id,
-      first_name,
-      last_name,
-      email,
-      university,
-      field_of_study,
-      qr_code_token,
-    } = body;
-
-    if (!membership_id || !email || !first_name) {
-      return NextResponse.json(
-        { success: false, error: "Informations incomplètes pour la transmission de la carte." },
-        { status: 400 }
+    const rawBody: unknown = await request.json().catch(() => null);
+    if (!rawBody || typeof rawBody !== "object" || Array.isArray(rawBody)) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Corps de requête JSON invalide." },
+          { status: 400 }
+        )
       );
     }
 
-    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
-    const proto = request.headers.get("x-forwarded-proto") || "https";
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (host ? `${proto}://${host}` : "https://eea-platform.vercel.app");
-    const verifyUrl = `${baseUrl}/verify/${qr_code_token || "eea_token_demo_0842"}`;
+    const body = rawBody as Record<string, unknown>;
+    const membershipId =
+      typeof body.membership_id === "string" ? body.membership_id.trim() : "";
 
-    const subject = `🎓 [EEA] Votre Carte Officielle de Membre Certifiée — Matricule ${membership_id}`;
+    if (!membershipId || !/^[a-zA-Z0-9_-]{3,64}$/.test(membershipId)) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Matricule du membre manquant ou invalide." },
+          { status: 400 }
+        )
+      );
+    }
+
+    // Chargement autoritaire depuis Supabase (empêche toute usurpation ou relais d'email arbitraire)
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: member, error: fetchErr } = await supabaseAdmin
+      .from("members")
+      .select(
+        "membership_id, first_name, last_name, email, university, field_of_study, qr_code_token"
+      )
+      .eq("membership_id", membershipId)
+      .maybeSingle();
+
+    if (fetchErr) {
+      console.error("Erreur lecture membre send-card:", fetchErr.message);
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Erreur lors de la récupération du dossier membre." },
+          { status: 500 }
+        )
+      );
+    }
+
+    if (!member) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          { success: false, error: "Membre introuvable dans le registre officiel." },
+          { status: 404 }
+        )
+      );
+    }
+
+    const baseUrl = getAppBaseUrl();
+    const verifyUrl = `${baseUrl}/verify/${encodeURIComponent(member.qr_code_token)}`;
+
+    const safeMembershipId = escapeHtml(member.membership_id);
+    const safeFirstName = escapeHtml(member.first_name);
+    const safeLastName = escapeHtml(member.last_name);
+    const safeUniversity = escapeHtml(member.university);
+    const safeField = escapeHtml(member.field_of_study);
+    const safeVerifyUrl = escapeHtml(verifyUrl);
+
+    const subject = `🎓 [EEA] Votre Carte Officielle de Membre Certifiée — Matricule ${member.membership_id}`;
 
     const plainText = `ÉTUDIANT ENTREPRENEURIAT AFRIQUE (EEA)
 Secrétariat Général & Direction de l'Organisation — UCAD Dakar
 
 FÉLICITATIONS ! VOTRE ADHÉSION EST OFFICIELLEMENT VALIDÉE.
 
-Bonjour ${first_name} ${last_name},
+Bonjour ${member.first_name} ${member.last_name},
 
 Le Secrétariat Général de l'EEA a le plaisir de vous confirmer la validation définitive de votre adhésion au réseau continental des étudiants entrepreneurs d'Afrique.
 
 VOS IDENTIFIANTS OFFICIELS :
-- Matricule Unique : ${membership_id}
-- Établissement : ${university}
-- Filière : ${field_of_study}
+- Matricule Unique : ${member.membership_id}
+- Établissement : ${member.university}
+- Filière : ${member.field_of_study}
 - Statut : MEMBRE ACTIF CERTIFIÉ
 - Vérification instantanée par QR Code : ${verifyUrl}
 
@@ -85,12 +142,12 @@ Bibliothèque Centrale UCAD, Dakar, Sénégal`;
           ✅ FÉLICITATIONS : CARTE DE MEMBRE OFFICIELLEMENT VALIDÉE
         </p>
         <p style="margin: 4px 0 0 0; font-size: 12px; color: #cbd5e1;">
-          Matricule Officiel : <strong style="color: #ffffff; font-family: monospace;">${membership_id}</strong> • Statut : <strong style="color: #34d399;">Actif</strong>
+          Matricule Officiel : <strong style="color: #ffffff; font-family: monospace;">${safeMembershipId}</strong> • Statut : <strong style="color: #34d399;">Actif</strong>
         </p>
       </div>
 
       <p style="font-size: 14px; line-height: 1.6; color: #e2e8f0; margin: 0 0 16px 0;">
-        Bonjour <strong>${first_name} ${last_name}</strong>,
+        Bonjour <strong>${safeFirstName} ${safeLastName}</strong>,
       </p>
 
       <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1; margin: 0 0 16px 0;">
@@ -101,13 +158,13 @@ Bibliothèque Centrale UCAD, Dakar, Sénégal`;
         <h3 style="color: #D4AF37; margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase;">
           Récapitulatif de votre Certification :
         </h3>
-        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Université :</strong> ${university}</p>
-        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Filière :</strong> ${field_of_study}</p>
+        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Université :</strong> ${safeUniversity}</p>
+        <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Filière :</strong> ${safeField}</p>
         <p style="margin: 6px 0; font-size: 13px; color: #cbd5e1;"><strong>Validité :</strong> Permanente (À vie — Aucun renouvellement requis)</p>
       </div>
 
       <div style="text-align: center; margin: 24px 0 12px 0;">
-        <a href="${verifyUrl}" style="background: linear-gradient(135deg, #D4AF37, #F3DE8A); color: #060d1d; font-weight: bold; font-size: 13px; padding: 12px 24px; text-decoration: none; border-radius: 10px; display: inline-block;">
+        <a href="${safeVerifyUrl}" style="background: linear-gradient(135deg, #D4AF37, #F3DE8A); color: #060d1d; font-weight: bold; font-size: 13px; padding: 12px 24px; text-decoration: none; border-radius: 10px; display: inline-block;">
           Vérifier mon Badge & QR Code en Ligne
         </a>
       </div>
@@ -121,26 +178,49 @@ Bibliothèque Centrale UCAD, Dakar, Sénégal`;
 </html>`;
 
     const emailResult = await sendEmail({
-      to: email,
+      to: member.email,
       subject,
       html: htmlBody,
       text: plainText,
     });
 
-    return NextResponse.json({
-      success: true,
-      emailSent: emailResult.success && !emailResult.simulated,
-      emailSimulated: Boolean(emailResult.simulated),
-      messageId: emailResult.messageId,
-      message: emailResult.simulated
-        ? `Email préparé pour ${first_name} ${last_name} (${email}) [Mode simulation Resend].`
-        : `Carte de membre transmise avec succès par email via Resend à ${email} !`,
-    });
+    if (!emailResult.success) {
+      return applySecurityHeaders(
+        NextResponse.json(
+          {
+            success: false,
+            error: emailResult.error || "Échec d'envoi de l'email via Resend.",
+          },
+          { status: 502 }
+        )
+      );
+    }
+
+    console.info(
+      `[AUDIT ADMIN] ${session.email} a envoyé la carte par email pour ${member.membership_id}`
+    );
+
+    return applySecurityHeaders(
+      NextResponse.json({
+        success: true,
+        emailSent: emailResult.success && !emailResult.simulated,
+        emailSimulated: Boolean(emailResult.simulated),
+        messageId: emailResult.messageId,
+        message: emailResult.simulated
+          ? `Email préparé pour ${member.first_name} ${member.last_name} (${member.email}) [Mode simulation DEV].`
+          : `Carte de membre transmise avec succès par email via Resend à ${member.email} !`,
+      })
+    );
   } catch (error) {
     console.error("Send Card Error:", error);
-    return NextResponse.json(
-      { success: false, error: "Erreur serveur lors de la transmission de la carte." },
-      { status: 500 }
+    return applySecurityHeaders(
+      NextResponse.json(
+        {
+          success: false,
+          error: "Erreur serveur lors de la transmission de la carte.",
+        },
+        { status: 500 }
+      )
     );
   }
 }

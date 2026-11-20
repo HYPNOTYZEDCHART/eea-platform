@@ -39,12 +39,20 @@ export async function sendEmail({
   simulated?: boolean;
   error?: string;
 }> {
-  const currentApiKey = process.env.RESEND_API_KEY;
+  const currentApiKey = process.env.RESEND_API_KEY?.trim();
 
-  // 1. Si aucune clé Resend n'est configurée, simuler l'envoi proprement sans crasher
-  if (!currentApiKey || currentApiKey.startsWith("placeholder")) {
+  // 1. En développement uniquement : simuler l'envoi si aucune clé Resend n'est configurée
+  // En production : refus strict pour éviter toute validation 2FA silencieusement simulée
+  if (!currentApiKey || currentApiKey.startsWith("placeholder") || currentApiKey.includes("your_")) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[SÉCURITÉ CRITIQUE] RESEND_API_KEY manquante ou invalide en production.");
+      return {
+        success: false,
+        error: "Service d'envoi d'emails non configuré en production.",
+      };
+    }
     console.info(
-      `[Resend Simulation] Email simulé pour ${to} : "${subject}". Ajoutez RESEND_API_KEY dans .env.local pour l'envoi réel.`
+      `[Resend Simulation DEV] Email simulé pour ${to} : "${subject}". Ajoutez RESEND_API_KEY dans .env.local pour l'envoi réel.`
     );
     return {
       success: true,

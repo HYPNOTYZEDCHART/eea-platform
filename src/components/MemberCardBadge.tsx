@@ -52,12 +52,12 @@ export default function MemberCardBadge({
 
   const member: Member = initialMember || localMember || defaultDemoMember;
 
-  // Fallback to localStorage if no prop provided
+  // Fallback to sessionStorage if no prop provided (zéro persistance PII durable)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!initialMember && typeof window !== "undefined") {
         try {
-          const stored = localStorage.getItem("eea_current_member");
+          const stored = sessionStorage.getItem("eea_current_member");
           if (stored) {
             setLocalMember(JSON.parse(stored));
           }
@@ -73,11 +73,12 @@ export default function MemberCardBadge({
   useEffect(() => {
     if (!member) return;
 
+    const verifyKey = member.qr_code_token || member.membership_id;
     const baseUrl =
       typeof window !== "undefined"
         ? window.location.origin
         : (process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app");
-    const verifyUrl = `${baseUrl}/verify/${member.qr_code_token}`;
+    const verifyUrl = `${baseUrl}/verify/${encodeURIComponent(verifyKey)}`;
 
     QRCode.toDataURL(
       verifyUrl,
@@ -229,12 +230,13 @@ function loadImageSafe(
     const logoImg = await loadImageSafe("/logo-eea.jpg");
 
     let qrData = qrCodeDataUrl;
-    if (!qrData && member.qr_code_token) {
+    const verifyKey = member.qr_code_token || member.membership_id;
+    if (!qrData && verifyKey) {
       const baseUrl =
         typeof window !== "undefined"
           ? window.location.origin
           : (process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app");
-      const verifyUrl = `${baseUrl}/verify/${member.qr_code_token}`;
+      const verifyUrl = `${baseUrl}/verify/${encodeURIComponent(verifyKey)}`;
       try {
         qrData = await QRCode.toDataURL(verifyUrl, {
           width: 360,
@@ -832,7 +834,7 @@ function loadImageSafe(
       </button>
 
       <Link
-        href={`/verify/${member.qr_code_token}`}
+        href={`/verify/${encodeURIComponent(member.qr_code_token || member.membership_id)}`}
         target="_blank"
         className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-[#38BDF8] bg-sky-950/40 hover:bg-sky-900/50 border border-sky-500/30 transition-colors text-xs sm:text-sm"
       >

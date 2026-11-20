@@ -36,25 +36,6 @@ import {
 } from "@/lib/supabase";
 import MemberCardBadge from "@/components/MemberCardBadge";
 
-const INITIAL_MEMBERS_SEEDED: Member[] = [
-  {
-    id: "mem-1",
-    membership_id: "EEA-2026-SN-0001",
-    first_name: "Jean-David",
-    last_name: "KOUASSI",
-    email: "kouassi.jeandavid@ucad.edu.sn",
-    phone: "+221 78 542 53 45",
-    country: "Sénégal",
-    university: "Université Cheikh Anta Diop (UCAD Dakar)",
-    field_of_study: "Génie Logiciel & Agrobusiness",
-    photo_url: null,
-    qr_code_token: "eea_token_demo_0001",
-    status: "active",
-    created_at: "2026-02-15T10:30:00Z",
-    expires_at: "2027-02-15T10:30:00Z",
-  },
-];
-
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -73,9 +54,22 @@ export default function AdminPage() {
 
   const [members, setMembers] = useState<Member[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "pending" | "expired" | "revoked"
   >("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFiltered, setTotalFiltered] = useState(0);
+  const [counts, setCounts] = useState({
+    total: 0,
+    active: 0,
+    pending: 0,
+    expired: 0,
+    revoked: 0,
+  });
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [loading, setLoading] = useState(false);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
@@ -94,15 +88,21 @@ export default function AdminPage() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Secure logout with cookie invalidation
+  // Déconnexion sécurisée avec révocation serveur et purge totale du stockage navigateur
   const handleLogout = useCallback(async () => {
     try {
       await fetch("/api/admin/auth", { method: "DELETE" });
     } catch {
       // ignore
     }
+    setMembers([]);
     setIsAuthenticated(false);
-    sessionStorage.removeItem("eea_admin_auth");
+    try {
+      sessionStorage.removeItem("eea_admin_auth");
+      localStorage.removeItem("eea_members");
+    } catch {
+      // ignore
+    }
   }, []);
 
   // Helper pour générer l'URL exacte de vérification selon le domaine en direct
@@ -111,7 +111,7 @@ export default function AdminPage() {
       typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_APP_URL || "https://eea-platform.vercel.app";
-    return `${origin}/verify/${token}`;
+    return `${origin}/verify/${encodeURIComponent(token)}`;
   };
 
   // Compte à rebours du code OTP (5 minutes)
@@ -164,75 +164,75 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  // Fetch members from Supabase (serveur avec service role + client fallback)
-  // Source unique de vérité : la base de données Supabase partagée en temps réel
-  const loadMembers = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    let loadedFromDb: Member[] | null = null;
+  // Debounce de la recherche pour pagination serveur
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setCurrentPage(1);
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [searchQuery]);
 
-    // 1. Priorité absolue : Route serveur paginée /api/admin/members (bypasse RLS, toujours à jour)
-    try {
-      const aggregated: Member[] = [];
-      let currentPage = 1;
-      let totalPages = 1;
+  // Chargement paginé côté serveur (zéro stockage PII dans localStorage)
+  const loadMembers = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) setLoading(true);
+      setLoadError(null);
 
-      while (currentPage <= totalPages) {
-        const res = await fetch(`/api/admin/members?page=${currentPage}&limit=100`);
+      try {
+        const params = new URLSearchParams({
+          page: String(currentPage),
+          limit: "20",
+          status: statusFilter,
+        });
+        if (debouncedSearch) {
+          params.set("search", debouncedSearch);
+        }
+
+        const res = await fetch(`/api/admin/members?${params.toString()}`);
         if (res.status === 401) {
-          console.warn("Session admin expirée ou non autorisée");
+          setMembers([]);
           setIsAuthenticated(false);
+          try {
+            localStorage.removeItem("eea_members");
+          } catch {
+            // ignore
+          }
           if (!isSilent) setLoading(false);
           return;
         }
-        if (!res.ok) break;
 
-        const json = await res.json();
-        if (!json.success || !Array.isArray(json.members)) break;
-
-        aggregated.push(...(json.members as Member[]));
-        totalPages = typeof json.meta?.totalPages === "number" ? json.meta.totalPages : 1;
-        currentPage += 1;
-      }
-
-      if (currentPage > 1) {
-        loadedFromDb = aggregated;
-      }
-    } catch {
-      // fallback
-    }
-
-    // 2. Application de la vérité de la base de données Supabase transmise par l'API serveur
-    // Cela garantit que toute l'équipe de direction voit exactement le même registre synchronisé
-    if (loadedFromDb !== null) {
-      const sorted = [...loadedFromDb].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      setMembers(sorted);
-      try {
-        localStorage.setItem("eea_members", JSON.stringify(sorted));
-      } catch {
-        // ignore
-      }
-    } else {
-      // Uniquement si le réseau est totalement inaccessible (mode hors-ligne strict)
-      try {
-        const localStored = JSON.parse(localStorage.getItem("eea_members") || "null");
-        if (Array.isArray(localStored) && localStored.length > 0) {
-          setMembers(localStored);
-        } else {
-          setMembers(INITIAL_MEMBERS_SEEDED);
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success || !Array.isArray(json.members)) {
+          throw new Error(json.error || `Erreur serveur (${res.status})`);
         }
-      } catch {
-        setMembers(INITIAL_MEMBERS_SEEDED);
-      }
-    }
 
-    if (!isSilent) setLoading(false);
-  }, []);
+        setMembers(json.members as Member[]);
+        if (json.counts) {
+          setCounts(json.counts);
+        }
+        if (json.meta) {
+          setTotalPages(Math.max(1, Number(json.meta.totalPages) || 1));
+          setTotalFiltered(Number(json.meta.total) || 0);
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Erreur réseau";
+        setLoadError(`Impossible de charger le registre : ${msg}`);
+      } finally {
+        if (!isSilent) setLoading(false);
+      }
+    },
+    [currentPage, statusFilter, debouncedSearch]
+  );
 
   // Initial load and automatic background polling every 10 seconds for real-time synchronization
   useEffect(() => {
     if (!isAuthenticated) return;
+    try {
+      localStorage.removeItem("eea_members");
+    } catch {
+      // ignore
+    }
     const timer = setTimeout(() => {
       void loadMembers(false);
     }, 0);
@@ -360,65 +360,104 @@ export default function AdminPage() {
   // Helper de sécurisation contre l'injection de formules Excel/Calc (OWASP CSV Formula Injection)
   const sanitizeCSVCell = (value: unknown): string => {
     if (value === null || value === undefined) return '""';
-    let str = String(value).trim();
-    if (/^[=+\-@\t\r]/.test(str)) {
+    let str = String(value)
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+      .replace(/\r?\n/g, " ")
+      .trim();
+    if (/^[\s\u00A0]*[=+\-@\t\r]/.test(str)) {
       str = "'" + str;
     }
     return `"${str.replace(/"/g, '""')}"`;
   };
 
-  // Export members list as CSV (Secured)
-  const handleExportCSV = () => {
-    const headers = [
-      "Matricule",
-      "Nom",
-      "Prénom",
-      "Email",
-      "Téléphone",
-      "Pays",
-      "Université",
-      "Filière",
-      "Statut_Brut",
-      "Statut_Effectif",
-      "Date_Adhésion",
-      "Validité",
-    ];
+  // Export members list as CSV via Blob (résistant aux caractères # et grands volumes)
+  const handleExportCSV = async () => {
+    setExportingCsv(true);
+    try {
+      const allMembers: Member[] = [];
+      let page = 1;
+      let pages = 1;
 
-    const rows = members.map((m) => {
-      const effStatus = getEffectiveMemberStatus(m);
-      return [
-        sanitizeCSVCell(m.membership_id),
-        sanitizeCSVCell(m.last_name),
-        sanitizeCSVCell(m.first_name),
-        sanitizeCSVCell(m.email),
-        sanitizeCSVCell(m.phone),
-        sanitizeCSVCell(m.country),
-        sanitizeCSVCell(m.university),
-        sanitizeCSVCell(m.field_of_study),
-        sanitizeCSVCell(m.status),
-        sanitizeCSVCell(effStatus),
-        sanitizeCSVCell(new Date(m.created_at).toLocaleDateString("fr-FR")),
-        sanitizeCSVCell(effStatus === "revoked" ? "Révoqué" : "Permanente (À vie)"),
+      while (page <= pages) {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: "100",
+          status: statusFilter,
+        });
+        if (debouncedSearch) params.set("search", debouncedSearch);
+
+        const res = await fetch(`/api/admin/members?${params.toString()}`);
+        if (res.status === 401) {
+          await handleLogout();
+          return;
+        }
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.success || !Array.isArray(json.members)) {
+          throw new Error(json.error || "Erreur lors de l'exportation.");
+        }
+        allMembers.push(...(json.members as Member[]));
+        pages = Math.max(1, Number(json.meta?.totalPages) || 1);
+        page += 1;
+      }
+
+      const headers = [
+        "Matricule",
+        "Nom",
+        "Prénom",
+        "Email",
+        "Téléphone",
+        "Pays",
+        "Université",
+        "Filière",
+        "Statut_Brut",
+        "Statut_Effectif",
+        "Date_Adhésion",
+        "Validité",
       ];
-    });
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(";"), ...rows.map((e) => e.join(";"))].join("\n");
+      const rows = allMembers.map((m) => {
+        const effStatus = getEffectiveMemberStatus(m);
+        return [
+          sanitizeCSVCell(m.membership_id),
+          sanitizeCSVCell(m.last_name),
+          sanitizeCSVCell(m.first_name),
+          sanitizeCSVCell(m.email),
+          sanitizeCSVCell(m.phone),
+          sanitizeCSVCell(m.country),
+          sanitizeCSVCell(m.university),
+          sanitizeCSVCell(m.field_of_study),
+          sanitizeCSVCell(m.status),
+          sanitizeCSVCell(effStatus),
+          sanitizeCSVCell(new Date(m.created_at).toLocaleDateString("fr-FR")),
+          sanitizeCSVCell(effStatus === "revoked" ? "Révoqué" : "Permanente (À vie)"),
+        ];
+      });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute(
-      "download",
-      `EEA_Membres_Officiels_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const csvBody = [headers.join(";"), ...rows.map((e) => e.join(";"))].join("\n");
+      const blob = new Blob(["\uFEFF" + csvBody], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", blobUrl);
+      link.setAttribute(
+        "download",
+        `EEA_Membres_Officiels_${new Date().toISOString().slice(0, 10)}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur export CSV";
+      setToastMessage(`Échec export CSV : ${msg}`);
+      setTimeout(() => setToastMessage(null), 6000);
+    } finally {
+      setExportingCsv(false);
+    }
   };
 
-  // Email dispatch helper for active member PDF badge (via Resend API with fallback)
+  // Email dispatch helper for active member PDF badge (via Resend API)
   const handleSendEmail = async (member: Member) => {
     try {
       const res = await fetch("/api/admin/send-card", {
@@ -426,16 +465,15 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           membership_id: member.membership_id,
-          first_name: member.first_name,
-          last_name: member.last_name,
-          email: member.email,
-          university: member.university,
-          field_of_study: member.field_of_study,
-          qr_code_token: member.qr_code_token,
         }),
       });
 
-      const data = await res.json();
+      if (res.status === 401) {
+        await handleLogout();
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
         setToastMessage(data.message || `Carte officielle transmise à ${member.email} !`);
         if (data.emailSimulated) {
@@ -448,17 +486,11 @@ export default function AdminPage() {
           window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
         }
       } else {
-        throw new Error(data.error || "Erreur");
+        throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
-    } catch {
-      const subject = encodeURIComponent(
-        `Votre Carte Officielle de Membre EEA (${member.membership_id}) - Format PDF`
-      );
-      const body = encodeURIComponent(
-        `Bonjour ${member.first_name} ${member.last_name},\n\nLe Secrétariat Général de l'Étudiant Entrepreneuriat Afrique (EEA) a le plaisir de vous transmettre votre carte officielle de membre au format PDF.\n\n- Matricule Officiel : ${member.membership_id}\n- Université : ${member.university}\n- Filière : ${member.field_of_study}\n- Vérification en ligne de votre QR Code : ${getVerifyUrl(member.qr_code_token)}\n\nFélicitations pour votre engagement dans la souveraineté économique et entrepreneuriale de l'Afrique.\n\nSecrétariat Général EEA\nBibliothèque Centrale UCAD, Dakar, Sénégal\nWhatsApp : +221 78 542 53 45`
-      );
-      window.open(`mailto:${member.email}?subject=${subject}&body=${body}`, "_blank");
-      setToastMessage(`Carte officielle préparée et transmise par email à ${member.email} !`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur d'envoi";
+      setToastMessage(`Échec envoi email : ${msg}`);
     }
 
     setTimeout(() => setToastMessage(null), 6000);
@@ -486,20 +518,6 @@ export default function AdminPage() {
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || `Erreur serveur (${res.status})`);
-      }
-
-      try {
-        localStorage.setItem("eea_members", JSON.stringify(updatedList));
-        const currentStored = localStorage.getItem("eea_current_member");
-        if (currentStored) {
-          const parsed = JSON.parse(currentStored);
-          if (parsed.membership_id === member.membership_id) {
-            parsed.status = "active";
-            localStorage.setItem("eea_current_member", JSON.stringify(parsed));
-          }
-        }
-      } catch {
-        // ignore
       }
 
       setToastMessage(
@@ -544,20 +562,6 @@ export default function AdminPage() {
         throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
 
-      try {
-        localStorage.setItem("eea_members", JSON.stringify(updatedList));
-        const currentStored = localStorage.getItem("eea_current_member");
-        if (currentStored) {
-          const parsed = JSON.parse(currentStored);
-          if (parsed.membership_id === target.membership_id) {
-            parsed.status = "revoked";
-            localStorage.setItem("eea_current_member", JSON.stringify(parsed));
-          }
-        }
-      } catch {
-        // ignore
-      }
-
       setToastMessage(
         `⚠️ Le membre ${target.last_name.toUpperCase()} ${target.first_name} (${target.membership_id}) a été révoqué / éjecté.`
       );
@@ -594,12 +598,6 @@ export default function AdminPage() {
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || `Erreur serveur (${res.status})`);
-      }
-
-      try {
-        localStorage.setItem("eea_members", JSON.stringify(updatedList));
-      } catch {
-        // ignore
       }
 
       setToastMessage(
@@ -639,19 +637,6 @@ export default function AdminPage() {
         throw new Error(data.error || `Erreur serveur (${res.status})`);
       }
 
-      try {
-        localStorage.setItem("eea_members", JSON.stringify(updatedList));
-        const currentStored = localStorage.getItem("eea_current_member");
-        if (currentStored) {
-          const parsed = JSON.parse(currentStored);
-          if (parsed.membership_id === target.membership_id) {
-            localStorage.removeItem("eea_current_member");
-          }
-        }
-      } catch {
-        // ignore
-      }
-
       setToastMessage(
         `Le membre ${target.last_name.toUpperCase()} ${target.first_name} a été supprimé définitivement du registre.`
       );
@@ -666,37 +651,15 @@ export default function AdminPage() {
     setTimeout(() => setToastMessage(null), 6000);
   };
 
-
-
-  // Metrics calculation
-  const totalMembers = members.length;
-  const activeMembers = members.filter((m) => getEffectiveMemberStatus(m) === "active").length;
-  const expiredMembers = members.filter((m) => getEffectiveMemberStatus(m) === "expired").length;
-  const pendingMembers = members.filter((m) => m.status === "pending").length;
-  const revokedMembers = members.filter((m) => m.status === "revoked").length;
+  // Metrics calculation (globaux depuis le serveur)
+  const totalMembers = counts.total;
+  const activeMembers = counts.active;
+  const expiredMembers = counts.expired;
+  const pendingMembers = counts.pending;
+  const revokedMembers = counts.revoked;
 
   const totalFundsCollected = activeMembers * 3000;
-
-  // Filtered members list
-  const filteredMembers = members.filter((m) => {
-    const matchesSearch =
-      m.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.membership_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.university.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.country.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const effStatus = getEffectiveMemberStatus(m);
-
-    let matchesStatus = true;
-    if (statusFilter === "active") matchesStatus = effStatus === "active";
-    else if (statusFilter === "pending") matchesStatus = m.status === "pending";
-    else if (statusFilter === "expired") matchesStatus = effStatus === "expired";
-    else if (statusFilter === "revoked") matchesStatus = m.status === "revoked";
-
-    return matchesSearch && matchesStatus;
-  });
+  const filteredMembers = members;
 
   // SCREEN 1: LOGIN (Haute Sécurité 2FA / OTP)
   if (!isAuthenticated) {
@@ -980,12 +943,13 @@ export default function AdminPage() {
             </button>
 
             <button
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/35 text-xs font-bold text-[#F3DE8A] transition-all cursor-pointer shadow-sm"
+              onClick={() => void handleExportCSV()}
+              disabled={exportingCsv}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/35 text-xs font-bold text-[#F3DE8A] transition-all cursor-pointer shadow-sm disabled:opacity-50"
               title="Télécharger le fichier CSV des membres"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Exporter CSV</span>
+              <span>{exportingCsv ? "Export..." : "Exporter CSV"}</span>
             </button>
 
             <Link
@@ -1027,7 +991,10 @@ export default function AdminPage() {
 
             <button
               type="button"
-              onClick={() => setStatusFilter("pending")}
+              onClick={() => {
+                setStatusFilter("pending");
+                setCurrentPage(1);
+              }}
               className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-[#060d1d] font-bold text-xs shadow transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
             >
               <Clock className="w-3.5 h-3.5" />
@@ -1148,11 +1115,12 @@ export default function AdminPage() {
               ].map((f) => (
                 <button
                   key={f.id}
-                  onClick={() =>
+                  onClick={() => {
                     setStatusFilter(
                       f.id as "all" | "active" | "pending" | "expired" | "revoked"
-                    )
-                  }
+                    );
+                    setCurrentPage(1);
+                  }}
                   className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                     statusFilter === f.id
                       ? "bg-[#D4AF37] text-[#060d1d] shadow-sm font-bold"
@@ -1343,7 +1311,7 @@ export default function AdminPage() {
 
                             {/* Public Verify URL */}
                             <Link
-                              href={`/verify/${m.qr_code_token}`}
+                              href={`/verify/${encodeURIComponent(m.qr_code_token)}`}
                               target="_blank"
                               className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white transition-colors"
                               title="Vérifier le QR code en ligne"
@@ -1390,6 +1358,45 @@ export default function AdminPage() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {loadError && (
+            <div className="p-4 border-t border-rose-500/20 bg-rose-500/10 text-rose-300 text-xs flex items-center justify-between gap-3">
+              <span>{loadError}</span>
+              <button
+                type="button"
+                onClick={() => void loadMembers(false)}
+                className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-white font-semibold cursor-pointer"
+              >
+                Réessayer
+              </button>
+            </div>
+          )}
+
+          {/* Server Pagination Footer */}
+          <div className="px-4 sm:px-5 py-3.5 border-t border-white/[0.08] flex items-center justify-between text-xs text-slate-400">
+            <span>
+              Page <strong className="text-white">{currentPage}</strong> / {totalPages} •{" "}
+              <strong className="text-white">{totalFiltered}</strong> résultat(s)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage <= 1 || loading}
+                className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 disabled:opacity-40 cursor-pointer"
+              >
+                Précédent
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages || loading}
+                className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 disabled:opacity-40 cursor-pointer"
+              >
+                Suivant
+              </button>
+            </div>
           </div>
         </div>
       </div>

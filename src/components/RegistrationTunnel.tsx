@@ -122,63 +122,46 @@ export default function RegistrationTunnel({
     setLoading(true);
 
     try {
-      // 1. Generate unique membership numbers
-      const countryCode = formData.country.slice(0, 2).toUpperCase();
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      const membershipId = `EEA-2026-${countryCode}-${randomNum}`;
-      const qrToken = `eea_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      const newMember: Member = {
-        id: crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}`,
-        membership_id: membershipId,
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        country: formData.country,
-        university: formData.university.trim(),
-        field_of_study: formData.fieldOfStudy.trim(),
-        photo_url: formData.photoUrl,
-        qr_code_token: qrToken,
-        status: "pending", // Status is pending until manual transfer is confirmed by admin
-        payment_method: formData.paymentMethod,
-        payment_reference: formData.paymentReference.trim() || null,
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-
-      // 2. Enregistrement sécurisé côté serveur via /api/register
-      // La route serveur traite le téléversement de photo (Service Role) et enregistre le membre
+      // Enregistrement sécurisé côté serveur via /api/register
+      // Le serveur génère de manière cryptographique le matricule officiel et le jeton QR
       const apiRes = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          membership_id: newMember.membership_id,
-          first_name: newMember.first_name,
-          last_name: newMember.last_name,
-          email: newMember.email,
-          phone: newMember.phone,
-          country: newMember.country,
-          university: newMember.university,
-          field_of_study: newMember.field_of_study,
-          photo_url: newMember.photo_url,
-          qr_code_token: newMember.qr_code_token,
-          payment_method: newMember.payment_method,
-          payment_reference: newMember.payment_reference,
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          country: formData.country,
+          university: formData.university.trim(),
+          field_of_study: formData.fieldOfStudy.trim(),
+          photo_url: formData.photoUrl,
+          payment_method: formData.paymentMethod,
+          payment_reference: formData.paymentReference.trim() || null,
         }),
       });
 
       if (!apiRes.ok) {
         const errJson = await apiRes.json().catch(() => ({}));
-        throw new Error(errJson.error || "Échec de l'enregistrement de votre adhésion.");
+        throw new Error(
+          errJson.error || "Échec de l'enregistrement de votre adhésion."
+        );
       }
 
       const resData = await apiRes.json();
-      const registeredMember: Member = resData.member || newMember;
+      if (!resData.member) {
+        throw new Error("Réponse serveur incomplète lors de l'enregistrement.");
+      }
 
-      // Sauvegarde du membre pour affichage et prévisualisation immédiate de la carte
+      const registeredMember: Member = resData.member as Member;
+
+      // Sauvegarde temporaire en session uniquement (effacée à la fermeture de l'onglet)
       try {
-        localStorage.setItem("eea_current_member", JSON.stringify(registeredMember));
+        sessionStorage.setItem(
+          "eea_current_member",
+          JSON.stringify(registeredMember)
+        );
+        localStorage.removeItem("eea_current_member");
       } catch {
         // ignore storage errors
       }
@@ -189,9 +172,13 @@ export default function RegistrationTunnel({
       }
       setCurrentStep(4);
       return;
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      alert("Une erreur est survenue lors de l'enregistrement. Veuillez réessayer.");
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Une erreur est survenue lors de l'enregistrement. Veuillez réessayer.";
+      alert(message);
     } finally {
       setLoading(false);
     }

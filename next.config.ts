@@ -1,6 +1,43 @@
 import type { NextConfig } from "next";
 
+const supabaseHostname = (() => {
+  try {
+    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    if (raw && !raw.includes("your-project") && !raw.includes("placeholder-project")) {
+      return new URL(raw).hostname;
+    }
+  } catch {
+    // ignore invalid URL
+  }
+  return "gynoxjawwyvmpvmkiafx.supabase.co";
+})();
+
+const isDev = process.env.NODE_ENV !== "production";
+const useHttpsUpgrade =
+  process.env.VERCEL === "1" ||
+  Boolean(process.env.NEXT_PUBLIC_APP_URL?.trim().startsWith("https://"));
+
+const cspDirectives = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: https://${supabaseHostname}`,
+  "font-src 'self' data:",
+  `connect-src 'self' https://${supabaseHostname}`,
+  "frame-src https://maps.google.com https://www.google.com",
+  "media-src 'self' blob: mediastream:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(useHttpsUpgrade ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
 const securityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: cspDirectives,
+  },
   {
     key: "X-DNS-Prefetch-Control",
     value: "on",
@@ -33,18 +70,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
-      },
-      {
-        protocol: "https",
-        hostname: "gynoxjawwyvmpvmkiafx.supabase.co",
+        hostname: supabaseHostname,
       },
     ],
   },
   async headers() {
     return [
       {
-        // Appliquer ces en-têtes de sécurité à toutes les routes
         source: "/:path*",
         headers: securityHeaders,
       },
