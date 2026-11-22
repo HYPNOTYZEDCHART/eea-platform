@@ -29,9 +29,10 @@ create table if not exists public.members (
     expires_at timestamp with time zone default timezone('utc'::text, now() + interval '100 years') not null -- Adhésion permanente à vie
 );
 
--- Colonnes additionnelles rétrocompatibles
+-- Colonnes et défauts rétrocompatibles
 alter table public.members add column if not exists payment_method text;
 alter table public.members add column if not exists payment_reference text;
+alter table public.members alter column expires_at set default timezone('utc'::text, now() + interval '100 years');
 
 -- Index de recherche rapide
 create index if not exists idx_members_membership_id on public.members(membership_id);
@@ -149,119 +150,94 @@ values
     ('member-cards', 'member-cards', true)
 on conflict (id) do nothing;
 
--- 5. POLITIQUES DE SÉCURITÉ (Row Level Security - RLS)
+-- 5. POLITIQUES DE SÉCURITÉ (Row Level Security - RLS avec clause TO service_role)
 alter table public.members enable row level security;
 alter table public.payments enable row level security;
 alter table public.admin_otp_challenges enable row level security;
 alter table public.admin_sessions enable row level security;
 alter table public.rate_limits enable row level security;
 
--- A. Table members: Accès strictement limité au rôle service_role (Zéro exposition anon/authenticated)
+-- A. Table members: Accès exclusif service_role (Zéro exposition anon/authenticated)
 drop policy if exists "Lecture publique de vérification de carte" on public.members;
 drop policy if exists "Lecture des membres restreinte aux administrateurs" on public.members;
 drop policy if exists "Lecture des membres restreinte au service role" on public.members;
-create policy "Lecture des membres restreinte au service role"
-    on public.members
-    for select
-    using (auth.role() = 'service_role');
-
--- B. Table members: Insertion sécurisée réservée au backend applicatif (Service Role uniquement)
 drop policy if exists "Insertion d'un nouveau membre lors du tunnel" on public.members;
 drop policy if exists "Insertion membre par service role" on public.members;
-create policy "Insertion membre par service role"
-    on public.members
-    for insert
-    with check (auth.role() = 'service_role');
-
--- C. Table members: Mise à jour et suppression réservées au service role
 drop policy if exists "Mise à jour membre par service role" on public.members;
-create policy "Mise à jour membre par service role"
-    on public.members
-    for update
-    using (auth.role() = 'service_role')
-    with check (auth.role() = 'service_role');
-
 drop policy if exists "Suppression membre par service role" on public.members;
-create policy "Suppression membre par service role"
-    on public.members
-    for delete
-    using (auth.role() = 'service_role');
+drop policy if exists "Members service role only" on public.members;
 
--- D. Table payments: Accès réservé exclusivement au service role
+create policy "Members service role only"
+    on public.members
+    for all
+    to service_role
+    using (true)
+    with check (true);
+
+-- B. Table payments: Accès exclusif service_role
 drop policy if exists "Insertion d'un paiement en attente" on public.payments;
 drop policy if exists "Insertion d'un paiement par service role" on public.payments;
-create policy "Insertion d'un paiement par service role"
-    on public.payments
-    for insert
-    with check (auth.role() = 'service_role');
-
 drop policy if exists "Lecture des paiements par service role ou authentifié" on public.payments;
 drop policy if exists "Lecture des paiements par service role" on public.payments;
-create policy "Lecture des paiements par service role"
-    on public.payments
-    for select
-    using (auth.role() = 'service_role');
-
 drop policy if exists "Mise à jour paiements par service role" on public.payments;
-create policy "Mise à jour paiements par service role"
-    on public.payments
-    for update
-    using (auth.role() = 'service_role')
-    with check (auth.role() = 'service_role');
+drop policy if exists "Payments service role only" on public.payments;
 
--- E. Tables de sécurité internes: Service role uniquement
+create policy "Payments service role only"
+    on public.payments
+    for all
+    to service_role
+    using (true)
+    with check (true);
+
+-- C. Tables de sécurité internes: Service role uniquement
 drop policy if exists "OTP challenges service role only" on public.admin_otp_challenges;
 create policy "OTP challenges service role only"
     on public.admin_otp_challenges
     for all
-    using (auth.role() = 'service_role')
-    with check (auth.role() = 'service_role');
+    to service_role
+    using (true)
+    with check (true);
 
 drop policy if exists "Admin sessions service role only" on public.admin_sessions;
 create policy "Admin sessions service role only"
     on public.admin_sessions
     for all
-    using (auth.role() = 'service_role')
-    with check (auth.role() = 'service_role');
+    to service_role
+    using (true)
+    with check (true);
 
 drop policy if exists "Rate limits service role only" on public.rate_limits;
 create policy "Rate limits service role only"
     on public.rate_limits
     for all
-    using (auth.role() = 'service_role')
-    with check (auth.role() = 'service_role');
+    to service_role
+    using (true)
+    with check (true);
 
--- F. Politiques de stockage (Pas de FOR SELECT public sur storage.objects pour empêcher le listing de bucket)
--- Les buckets étant public=true, les fichiers individuels restent accessibles par URL directe CDN sans permettre le listage.
+-- D. Politiques de stockage (À appliquer via Storage Policies si postgres n'est pas owner de storage.objects)
+-- Pas de FOR SELECT public sur storage.objects pour empêcher le listage anonyme des buckets.
 drop policy if exists "Accès public en lecture des photos de membres" on storage.objects;
 drop policy if exists "Upload public des photos de membres" on storage.objects;
 drop policy if exists "Upload des photos de membres par service role" on storage.objects;
 create policy "Upload des photos de membres par service role"
     on storage.objects for insert
-    with check (
-        bucket_id = 'member-photos'
-        and auth.role() = 'service_role'
-    );
+    to service_role
+    with check (bucket_id = 'member-photos');
 
 drop policy if exists "Suppression des photos par service role" on storage.objects;
 create policy "Suppression des photos par service role"
     on storage.objects for delete
-    using (
-        bucket_id = 'member-photos'
-        and auth.role() = 'service_role'
-    );
+    to service_role
+    using (bucket_id = 'member-photos');
 
 drop policy if exists "Accès public en lecture des cartes de membres" on storage.objects;
 drop policy if exists "Upload des cartes générées par admin" on storage.objects;
 create policy "Upload des cartes générées par admin"
     on storage.objects for insert
-    with check (
-        bucket_id = 'member-cards'
-        and auth.role() = 'service_role'
-    );
+    to service_role
+    with check (bucket_id = 'member-cards');
 
--- 6. FONCTION RPC DE VÉRIFICATION PUBLIQUE SÉCURISÉE (Anti-Scraping & Zero-Trust)
--- Correspondance stricte par qr_code_token haute entropie (search_path verrouillé).
+-- 6. FONCTION RPC DE VÉRIFICATION INTERNE (Restreinte au service_role uniquement)
 create or replace function public.get_verified_badge(token_input text)
 returns table (
     membership_id text,
@@ -294,6 +270,9 @@ as $$
     where m.qr_code_token = token_input
     limit 1;
 $$;
+
+revoke all on function public.get_verified_badge(text) from public, anon, authenticated;
+grant execute on function public.get_verified_badge(text) to service_role;
 
 -- Rechargement immédiat du cache de schéma PostgREST
 notify pgrst, 'reload schema';

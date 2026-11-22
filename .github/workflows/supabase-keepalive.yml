@@ -33,15 +33,13 @@ jobs:
               exit 1
             fi
           elif [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
-            echo "Ping direct RPC PostgreSQL Supabase..."
-            HTTP_STATUS=$(curl -sS -o /tmp/rpc.json -w "%{http_code}" \
-              -X POST "${SUPABASE_URL%/}/rest/v1/rpc/get_verified_badge" \
+            echo "Ping direct PostgreSQL Supabase..."
+            HTTP_STATUS=$(curl -sS -o /tmp/rest_ping.json -w "%{http_code}" \
               -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
-              -H "Content-Type: application/json" \
-              -d '{"token_input":"__keepalive_ping__"}')
+              "${SUPABASE_URL%/}/rest/v1/members?select=id&limit=1")
             echo "HTTP $HTTP_STATUS"
             if [ "$HTTP_STATUS" -ne 200 ]; then
-              cat /tmp/rpc.json
+              cat /tmp/rest_ping.json
               exit 1
             fi
           else
