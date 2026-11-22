@@ -41,6 +41,7 @@ export default function AdminPage() {
 
   // Authentification Haute Sécurité 2-Facteurs (2FA / OTP)
   const [loginStep, setLoginStep] = useState<"credentials" | "otp">("credentials");
+  const [authMethod, setAuthMethod] = useState<"email_otp" | "totp">("email_otp");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -276,6 +277,7 @@ export default function AdminPage() {
 
       if (res.ok && data.success && data.step === "otp_required") {
         setLoginStep("otp");
+        setAuthMethod(data.authMethod === "totp" ? "totp" : "email_otp");
         setEmailMasked(data.emailMasked || adminEmail);
         setDevOtpHint(data.devOtp || null);
         setOtpTimer(300);
@@ -797,14 +799,25 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between font-semibold">
                   <span className="flex items-center gap-1.5 text-[#D4AF37]">
                     <Lock className="w-3.5 h-3.5" />
-                    Code envoyé à votre adresse
+                    {authMethod === "totp"
+                      ? "Code Authenticator (TOTP)"
+                      : "Code envoyé à votre adresse"}
                   </span>
                   <span className="font-mono text-amber-300 text-[11px]">
                     {Math.floor(otpTimer / 60)}:{(otpTimer % 60).toString().padStart(2, "0")}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300">
-                  Consultez la boîte mail de <strong className="text-white">{emailMasked}</strong> et saisissez les 6 chiffres.
+                  {authMethod === "totp" ? (
+                    <>
+                      Ouvrez votre application Authenticator pour{" "}
+                      <strong className="text-white">{emailMasked}</strong> et saisissez le code à 6 chiffres.
+                    </>
+                  ) : (
+                    <>
+                      Consultez la boîte mail de <strong className="text-white">{emailMasked}</strong> et saisissez les 6 chiffres.
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -867,14 +880,16 @@ export default function AdminPage() {
                   ← Modifier l&apos;email
                 </button>
 
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={resendingOtp || otpTimer > 240}
-                  className="text-[#D4AF37] hover:underline disabled:opacity-40 cursor-pointer font-semibold"
-                >
-                  {resendingOtp ? "Renvoi..." : "Renvoyer le code"}
-                </button>
+                {authMethod !== "totp" && (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={resendingOtp || otpTimer > 240}
+                    className="text-[#D4AF37] hover:underline disabled:opacity-40 cursor-pointer font-semibold"
+                  >
+                    {resendingOtp ? "Renvoi..." : "Renvoyer le code"}
+                  </button>
+                )}
               </div>
             </form>
           )}

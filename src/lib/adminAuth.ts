@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import net from "net";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { consumeRateLimit } from "@/lib/rateLimit";
 
 export const ADMIN_COOKIE_NAME = "eea_admin_session";
 export const ADMIN_OTP_COOKIE_NAME = "eea_admin_otp_challenge";
 export const ADMIN_MAX_AGE_SECONDS = 60 * 60 * 8; // 8 heures
 export const ADMIN_OTP_MAX_AGE_SECONDS = 5 * 60; // 5 minutes
+export type OtpChallengeMode = "email_otp" | "totp";
 
 interface StoredOtpChallenge {
   jti: string;
   email: string;
+  mode: OtpChallengeMode;
   codeHash: string;
   attemptsLeft: number;
   fingerprint: string;
@@ -28,9 +31,16 @@ interface StoredAdminSession {
   expiresAt: number;
 }
 
+export interface DevAdminConfig {
+  email: string;
+  password: string;
+  totpSecret: string;
+}
+
 const fallbackOtpStore = new Map<string, StoredOtpChallenge>();
 const fallbackSessionStore = new Map<string, StoredAdminSession>();
 const MAX_FALLBACK_ENTRIES = 2_000;
+const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 let warnedMissingSecurityTables = false;
 
 declare global {
@@ -51,7 +61,9 @@ function pruneFallbackStores(): void {
   }
 }
 
-function isMissingRelationError(error: { code?: string; message?: string } | null): boolean {
+function isMissingRelationError(
+  error: { code?: string; message?: string } | null
+): boolean {
   if (!error) return false;
   return (
     error.code === "PGRST205" ||
@@ -62,7 +74,6 @@ function isMissingRelationError(error: { code?: string; message?: string } | nul
 
 /**
  * Clé secrète cryptographique dédiée exclusivement à la signature HMAC des sessions et OTP.
- * Aucun repli vers les clés Supabase (séparation des clés) ni vers une constante codée en dur.
  */
 export function getSigningSecret(): string {
   const secret = process.env.ADMIN_OTP_SECRET_KEY?.trim();
@@ -92,15 +103,142 @@ export function getSigningSecret(): string {
 }
 
 /**
- * Récupère la liste stricte des adresses email autorisées à administrer la plateforme.
+ * Récupère la liste des comptes propriétaires (2FA par email Resend obligatoire).
  */
-export function getAuthorizedAdminEmails(): string[] {
+export function getOwnerAdminEmails(): string[] {
   const rawConfiguredEmails =
     process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "";
-  return rawConfiguredEmails
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+  return Array.from(
+    new Set(
+      rawConfiguredEmails
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+}
+
+/**
+ * Décode une clé Base32 RFC 4648 pour la vérification TOTP RFC 6238.
+ */
+export function decodeBase32(secret: string): Buffer {
+  const clean = secret.toUpperCase().replace(/[\s=-]/g, "");
+  if (!clean) return Buffer.alloc(0);
+
+  let bits = 0;
+  let value = 0;
+  const bytes: number[] = [];
+
+  for (const ch of clean) {
+    const idx = BASE32_ALPHABET.indexOf(ch);
+    if (idx === -1) return Buffer.alloc(0);
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+
+  return Buffer.from(bytes);
+}
+
+/**
+ * Calcule un code TOTP à 6 chiffres (RFC 6238, HMAC-SHA1, pas 30s) pour un compteur donné.
+ */
+export function generateTotpAtStep(secretBase32: string, step: number): string {
+  const key = decodeBase32(secretBase32);
+  if (key.length === 0) {
+    throw new Error("Clé TOTP Base32 invalide.");
+  }
+
+  const counter = Buffer.alloc(8);
+  const high = Math.floor(step / 0x100000000);
+  const low = step >>> 0;
+  counter.writeUInt32BE(high, 0);
+  counter.writeUInt32BE(low, 4);
+
+  const hmac = crypto.createHmac("sha1", key).update(counter).digest();
+  const offset = hmac[hmac.length - 1] & 0x0f;
+  const code =
+    (((hmac[offset] & 0x7f) << 24) |
+      ((hmac[offset + 1] & 0xff) << 16) |
+      ((hmac[offset + 2] & 0xff) << 8) |
+      (hmac[offset + 3] & 0xff)) %
+    1_000_000;
+
+  return String(code).padStart(6, "0");
+}
+
+/**
+ * Génère le code TOTP courant à 6 chiffres.
+ */
+export function generateCurrentTotp(secretBase32: string): string {
+  return generateTotpAtStep(secretBase32, Math.floor(Date.now() / 30_000));
+}
+
+/**
+ * Vérifie un code TOTP à 6 chiffres avec tolérance de dérive d'horloge de ±30s.
+ */
+export function verifyTotpCode(
+  secretBase32: string,
+  inputOtp: string
+): { valid: boolean; matchedStep?: number } {
+  if (!/^\d{6}$/.test(inputOtp)) return { valid: false };
+  const currentStep = Math.floor(Date.now() / 30_000);
+
+  let matchedStep: number | undefined;
+  for (const offset of [-1, 0, 1]) {
+    const step = currentStep + offset;
+    const expected = generateTotpAtStep(secretBase32, step);
+    if (safeCompare(inputOtp, expected)) {
+      matchedStep = step;
+    }
+  }
+
+  return matchedStep !== undefined
+    ? { valid: true, matchedStep }
+    : { valid: false };
+}
+
+/**
+ * Configuration isolée du compte développeur (mot de passe propre >= 20 chars + 2FA TOTP).
+ */
+export function getDevAdminConfig(): DevAdminConfig | null {
+  const email = (process.env.ADMIN_DEV_EMAIL || "").trim().toLowerCase();
+  const password = (process.env.ADMIN_DEV_PASSWORD || "").trim();
+  const totpSecret = (process.env.ADMIN_DEV_TOTP_SECRET || "").trim();
+
+  if (!email || !password || !totpSecret) return null;
+  if (password.length < 20) {
+    console.error(
+      "[ALERTE SÉCURITÉ] ADMIN_DEV_PASSWORD ignoré car inférieur à 20 caractères."
+    );
+    return null;
+  }
+  if (decodeBase32(totpSecret).length < 10) {
+    console.error(
+      "[ALERTE SÉCURITÉ] ADMIN_DEV_TOTP_SECRET Base32 invalide ou trop court."
+    );
+    return null;
+  }
+  if (getOwnerAdminEmails().includes(email)) {
+    console.error(
+      "[ALERTE SÉCURITÉ] ADMIN_DEV_EMAIL ne doit pas être listé dans ADMIN_EMAILS."
+    );
+    return null;
+  }
+
+  return { email, password, totpSecret };
+}
+
+/**
+ * Liste complète des adresses autorisées à maintenir une session admin valide.
+ */
+export function getAuthorizedAdminEmails(): string[] {
+  const owners = getOwnerAdminEmails();
+  const dev = getDevAdminConfig();
+  return dev ? Array.from(new Set([...owners, dev.email])) : owners;
 }
 
 /**
@@ -269,6 +407,7 @@ export function verifyAdminMutationOrigin(
 export interface OtpChallengeTokenPayload {
   jti: string;
   email: string;
+  mode: OtpChallengeMode;
   expiresAt: number;
   fingerprint: string;
   issuedAt: number;
@@ -292,12 +431,13 @@ function verifyTokenHmac(payloadStr: string, hmac: string): boolean {
 }
 
 /**
- * Crée un challenge OTP 2FA persistant côté serveur (anti-rejeu & limite stricte de 3 essais).
+ * Crée un challenge 2FA persistant côté serveur (email OTP ou TOTP Authenticator).
  */
 export async function createOtpChallenge(
   email: string,
-  otpCode: string,
-  request: NextRequest
+  otpCode: string | null,
+  request: NextRequest,
+  mode: OtpChallengeMode = "email_otp"
 ): Promise<string> {
   const jti = crypto.randomUUID();
   const issuedAt = Date.now();
@@ -305,7 +445,13 @@ export async function createOtpChallenge(
   const fingerprint = getClientFingerprint(request);
   const clientIp = getClientIdentifier(request);
   const cleanEmail = email.toLowerCase().trim();
-  const codeHash = crypto.createHash("sha256").update(otpCode).digest("hex");
+  const codeHash =
+    mode === "totp"
+      ? "TOTP_MODE"
+      : crypto
+          .createHash("sha256")
+          .update(otpCode || "")
+          .digest("hex");
 
   let persisted = false;
   try {
@@ -341,6 +487,7 @@ export async function createOtpChallenge(
     fallbackOtpStore.set(jti, {
       jti,
       email: cleanEmail,
+      mode,
       codeHash,
       attemptsLeft: 3,
       fingerprint,
@@ -354,6 +501,7 @@ export async function createOtpChallenge(
   const tokenPayload: OtpChallengeTokenPayload = {
     jti,
     email: cleanEmail,
+    mode,
     expiresAt,
     fingerprint,
     issuedAt,
@@ -429,7 +577,7 @@ export async function getValidChallengePayload(
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin
       .from("admin_otp_challenges")
-      .select("jti, email, attempts_left, consumed, issued_at, expires_at")
+      .select("jti, email, code_hash, attempts_left, consumed, issued_at, expires_at")
       .eq("jti", jti)
       .maybeSingle();
 
@@ -445,6 +593,7 @@ export async function getValidChallengePayload(
         payload: {
           ...parsed.payload,
           email: data.email,
+          mode: data.code_hash === "TOTP_MODE" ? "totp" : "email_otp",
           issuedAt: new Date(data.issued_at).getTime(),
         },
       };
@@ -483,8 +632,46 @@ export async function consumeOtpChallenge(jti: string): Promise<void> {
   }
 }
 
+async function validateChallengeSecret(
+  email: string,
+  codeHash: string,
+  mode: OtpChallengeMode,
+  inputOtp: string
+): Promise<{ matched: boolean; error?: string }> {
+  if (mode === "totp" || codeHash === "TOTP_MODE") {
+    const devConfig = getDevAdminConfig();
+    if (!devConfig || !safeCompare(email.toLowerCase().trim(), devConfig.email)) {
+      return { matched: false, error: "Compte TOTP non configuré ou révoqué." };
+    }
+
+    const totpCheck = verifyTotpCode(devConfig.totpSecret, inputOtp);
+    if (!totpCheck.valid || totpCheck.matchedStep === undefined) {
+      return { matched: false };
+    }
+
+    // Protection RFC 6238 contre le rejeu d'un même code TOTP dans sa fenêtre de 30s
+    const stepGuard = await consumeRateLimit(
+      "totp_step",
+      `${devConfig.email}:${totpCheck.matchedStep}`,
+      { windowMs: 120_000, maxRequests: 1 }
+    );
+
+    if (!stepGuard.allowed) {
+      return {
+        matched: false,
+        error: "Ce code Authenticator a déjà été utilisé. Attendez le prochain code (30s).",
+      };
+    }
+
+    return { matched: true };
+  }
+
+  const inputHash = crypto.createHash("sha256").update(inputOtp).digest("hex");
+  return { matched: safeCompare(inputHash, codeHash) };
+}
+
 /**
- * Valide le code OTP côté serveur de manière atomique (zéro Master OTP, zéro rejeu stateless).
+ * Valide le code 2FA côté serveur de manière atomique (Email OTP ou TOTP, zéro rejeu stateless).
  */
 export async function verifyOtpChallenge(
   token: string,
@@ -493,6 +680,7 @@ export async function verifyOtpChallenge(
 ): Promise<{
   valid: boolean;
   email?: string;
+  mode?: OtpChallengeMode;
   attemptsLeft?: number;
   error?: string;
 }> {
@@ -501,8 +689,7 @@ export async function verifyOtpChallenge(
     return { valid: false, error: parsed.error || "Challenge invalide." };
   }
 
-  const { jti } = parsed.payload;
-  const inputHash = crypto.createHash("sha256").update(inputOtp).digest("hex");
+  const { jti, mode } = parsed.payload;
 
   try {
     const supabaseAdmin = getSupabaseAdmin();
@@ -517,7 +704,7 @@ export async function verifyOtpChallenge(
         return {
           valid: false,
           attemptsLeft: 0,
-          error: "Session OTP expirée ou révoquée. Veuillez recommencer.",
+          error: "Session 2FA expirée ou révoquée. Veuillez recommencer.",
         };
       }
 
@@ -529,7 +716,16 @@ export async function verifyOtpChallenge(
         return { valid: false, error: "Le challenge de sécurité a expiré." };
       }
 
-      if (safeCompare(inputHash, row.code_hash)) {
+      const effectiveMode: OtpChallengeMode =
+        row.code_hash === "TOTP_MODE" ? "totp" : "email_otp";
+      const validation = await validateChallengeSecret(
+        row.email,
+        row.code_hash,
+        effectiveMode,
+        inputOtp
+      );
+
+      if (validation.matched) {
         const { data: consumedRow, error: consumeErr } = await supabaseAdmin
           .from("admin_otp_challenges")
           .update({ consumed: true })
@@ -542,11 +738,11 @@ export async function verifyOtpChallenge(
         if (consumeErr || !consumedRow) {
           return {
             valid: false,
-            error: "Ce code OTP a déjà été utilisé ou révoqué.",
+            error: "Ce code 2FA a déjà été utilisé ou révoqué.",
           };
         }
 
-        return { valid: true, email: consumedRow.email };
+        return { valid: true, email: consumedRow.email, mode: effectiveMode };
       }
 
       const nextAttempts = Math.max(0, row.attempts_left - 1);
@@ -562,19 +758,22 @@ export async function verifyOtpChallenge(
         return {
           valid: false,
           attemptsLeft: 0,
-          error: "Sécurité déclenchée : 3 codes incorrects consécutifs. Veuillez recommencer.",
+          error:
+            "Sécurité déclenchée : 3 codes incorrects consécutifs. Veuillez recommencer.",
         };
       }
 
       return {
         valid: false,
         attemptsLeft: nextAttempts,
-        error: `Code de sécurité invalide. Il vous reste ${nextAttempts} tentative(s).`,
+        error:
+          validation.error ||
+          `Code de sécurité invalide. Il vous reste ${nextAttempts} tentative(s).`,
       };
     }
 
     if (!isMissingRelationError(error)) {
-      return { valid: false, error: "Erreur serveur lors de la vérification OTP." };
+      return { valid: false, error: "Erreur serveur lors de la vérification 2FA." };
     }
   } catch {
     // Repli mémoire si Supabase indisponible
@@ -585,13 +784,19 @@ export async function verifyOtpChallenge(
     return {
       valid: false,
       attemptsLeft: 0,
-      error: "Session OTP expirée ou révoquée. Veuillez recommencer.",
+      error: "Session 2FA expirée ou révoquée. Veuillez recommencer.",
     };
   }
 
-  if (safeCompare(inputHash, mem.codeHash)) {
+  const memValidation = await validateChallengeSecret(
+    mem.email,
+    mem.codeHash,
+    mode,
+    inputOtp
+  );
+  if (memValidation.matched) {
     mem.consumed = true;
-    return { valid: true, email: mem.email };
+    return { valid: true, email: mem.email, mode: mem.mode };
   }
 
   mem.attemptsLeft -= 1;
@@ -600,14 +805,17 @@ export async function verifyOtpChallenge(
     return {
       valid: false,
       attemptsLeft: 0,
-      error: "Sécurité déclenchée : 3 codes incorrects consécutifs. Veuillez recommencer.",
+      error:
+        "Sécurité déclenchée : 3 codes incorrects consécutifs. Veuillez recommencer.",
     };
   }
 
   return {
     valid: false,
     attemptsLeft: mem.attemptsLeft,
-    error: `Code de sécurité invalide. Il vous reste ${mem.attemptsLeft} tentative(s).`,
+    error:
+      memValidation.error ||
+      `Code de sécurité invalide. Il vous reste ${mem.attemptsLeft} tentative(s).`,
   };
 }
 
@@ -711,7 +919,6 @@ export async function verifySignedToken(
     }
   }
 
-  // Vérification de révocation serveur
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin

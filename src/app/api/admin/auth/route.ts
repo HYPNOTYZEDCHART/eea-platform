@@ -17,8 +17,11 @@ import {
   createSignedToken,
   getAdminSession,
   revokeAdminSession,
+  getOwnerAdminEmails,
+  getDevAdminConfig,
   getAuthorizedAdminEmails,
   getValidChallengePayload,
+  generateCurrentTotp,
   verifyAdminMutationOrigin,
 } from "@/lib/adminAuth";
 
@@ -110,6 +113,24 @@ function resetFailedAttempts(ip: string, email?: string) {
   }
 }
 
+function maskEmail(email: string): string {
+  const parts = email.split("@");
+  const maskedName = parts[0].slice(0, 2) + "•••••";
+  const domainParts = (parts[1] || "").split(".");
+  const maskedDomain =
+    (domainParts[0]?.slice(0, 1) || "") +
+    "••••." +
+    (domainParts[1] || "com");
+  return `${maskedName}@${maskedDomain}`;
+}
+
+function isDevSilentResend(): boolean {
+  return (
+    process.env.NODE_ENV === "development" &&
+    process.env.RESEND_DEV_SILENT === "true"
+  );
+}
+
 // =============================================================================
 // 2. GET : VÉRIFICATION SILENCIEUSE DU JETON DE SESSION SERVEUR
 // =============================================================================
@@ -126,7 +147,7 @@ export async function GET(request: NextRequest) {
 }
 
 // =============================================================================
-// 3. POST : AUTHENTIFICATION 2FA DURCIE (SANS BYPASS MASTER OTP NI REPLI MÉMOIRE)
+// 3. POST : AUTHENTIFICATION 2FA (OWNER EMAIL OTP + DEV TOTP ISOLÉ)
 // =============================================================================
 export async function POST(request: NextRequest) {
   try {
@@ -142,7 +163,6 @@ export async function POST(request: NextRequest) {
 
     const ip = getClientIdentifier(request);
 
-    // 1A. Verrou local + tarpitting
     const ipLocal = checkLocalTarpit(ip);
     if (!ipLocal.allowed) {
       return applySecurityHeaders(
@@ -156,7 +176,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1B. Rate limiting distribué persistant (résistant aux redémarrages & serverless)
     const ipDistRate = await consumeRateLimit("admin_auth_ip", ip, {
       windowMs: 15 * 60 * 1000,
       maxRequests: 15,
@@ -188,7 +207,6 @@ export async function POST(request: NextRequest) {
     }
     const body = rawBody as Record<string, unknown>;
 
-    // 2. Piège Honeypot anti-bots
     if (body.website_url || body.admin_role_token || body.hp_secret) {
       rateLimitMap.set(ip, {
         count: 99,
@@ -206,10 +224,13 @@ export async function POST(request: NextRequest) {
 
     const action = typeof body.action === "string" ? body.action : "login";
 
+    const ownerEmails = getOwnerAdminEmails();
+    const devConfig = getDevAdminConfig();
     const authorizedEmails = getAuthorizedAdminEmails();
+
     if (authorizedEmails.length === 0) {
       console.error(
-        "[ALERTE SÉCURITÉ] Aucun compte administrateur configuré (ADMIN_EMAILS / ADMIN_EMAIL)."
+        "[ALERTE SÉCURITÉ] Aucun compte administrateur configuré."
       );
       return applySecurityHeaders(
         NextResponse.json(
@@ -223,10 +244,8 @@ export async function POST(request: NextRequest) {
     }
 
     const configuredPassword = (process.env.ADMIN_PASSWORD || "").trim();
-    if (!configuredPassword) {
-      console.error(
-        "[ALERTE SÉCURITÉ] Variable ADMIN_PASSWORD vide ou manquante."
-      );
+    if (ownerEmails.length > 0 && !configuredPassword && !devConfig) {
+      console.error("[ALERTE SÉCURITÉ] Variable ADMIN_PASSWORD vide.");
       return applySecurityHeaders(
         NextResponse.json(
           {
@@ -239,7 +258,7 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // ACTION 1 : ÉTAPE 1 - IDENTIFIANTS (Email + Mot de Passe)
+    // ACTION 1 : ÉTAPE 1 - IDENTIFIANTS (Owner vs Développeur TOTP)
     // =========================================================================
     if (action === "login") {
       const email =
@@ -285,12 +304,20 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const isEmailValid = authorizedEmails.some((allowed) =>
-        safeCompare(email, allowed)
-      );
-      const isPasswordValid = safeCompare(password, configuredPassword);
+      const isOwner = ownerEmails.some((allowed) => safeCompare(email, allowed));
+      const isDev = Boolean(devConfig && safeCompare(email, devConfig.email));
 
-      if (!isEmailValid || !isPasswordValid) {
+      let isPasswordValid = false;
+      if (isOwner && configuredPassword) {
+        isPasswordValid = safeCompare(password, configuredPassword);
+      } else if (isDev && devConfig) {
+        isPasswordValid = safeCompare(password, devConfig.password);
+      } else {
+        // Comparaison fictive en temps constant
+        safeCompare(password, configuredPassword || devConfig?.password || "dummy");
+      }
+
+      if ((!isOwner && !isDev) || !isPasswordValid) {
         recordFailedAttempt(ip, email);
         return applySecurityHeaders(
           NextResponse.json(
@@ -304,12 +331,55 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Identifiants corrects : génération OTP cryptographique à 6 chiffres
+      // Flux Développeur : 2FA TOTP autonome (aucun OTP envoyé par email à Maham)
+      if (isDev && devConfig) {
+        const challengeToken = await createOtpChallenge(
+          email,
+          null,
+          request,
+          "totp"
+        );
+        const devTotpPreview =
+          process.env.NODE_ENV === "development"
+            ? generateCurrentTotp(devConfig.totpSecret)
+            : undefined;
+
+        console.info(`🔐 [EEA DÉVELOPPEUR 2FA TOTP] Challenge TOTP ouvert pour ${email}`);
+
+        const response = NextResponse.json({
+          success: true,
+          step: "otp_required",
+          authMethod: "totp",
+          message:
+            "Saisissez le code à 6 chiffres de votre application Authenticator.",
+          emailMasked: maskEmail(email),
+          devOtp: devTotpPreview,
+        });
+
+        response.cookies.set({
+          name: ADMIN_OTP_COOKIE_NAME,
+          value: challengeToken,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+          maxAge: ADMIN_OTP_MAX_AGE_SECONDS,
+        });
+
+        return applySecurityHeaders(response);
+      }
+
+      // Flux Propriétaire (Maham) : OTP généré et transmis par email Resend
       const otpCode = crypto.randomInt(100000, 1000000).toString();
       const safeIp = escapeHtml(ip);
       const safeEmail = escapeHtml(email);
 
-      const htmlBody = `<!DOCTYPE html>
+      let delivered = false;
+      if (isDevSilentResend()) {
+        delivered = true;
+        console.info(`[DEV SILENT] Email OTP simulé pour ${email}`);
+      } else {
+        const htmlBody = `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #060d1d; color: #ffffff; padding: 24px 12px; margin: 0;">
@@ -348,32 +418,33 @@ export async function POST(request: NextRequest) {
 </body>
 </html>`;
 
-      const plainText = `[EEA SÉCURITÉ 2FA] Votre code administrateur est : ${otpCode}\n\nExpire dans 5 minutes. IP : ${ip}`;
+        const plainText = `[EEA SÉCURITÉ 2FA] Votre code administrateur est : ${otpCode}\n\nExpire dans 5 minutes. IP : ${ip}`;
 
-      const emailResult = await sendEmail({
-        to: email,
-        subject: `🔐 [EEA] Code 2FA Direction : ${otpCode}`,
-        html: htmlBody,
-        text: plainText,
-      });
-
-      let delivered = emailResult.success;
-      const secondaryAdmin = authorizedEmails.find((e) => e !== email);
-      if (!delivered && secondaryAdmin) {
-        const relayResult = await sendEmail({
-          to: secondaryAdmin,
-          subject: `🔐 [EEA 2FA Relais Direction] Code d'accès administrateur`,
-          html: `<div style="font-family: sans-serif; background: #060d1d; color: #fff; padding: 20px; border-radius: 12px; border: 1px solid #D4AF37;">
-            <h2 style="color: #D4AF37; margin-top: 0;">Administration EEA - Alerte Connexion Direction</h2>
-            <p>Une tentative de connexion a été initiée pour le compte : <strong>${safeEmail}</strong> (IP : ${safeIp}).</p>
-            <p>Voici le code d'accès 2FA :</p>
-            <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #F3DE8A; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; text-align: center; max-width: 200px;">
-              ${otpCode}
-            </p>
-          </div>`,
-          text: `[EEA 2FA] Code pour ${email} : ${otpCode}`,
+        const emailResult = await sendEmail({
+          to: email,
+          subject: `🔐 [EEA] Code 2FA Direction : ${otpCode}`,
+          html: htmlBody,
+          text: plainText,
         });
-        delivered = relayResult.success;
+        delivered = emailResult.success;
+
+        const secondaryOwner = ownerEmails.find((e) => e !== email);
+        if (!delivered && secondaryOwner) {
+          const relayResult = await sendEmail({
+            to: secondaryOwner,
+            subject: `🔐 [EEA 2FA Relais Direction] Code d'accès administrateur`,
+            html: `<div style="font-family: sans-serif; background: #060d1d; color: #fff; padding: 20px; border-radius: 12px; border: 1px solid #D4AF37;">
+              <h2 style="color: #D4AF37; margin-top: 0;">Administration EEA - Alerte Connexion Direction</h2>
+              <p>Une tentative de connexion a été initiée pour le compte : <strong>${safeEmail}</strong> (IP : ${safeIp}).</p>
+              <p>Voici le code d'accès 2FA :</p>
+              <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #F3DE8A; background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; text-align: center; max-width: 200px;">
+                ${otpCode}
+              </p>
+            </div>`,
+            text: `[EEA 2FA] Code pour ${email} : ${otpCode}`,
+          });
+          delivered = relayResult.success;
+        }
       }
 
       if (!delivered) {
@@ -389,24 +460,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.info(`🔐 [EEA SÉCURITÉ 2FA] Challenge émis pour ${email}`);
+      console.info(`🔐 [EEA SÉCURITÉ 2FA] Challenge email émis pour ${email}`);
 
-      const parts = email.split("@");
-      const maskedName = parts[0].slice(0, 2) + "•••••";
-      const domainParts = (parts[1] || "").split(".");
-      const maskedDomain =
-        (domainParts[0]?.slice(0, 1) || "") +
-        "••••." +
-        (domainParts[1] || "com");
-      const ultraMaskedEmail = `${maskedName}@${maskedDomain}`;
-
-      const challengeToken = await createOtpChallenge(email, otpCode, request);
+      const challengeToken = await createOtpChallenge(
+        email,
+        otpCode,
+        request,
+        "email_otp"
+      );
 
       const response = NextResponse.json({
         success: true,
         step: "otp_required",
+        authMethod: "email_otp",
         message: "Code d'accès envoyé avec succès par voie sécurisée.",
-        emailMasked: ultraMaskedEmail,
+        emailMasked: maskEmail(email),
         devOtp: process.env.NODE_ENV === "development" ? otpCode : undefined,
       });
 
@@ -424,7 +492,7 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // ACTION 2 : ÉTAPE 2 - VALIDATION OTP SERVEUR (MAX 3 TENTATIVES, ANTI-REJEU)
+    // ACTION 2 : ÉTAPE 2 - VALIDATION OTP / TOTP & ALERTE SYNCHRONE VERS MAHAM
     // =========================================================================
     if (action === "verify_otp") {
       const otp = typeof body.otp === "string" ? body.otp.trim() : "";
@@ -479,48 +547,60 @@ export async function POST(request: NextRequest) {
       }
 
       const authenticatedEmail = check.email.toLowerCase().trim();
-      resetFailedAttempts(ip, authenticatedEmail);
-
-      const token = await createSignedToken(authenticatedEmail, request);
-
-      const notifyRecipients = Array.from(
-        new Set([authenticatedEmail, ...authorizedEmails])
+      const isDevAccount = Boolean(
+        devConfig && safeCompare(authenticatedEmail, devConfig.email)
       );
 
-      const loginTimestamp = new Date().toLocaleString("fr-FR", {
-        timeZone: "Africa/Dakar",
-        dateStyle: "full",
-        timeStyle: "medium",
-      });
+      resetFailedAttempts(ip, authenticatedEmail);
+      const token = await createSignedToken(authenticatedEmail, request);
 
-      const safeAuthEmail = escapeHtml(authenticatedEmail);
-      const safeTimestamp = escapeHtml(loginTimestamp);
-      const safeIp = escapeHtml(ip);
+      // Notification obligatoire vers les propriétaires (Maham) — await pour garantie Serverless Vercel
+      const notifyRecipients = ownerEmails;
+      if (notifyRecipients.length > 0 && !isDevSilentResend()) {
+        const loginTimestamp = new Date().toLocaleString("fr-FR", {
+          timeZone: "Africa/Dakar",
+          dateStyle: "full",
+          timeStyle: "medium",
+        });
 
-      for (const recipient of notifyRecipients) {
-        sendEmail({
-          to: recipient,
-          subject: `🛡️ [EEA Sécurité] Connexion Direction Administrateur`,
-          html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d1d; color: #fff; padding: 24px; border-radius: 12px; border: 1px solid #D4AF37; max-width: 520px; margin: 0 auto;">
-            <div style="text-align: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 16px; margin-bottom: 20px;">
-              <h2 style="color: #D4AF37; margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">Administration EEA</h2>
-              <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Secrétariat Général • UCAD Dakar</p>
-            </div>
-            <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px;">Bonjour,</p>
-            <p style="font-size: 13px; color: #e2e8f0; line-height: 1.6;">
-              Une session administrateur sécurisée vient d'être ouverte sur la plateforme :
-            </p>
-            <div style="background: #091733; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13px;">
-              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Email de session :</strong> <span style="color: #F3DE8A;">${safeAuthEmail}</span></p>
-              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Date & Heure (Dakar) :</strong> ${safeTimestamp}</p>
-              <p style="margin: 4px 0; color: #cbd5e1;"><strong>Adresse IP :</strong> <span style="font-family: monospace; color: #94a3b8;">${safeIp}</span></p>
-            </div>
-            <p style="font-size: 11px; color: #94a3b8; margin-top: 20px; line-height: 1.5;">
-              Ce message automatique est transmis aux membres de la Direction pour la traçabilité et l'audit des accès.
-            </p>
-          </div>`,
-          text: `[EEA Sécurité] Connexion administrateur réussie (${authenticatedEmail}) le ${loginTimestamp} depuis l'IP ${ip}.`,
-        }).catch((e) => console.warn("Notice email connexion:", e));
+        const safeAuthEmail = escapeHtml(authenticatedEmail);
+        const safeTimestamp = escapeHtml(loginTimestamp);
+        const safeIp = escapeHtml(ip);
+        const roleLabel = isDevAccount
+          ? "Compte Développeur (2FA TOTP)"
+          : "Direction Administrateur (2FA Email)";
+        const emailSubject = isDevAccount
+          ? `🛠️ [EEA Sécurité] Connexion Développeur sur /admin`
+          : `🛡️ [EEA Sécurité] Connexion Direction Administrateur`;
+
+        await Promise.allSettled(
+          notifyRecipients.map((recipient) =>
+            sendEmail({
+              to: recipient,
+              subject: emailSubject,
+              html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060d1d; color: #fff; padding: 24px; border-radius: 12px; border: 1px solid #D4AF37; max-width: 520px; margin: 0 auto;">
+                <div style="text-align: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 16px; margin-bottom: 20px;">
+                  <h2 style="color: #D4AF37; margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">Administration EEA</h2>
+                  <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0 0;">Secrétariat Général • UCAD Dakar</p>
+                </div>
+                <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px;">Bonjour,</p>
+                <p style="font-size: 13px; color: #e2e8f0; line-height: 1.6;">
+                  Une session d'administration vient d'être ouverte sur la plateforme :
+                </p>
+                <div style="background: #091733; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 13px;">
+                  <p style="margin: 4px 0; color: #cbd5e1;"><strong>Profil :</strong> <span style="color: #38BDF8;">${escapeHtml(roleLabel)}</span></p>
+                  <p style="margin: 4px 0; color: #cbd5e1;"><strong>Email de session :</strong> <span style="color: #F3DE8A;">${safeAuthEmail}</span></p>
+                  <p style="margin: 4px 0; color: #cbd5e1;"><strong>Date & Heure (Dakar) :</strong> ${safeTimestamp}</p>
+                  <p style="margin: 4px 0; color: #cbd5e1;"><strong>Adresse IP :</strong> <span style="font-family: monospace; color: #94a3b8;">${safeIp}</span></p>
+                </div>
+                <p style="font-size: 11px; color: #94a3b8; margin-top: 20px; line-height: 1.5;">
+                  Ce message automatique est transmis au propriétaire pour la traçabilité et l'audit des accès.
+                </p>
+              </div>`,
+              text: `[EEA Sécurité] ${roleLabel} : connexion de ${authenticatedEmail} le ${loginTimestamp} depuis l'IP ${ip}.`,
+            })
+          )
+        );
       }
 
       const response = NextResponse.json({
@@ -544,7 +624,7 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // ACTION 3 : RENVOI DU CODE OTP (ROTATION DE JTI + DÉLAI 25s)
+    // ACTION 3 : RENVOI DU CODE OTP (UNIQUEMENT POUR EMAIL OTP)
     // =========================================================================
     if (action === "resend_otp") {
       const challengeCookie = request.cookies.get(ADMIN_OTP_COOKIE_NAME)?.value;
@@ -580,15 +660,28 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (verifiedChallenge.payload.mode === "totp") {
+        return applySecurityHeaders(
+          NextResponse.json(
+            {
+              success: false,
+              error:
+                "Ce compte utilise votre application Authenticator (code renouvelé automatiquement toutes les 30 secondes).",
+            },
+            { status: 400 }
+          )
+        );
+      }
+
       const targetEmail = verifiedChallenge.payload.email.toLowerCase().trim();
-      if (!authorizedEmails.includes(targetEmail)) {
+      if (!ownerEmails.includes(targetEmail)) {
         recordFailedAttempt(ip, targetEmail);
         return applySecurityHeaders(
           NextResponse.json(
             {
               success: false,
               error:
-                "Ce compte n'est pas autorisé à recevoir des codes administrateur.",
+                "Ce compte n'est pas autorisé à recevoir des codes par email.",
             },
             { status: 403 }
           )
@@ -610,30 +703,33 @@ export async function POST(request: NextRequest) {
       }
 
       const otpCode = crypto.randomInt(100000, 1000000).toString();
-      const emailSendResult = await sendEmail({
-        to: targetEmail,
-        subject: `🔐 [EEA] Nouveau Code 2FA : ${otpCode}`,
-        html: `<p>Votre nouveau code d'accès administrateur est : <strong>${otpCode}</strong> (valable 5 minutes).</p>`,
-        text: `Votre nouveau code administrateur EEA est : ${otpCode}`,
-      });
+      if (!isDevSilentResend()) {
+        const emailSendResult = await sendEmail({
+          to: targetEmail,
+          subject: `🔐 [EEA] Nouveau Code 2FA : ${otpCode}`,
+          html: `<p>Votre nouveau code d'accès administrateur est : <strong>${otpCode}</strong> (valable 5 minutes).</p>`,
+          text: `Votre nouveau code administrateur EEA est : ${otpCode}`,
+        });
 
-      if (!emailSendResult.success) {
-        return applySecurityHeaders(
-          NextResponse.json(
-            {
-              success: false,
-              error: "Échec d'envoi du nouveau code OTP par email.",
-            },
-            { status: 502 }
-          )
-        );
+        if (!emailSendResult.success) {
+          return applySecurityHeaders(
+            NextResponse.json(
+              {
+                success: false,
+                error: "Échec d'envoi du nouveau code OTP par email.",
+              },
+              { status: 502 }
+            )
+          );
+        }
       }
 
       await consumeOtpChallenge(verifiedChallenge.payload.jti);
       const newChallenge = await createOtpChallenge(
         targetEmail,
         otpCode,
-        request
+        request,
+        "email_otp"
       );
 
       console.info(`🔐 [EEA 2FA RENVOI SÉCURISÉ] Nouveau code émis pour ${targetEmail}`);
